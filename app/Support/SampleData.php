@@ -20,11 +20,11 @@ final class SampleData
     public static function accounts(): array
     {
         return [
-            ['id' => 1, 'name' => 'Kas Harian', 'type' => 'cash', 'balance' => '1250000.00', 'icon' => 'wallet', 'is_archived' => false],
-            ['id' => 2, 'name' => 'BCA Bersama', 'type' => 'bank', 'balance' => '8420000.00', 'icon' => 'landmark', 'is_archived' => false],
-            ['id' => 3, 'name' => 'GoPay Belanja', 'type' => 'ewallet', 'balance' => '385000.00', 'icon' => 'smartphone', 'is_archived' => false],
-            ['id' => 4, 'name' => 'Tabungan Kurban', 'type' => 'bank', 'balance' => '2400000.00', 'icon' => 'piggy-bank', 'is_archived' => false],
-            ['id' => 5, 'name' => 'Dompet Lama', 'type' => 'cash', 'balance' => '0.00', 'icon' => 'wallet', 'is_archived' => true],
+            ['id' => 1, 'name' => 'Kas Harian', 'type' => 'cash', 'balance' => '1250000.00', 'icon' => 'wallet', 'is_archived' => false, 'tx_count' => 7],
+            ['id' => 2, 'name' => 'BCA Bersama', 'type' => 'bank', 'balance' => '8420000.00', 'icon' => 'landmark', 'is_archived' => false, 'tx_count' => 13],
+            ['id' => 3, 'name' => 'GoPay Belanja', 'type' => 'ewallet', 'balance' => '385000.00', 'icon' => 'smartphone', 'is_archived' => false, 'tx_count' => 5],
+            ['id' => 4, 'name' => 'Tabungan Kurban', 'type' => 'other', 'balance' => '2400000.00', 'icon' => 'piggy-bank', 'is_archived' => false, 'tx_count' => 1],
+            ['id' => 5, 'name' => 'Dompet Lama', 'type' => 'cash', 'balance' => '0.00', 'icon' => 'wallet', 'is_archived' => true, 'tx_count' => 0],
         ];
     }
 
