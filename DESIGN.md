@@ -29,18 +29,26 @@ Tiga warna inti, satu aksen. Netral (putih, abu, hitam) tidak dihitung.
 **Arah uang sebagai warna.** Pemasukan memakai biru, pengeluaran memakai amber.
 Warna di sini mengkodekan arah uang, bukan identitas kategori.
 
-Warna mark chart berbeda dari warna teks karena alasan terukur: `#17324F` gagal
-uji chroma sebagai mark (terbaca abu-abu di grafik), jadi chart memakai langkah
-biru yang lebih terang pada hue yang sama.
+Arah uang dipisah jadi dua peran karena ambang kontrasnya memang berbeda: teks
+butuh 4.5:1, objek grafis cukup 3:1. Amber `#D97706` lolos sebagai batang chart
+tapi hanya **3.19:1** sebagai teks di atas kartu putih, jadi nominal memakai
+langkah yang lebih gelap. Biru `#17324F` sebaliknya gagal uji chroma sebagai
+mark dan terbaca abu-abu di grafik, jadi batang memakai langkah yang lebih
+terang pada hue yang sama.
 
-| Peran chart | Light     | Dark      |
-| ----------- | --------- | --------- |
-| Pemasukan   | `#17639B` | `#3E97D4` |
-| Pengeluaran | `#D97706` | `#C8801E` |
+| Peran              | Light              | Dark      |
+| ------------------ | ------------------ | --------- |
+| Teks pemasukan     | `#17639B`          | `#3E97D4` |
+| Teks pengeluaran   | `#B45309` (5.02:1) | `#C8801E` |
+| Batang pemasukan   | `#17639B`          | `#3E97D4` |
+| Batang pengeluaran | `#D97706`          | `#C8801E` |
 
-Keempat nilai chart lolos seluruh pemeriksaan validator palet (lightness band,
-chroma floor, separasi CVD, normal-vision floor, kontras terhadap surface) pada
-mode masing-masing.
+Nilai batang lolos seluruh pemeriksaan validator palet (lightness band, chroma
+floor, separasi CVD, normal-vision floor, kontras terhadap surface) pada mode
+masing-masing. Nilai teks diukur terhadap kartu dan latar di kedua mode.
+
+Warna merah bawaan juga diganti: teks putih di atas `#EF4444` hanya 3.76:1,
+sedangkan `#C81E1E` memberi 5.74:1.
 
 ## Tipografi
 

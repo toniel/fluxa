@@ -43,7 +43,7 @@ const rows = computed(() => {
             </div>
             <div class="bg-muted h-2 overflow-hidden rounded-sm">
                 <div
-                    class="bg-money-out h-full rounded-r-[4px]"
+                    class="bg-chart-out h-full rounded-r-[4px]"
                     :style="{ width: `${row.percent}%` }"
                 />
             </div>

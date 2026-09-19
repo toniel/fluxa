@@ -22,17 +22,17 @@ const base = computed(() => page.url.split('?')[0]);
         <span class="flex items-center gap-2">
             <Link
                 :href="base"
-                class="focus-visible:ring-ring rounded underline underline-offset-4 focus-visible:ring-2 focus-visible:outline-none"
+                class="focus-visible:ring-ring inline-flex min-h-11 items-center rounded px-1 underline underline-offset-4 focus-visible:ring-2 focus-visible:outline-none md:min-h-0"
                 >Ada isi</Link
             >
             <Link
                 :href="`${base}?kosong`"
-                class="focus-visible:ring-ring rounded underline underline-offset-4 focus-visible:ring-2 focus-visible:outline-none"
+                class="focus-visible:ring-ring inline-flex min-h-11 items-center rounded px-1 underline underline-offset-4 focus-visible:ring-2 focus-visible:outline-none md:min-h-0"
                 >Kosong</Link
             >
             <Link
                 :href="`${base}?galat`"
-                class="focus-visible:ring-ring rounded underline underline-offset-4 focus-visible:ring-2 focus-visible:outline-none"
+                class="focus-visible:ring-ring inline-flex min-h-11 items-center rounded px-1 underline underline-offset-4 focus-visible:ring-2 focus-visible:outline-none md:min-h-0"
                 >Gagal muat</Link
             >
         </span>
