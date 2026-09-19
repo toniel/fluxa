@@ -17,6 +17,10 @@ void createInertiaApp({
             // tidak punya tujuan: seluruh isinya route subdomain.
             case name.startsWith('tenants/'):
                 return null;
+            // Halaman masuk membawa panel pengantarnya sendiri, jadi ia tidak
+            // memakai kartu terpusat milik AuthLayout.
+            case name === 'auth/Login':
+                return null;
             case name.startsWith('auth/'):
                 return AuthLayout;
             case name.startsWith('settings/'):
