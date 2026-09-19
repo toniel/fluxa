@@ -1,0 +1,79 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Stancl\Tenancy\Database\Concerns\HasDomains;
+use Stancl\Tenancy\Database\Models\Tenant as BaseTenant;
+
+/**
+ * @property int $id
+ * @property string $name
+ * @property int $owner_id
+ * @property-read Domain[] $domains
+ */
+#[Fillable(['name', 'owner_id'])]
+class Tenant extends BaseTenant
+{
+    use HasDomains;
+
+    public $incrementing = true;
+
+    protected $keyType = 'int';
+
+    /**
+     * Kolom nyata di tabel tenants.
+     *
+     * Wajib memuat SETIAP kolom nyata. Atribut yang tidak terdaftar di sini
+     * dijejalkan stancl ke kolom `data` JSON tanpa error apa pun — kolom
+     * aslinya sekadar tetap NULL.
+     *
+     * @return list<string>
+     */
+    public static function getCustomColumns(): array
+    {
+        return ['id', 'name', 'owner_id'];
+    }
+
+    /**
+     * @return BelongsTo<User, $this>
+     */
+    public function owner(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'owner_id');
+    }
+
+    /**
+     * @return HasMany<Domain, $this>
+     */
+    public function domains(): HasMany
+    {
+        return $this->hasMany(Domain::class);
+    }
+
+    public function primaryDomain(): ?Domain
+    {
+        return Domain::query()->forTenant($this)->primary()->first();
+    }
+
+    public function subdomain(): ?string
+    {
+        return $this->primaryDomain()?->domain;
+    }
+
+    /**
+     * URL absolut ke subdomain tenant ini, dipakai tenant switcher dan setiap
+     * redirect lintas origin dari central domain.
+     */
+    public function url(string $path = '/'): string
+    {
+        $scheme = str_starts_with((string) config('app.url'), 'https') ? 'https' : 'http';
+        $central = config('tenancy.central_domains')[0];
+
+        return $scheme.'://'.$this->subdomain().'.'.$central.$path;
+    }
+}

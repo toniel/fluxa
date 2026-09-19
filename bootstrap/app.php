@@ -7,6 +7,8 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
 use Illuminate\Http\Request;
+use Stancl\Tenancy\Exceptions\TenantCouldNotBeIdentifiedOnDomainException;
+use Symfony\Component\HttpFoundation\Response;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -27,4 +29,12 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
         );
+
+        // Subdomain yang tidak terdaftar dijawab 404, bukan 500. Selain lebih
+        // benar secara HTTP, ini menutup kebocoran informasi: orang yang
+        // menebak-nebak subdomain tidak boleh bisa membedakan "tenant ini tidak
+        // ada" dari "tenant ini ada tapi bukan milikmu".
+        $exceptions->render(function (TenantCouldNotBeIdentifiedOnDomainException $e): Response {
+            abort(404);
+        });
     })->create();
