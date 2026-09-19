@@ -15,29 +15,29 @@ Alasan (dengan bukti dari repo):
 
 1. **Package-nya memang tidak ada.** `composer.json` hanya punya inertia, fortify, wayfinder, chisel, tinker. Tidak ada `spatie/laravel-data`, `spatie/laravel-medialibrary`, `spatie/laravel-permission`, `lorisleiva/laravel-actions`, `lacodix/laravel-model-filter`. `package.json` tidak punya `@tanstack/vue-query`. Opsi (a) = 5 package PHP + 1 npm + `spatie/laravel-typescript-transformer` + script `composer types:sync` + file `resources/js/generated/generated.d.ts` yang wajib di-commit. Itu hari kerja tersendiri sebelum satu baris fitur Fluxa ditulis.
 2. **`CRUD_FLOW.md` ditulis untuk repo lain.** Dia merujuk `composer test:coverage`, `composer types:sync`, `bin/no-zero-coverage.php`, `tests/Unit/ConventionsTest.php`, `resources/js/services/`, `app/Data/`, `EventPolicy` — **tidak satupun ada di repo ini**. `composer ci:check` di sini hanya `npm run check` + `vue-tsc` + `pint --test` + `phpstan` + `artisan test`, tanpa coverage floor. Jadi "mengikuti CRUD_FLOW.md" saat ini berarti membangun ulang seluruh infrastruktur enforcement-nya juga.
-3. **`spatie/laravel-permission` salah bentuk untuk kasus ini.** Role Fluxa adalah role *per-tenant* di pivot `tenant_user`, dan PRD sendiri sudah menetapkan `Tenant::hasRole($user, $roles)` + Policy. Teams feature spatie/permission akan jadi lapisan kedua yang bertabrakan dengan `tenant_id` scoping.
+3. **`spatie/laravel-permission` salah bentuk untuk kasus ini.** Role Fluxa adalah role _per-tenant_ di pivot `tenant_user`, dan PRD sendiri sudah menetapkan `Tenant::hasRole($user, $roles)` + Policy. Teams feature spatie/permission akan jadi lapisan kedua yang bertabrakan dengan `tenant_id` scoping.
 4. **TanStack Query justru menambah permukaan risiko keamanan.** Konvensi 3 di `CRUD_FLOW.md` mengharuskan tabel menembak endpoint `Api/` JSON terpisah. Untuk aplikasi finansial multi-tenant itu berarti **dua jalur akses data yang keduanya harus di-scope dan di-policy dengan benar**. Untuk prototype, Inertia props adalah satu jalur saja — lebih aman dan lebih cepat.
 5. **Yang paling berharga dari `CRUD_FLOW.md` ternyata sudah native di Laravel 13.** Sudah diverifikasi di `vendor/laravel/framework/src/Illuminate/Database/Eloquent/Attributes/`: `Fillable.php`, `UseEloquentBuilder.php`, `ScopedBy.php`, `UsePolicy.php`, `UseResource.php`, `ObservedBy.php` semuanya ada. Jadi konvensi "no scopes on model, query logic ke `app/QueryBuilders/`" bisa diikuti **tanpa package apapun**.
 
 **Jadi yang DIADOPSI dari `CRUD_FLOW.md`:**
 
-| Aturan CRUD_FLOW | Adopsi? | Pengganti di rencana ini |
-| --- | --- | --- |
-| `#[Fillable]` di model | Ya | Native Laravel 13 (sudah dipakai `app/Models/User.php`) |
-| Query logic ke `app/QueryBuilders/` + `#[UseEloquentBuilder]` | Ya | Native. Wajib — ini yang menjaga `where` keluar dari controller |
-| Write logic ke `app/Actions/` | Ya | **Plain invokable class** (`__invoke`/`handle`), tanpa `lorisleiva/laravel-actions` |
-| Authorization lewat Policy + `Gate::authorize()`, bukan `AuthorizesRequests` | Ya | Native |
-| `denyAsNotFound()` untuk baris yang seharusnya tak terlihat | Ya | Native, penting untuk isolasi tenant |
-| Semua URL dari Wayfinder | Ya | Sudah terpasang, `formVariants: true` di `vite.config.ts` |
-| `Inertia::flash('toast', ...)` | Ya | `resources/js/lib/flashToast.ts` sudah ada |
-| Pola halaman `Form.vue` + `Create.vue`/`Edit.vue` | Ya | Gratis |
-| File `.vue` > 300 baris dipecah | Ya | Disiplin, tanpa test enforcement |
-| 2 Spatie Data object per resource | **Tidak** | **FormRequest** (inbound) + **JsonResource** (outbound) |
-| `#[TypeScript]` → `generated.d.ts` | **Tidak** | TS interface tulis tangan di `resources/js/types/fluxa.d.ts` |
-| lacodix filter traits | **Tidak** | Filter sederhana di QueryBuilder (`filterFromRequest(array)`) |
-| TanStack Query + `Api/` controller + `services/` | **Tidak** | Inertia props + `router.reload({ only: [...] })` |
-| spatie/permission | **Tidak** | `Tenant::hasRole()` + Policy (sesuai PRD) |
-| spatie/media-library | **Tidak** | Phase 1 tidak ada upload; icon = nama string Lucide |
+| Aturan CRUD_FLOW                                                             | Adopsi?   | Pengganti di rencana ini                                                            |
+| ---------------------------------------------------------------------------- | --------- | ----------------------------------------------------------------------------------- |
+| `#[Fillable]` di model                                                       | Ya        | Native Laravel 13 (sudah dipakai `app/Models/User.php`)                             |
+| Query logic ke `app/QueryBuilders/` + `#[UseEloquentBuilder]`                | Ya        | Native. Wajib — ini yang menjaga `where` keluar dari controller                     |
+| Write logic ke `app/Actions/`                                                | Ya        | **Plain invokable class** (`__invoke`/`handle`), tanpa `lorisleiva/laravel-actions` |
+| Authorization lewat Policy + `Gate::authorize()`, bukan `AuthorizesRequests` | Ya        | Native                                                                              |
+| `denyAsNotFound()` untuk baris yang seharusnya tak terlihat                  | Ya        | Native, penting untuk isolasi tenant                                                |
+| Semua URL dari Wayfinder                                                     | Ya        | Sudah terpasang, `formVariants: true` di `vite.config.ts`                           |
+| `Inertia::flash('toast', ...)`                                               | Ya        | `resources/js/lib/flashToast.ts` sudah ada                                          |
+| Pola halaman `Form.vue` + `Create.vue`/`Edit.vue`                            | Ya        | Gratis                                                                              |
+| File `.vue` > 300 baris dipecah                                              | Ya        | Disiplin, tanpa test enforcement                                                    |
+| 2 Spatie Data object per resource                                            | **Tidak** | **FormRequest** (inbound) + **JsonResource** (outbound)                             |
+| `#[TypeScript]` → `generated.d.ts`                                           | **Tidak** | TS interface tulis tangan di `resources/js/types/fluxa.d.ts`                        |
+| lacodix filter traits                                                        | **Tidak** | Filter sederhana di QueryBuilder (`filterFromRequest(array)`)                       |
+| TanStack Query + `Api/` controller + `services/`                             | **Tidak** | Inertia props + `router.reload({ only: [...] })`                                    |
+| spatie/permission                                                            | **Tidak** | `Tenant::hasRole()` + Policy (sesuai PRD)                                           |
+| spatie/media-library                                                         | **Tidak** | Phase 1 tidak ada upload; icon = nama string Lucide                                 |
 
 **Catatan tentang `JsonResource` sebagai pengganti outbound Data object:** ini yang menjawab kebutuhan `can_edit`/`can_delete` per item dan formatting — satu tempat, framework-native, `#[UseResource]` bisa dipakai kalau mau.
 
@@ -45,16 +45,16 @@ Alasan (dengan bukti dari repo):
 
 ### 0.2 Keputusan teknis lain yang mengikat seluruh rencana
 
-| Topik | Keputusan | Alasan singkat |
-| --- | --- | --- |
-| Tipe kolom enum | `string(32)` + PHP backed enum di `app/Enums/` + cast, **bukan** `$table->enum()` | Phase 2 menambah `bill_payment`/`credit_card` cukup ubah enum PHP, tanpa `ALTER TABLE` (yang menyakitkan di MySQL dan tak didukung penuh SQLite) |
-| Mutasi balance | **Action/Service, bukan Observer** | Detail di §3 |
-| Tenant context | Singleton scoped + middleware + session key | Detail di §2 |
-| `transactions.category_id` | **nullable sejak sekarang** | Phase 2 `bill_payment` tidak punya kategori; nullable sejak awal = nol data migration nanti |
-| Chart | SVG tulis tangan (tanpa dependency) | Detail di §9.3 |
-| Format Rupiah | Angka mentah dari backend, format di frontend | Detail di §9.4 |
-| ID | `bigIncrements` (bukan ULID) | Starter kit `users` sudah `$table->id()`; konsistensi > estetika untuk prototype |
-| Uang | `decimal(15,2)`, cast `decimal:2`, aritmetika lewat `increment`/`decrement` DB-side | Hindari float; PRD sudah menetapkan `decimal(15,2)` |
+| Topik                      | Keputusan                                                                           | Alasan singkat                                                                                                                                   |
+| -------------------------- | ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Tipe kolom enum            | `string(32)` + PHP backed enum di `app/Enums/` + cast, **bukan** `$table->enum()`   | Phase 2 menambah `bill_payment`/`credit_card` cukup ubah enum PHP, tanpa `ALTER TABLE` (yang menyakitkan di MySQL dan tak didukung penuh SQLite) |
+| Mutasi balance             | **Action/Service, bukan Observer**                                                  | Detail di §3                                                                                                                                     |
+| Tenant context             | Singleton scoped + middleware + session key                                         | Detail di §2                                                                                                                                     |
+| `transactions.category_id` | **nullable sejak sekarang**                                                         | Phase 2 `bill_payment` tidak punya kategori; nullable sejak awal = nol data migration nanti                                                      |
+| Chart                      | SVG tulis tangan (tanpa dependency)                                                 | Detail di §9.3                                                                                                                                   |
+| Format Rupiah              | Angka mentah dari backend, format di frontend                                       | Detail di §9.4                                                                                                                                   |
+| ID                         | `bigIncrements` (bukan ULID)                                                        | Starter kit `users` sudah `$table->id()`; konsistensi > estetika untuk prototype                                                                 |
+| Uang                       | `decimal(15,2)`, cast `decimal:2`, aritmetika lewat `increment`/`decrement` DB-side | Hindari float; PRD sudah menetapkan `decimal(15,2)`                                                                                              |
 
 ---
 
@@ -363,6 +363,7 @@ trait BelongsToTenant
 Ikuti gaya `app/Models/User.php` yang sudah ada: `@property` docblock lengkap (wajib untuk PHPStan level 7), `#[Fillable([...])]`, `#[UseEloquentBuilder(...)]`, casts di `protected function casts()`.
 
 **`app/Models/Tenant.php`**
+
 ```php
 #[Fillable(['name', 'subdomain', 'is_custom_subdomain', 'owner_id'])]
 #[UseEloquentBuilder(TenantQueryBuilder::class)]
@@ -386,6 +387,7 @@ class Tenant extends Model
 **`app/Models/TenantUser.php`** — pivot model (`extends Pivot`), casts `role => TenantRole::class`, `joined_at => 'datetime'`. Diperlukan karena kita butuh `TenantMemberPolicy` beroperasi pada baris pivot.
 
 **`app/Models/TenantInvitation.php`**
+
 ```php
 #[Fillable(['tenant_id','email','role','token','invited_by','status','expires_at'])]
 #[UseEloquentBuilder(TenantInvitationQueryBuilder::class)]
@@ -401,12 +403,14 @@ class TenantInvitation extends Model
 ```
 
 **`app/Models/Account.php`**
+
 ```php
 use BelongsToTenant, HasFactory;
 
 #[Fillable(['name','type','initial_balance','icon','color','is_archived','created_by'])]
 #[UseEloquentBuilder(AccountQueryBuilder::class)]
 ```
+
 Perhatikan: **`balance` sengaja TIDAK fillable.** Satu-satunya cara mengubahnya adalah lewat `AdjustAccountBalance` action (§3). Ini pertahanan struktural, bukan sekadar konvensi.
 
 Relasi: `transactions()`, `transfersOut()` (`from_account_id`), `transfersIn()` (`to_account_id`), `creator()`.
@@ -422,6 +426,7 @@ Relasi: `transactions()`, `transfersOut()` (`from_account_id`), `transfersIn()` 
 **`app/Models/Subscription.php`** — `use BelongsToTenant;`, relasi `plan()`, helper `isActive(): bool`.
 
 Tambahkan juga di `app/Models/User.php`:
+
 ```php
 #[Fillable(['name', 'email', 'password', 'google_id', 'avatar'])]
 // ...
@@ -481,7 +486,7 @@ public function forMember(User $user): static;                     // whereHas m
 
 **Pakai Action/Service, jangan Observer.** Alasan:
 
-1. **Transfer butuh dua akun terkunci sekaligus dalam satu transaksi DB.** Observer `created` pada `Transfer` berjalan *di dalam* `Model::save()`, dan untuk mengunci dua baris dengan urutan deterministik kita perlu mengontrol batas transaksi dari luar. Observer memaksa transaksi dibuka di tempat yang tidak terlihat oleh pembaca.
+1. **Transfer butuh dua akun terkunci sekaligus dalam satu transaksi DB.** Observer `created` pada `Transfer` berjalan _di dalam_ `Model::save()`, dan untuk mengunci dua baris dengan urutan deterministik kita perlu mengontrol batas transaksi dari luar. Observer memaksa transaksi dibuka di tempat yang tidak terlihat oleh pembaca.
 2. **Update transaksi adalah operasi "reverse lama, apply baru" yang butuh nilai lama DAN baru.** Di observer `updating` itu bisa (`getOriginal()`), tapi jadi kode paling berbahaya di aplikasi yang tersembunyi di file yang tak pernah dibuka orang.
 3. **Observer diam saat mass update/delete.** `Transaction::query()->where(...)->delete()` tidak memicu observer sama sekali. Untuk data finansial ini adalah bug yang tidak terdeteksi sampai ada yang mengaudit saldo.
 4. **Testability.** Action bisa dipanggil langsung di unit test dengan dua akun dan diassert saldonya; observer hanya bisa diuji lewat model.
@@ -566,19 +571,19 @@ public function handle(array $data, User $user): Transaction
 
 ### 3.5 Matriks siklus hidup → efek saldo
 
-| Operasi | Yang terjadi dalam satu `DB::transaction` |
-| --- | --- |
-| `CreateTransaction` (income) | lock akun; insert; `balance += amount` |
-| `CreateTransaction` (expense) | lock akun; insert; `balance -= amount` |
-| `UpdateTransaction` | lock akun **lama dan baru** (urut id); `reverse(old)`; update baris; `apply(new)`. Ini menangani perubahan amount, type, **dan pindah akun** dalam satu jalur, tanpa cabang khusus |
-| `DeleteTransaction` (soft) | lock akun; `reverse(old)`; `$transaction->delete()` |
-| `RestoreTransaction` | lock akun; `$transaction->restore()`; `apply(current)` |
-| Force delete | **Tidak diekspos di UI.** Kalau nanti perlu, ia TIDAK mengubah saldo (baris sudah ter-reverse saat soft delete) |
-| `CreateTransfer` | lock kedua akun urut id; insert; `from -= amount`; `to += amount` |
-| `UpdateTransfer` | lock union(akun lama, akun baru) urut id; reverse pasangan lama; update; apply pasangan baru |
-| `DeleteTransfer` (soft) | lock kedua akun; reverse; delete |
-| `ArchiveAccount` | tidak menyentuh saldo. Akun terarsip tidak boleh dipilih di form transaksi baru (validasi di FormRequest lewat `Rule::exists()->where('is_archived', false)`) |
-| `UpdateAccount` | `initial_balance` **tidak boleh diubah setelah create** (kalau boleh, ia harus jadi delta ke `balance`). Untuk prototype: kunci field-nya di form edit. Catat di §12 |
+| Operasi                       | Yang terjadi dalam satu `DB::transaction`                                                                                                                                          |
+| ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `CreateTransaction` (income)  | lock akun; insert; `balance += amount`                                                                                                                                             |
+| `CreateTransaction` (expense) | lock akun; insert; `balance -= amount`                                                                                                                                             |
+| `UpdateTransaction`           | lock akun **lama dan baru** (urut id); `reverse(old)`; update baris; `apply(new)`. Ini menangani perubahan amount, type, **dan pindah akun** dalam satu jalur, tanpa cabang khusus |
+| `DeleteTransaction` (soft)    | lock akun; `reverse(old)`; `$transaction->delete()`                                                                                                                                |
+| `RestoreTransaction`          | lock akun; `$transaction->restore()`; `apply(current)`                                                                                                                             |
+| Force delete                  | **Tidak diekspos di UI.** Kalau nanti perlu, ia TIDAK mengubah saldo (baris sudah ter-reverse saat soft delete)                                                                    |
+| `CreateTransfer`              | lock kedua akun urut id; insert; `from -= amount`; `to += amount`                                                                                                                  |
+| `UpdateTransfer`              | lock union(akun lama, akun baru) urut id; reverse pasangan lama; update; apply pasangan baru                                                                                       |
+| `DeleteTransfer` (soft)       | lock kedua akun; reverse; delete                                                                                                                                                   |
+| `ArchiveAccount`              | tidak menyentuh saldo. Akun terarsip tidak boleh dipilih di form transaksi baru (validasi di FormRequest lewat `Rule::exists()->where('is_archived', false)`)                      |
+| `UpdateAccount`               | `initial_balance` **tidak boleh diubah setelah create** (kalau boleh, ia harus jadi delta ke `balance`). Untuk prototype: kunci field-nya di form edit. Catat di §12               |
 
 Helper di model: `Transaction::signedAmount(): string` = `bcmul($this->amount, (string) $this->type->signum(), 2)`.
 
@@ -634,6 +639,7 @@ public function handle(Request $request, Closure $next): Response
 ```
 
 Tiga hal yang ditangani sekaligus di sini:
+
 - **Session menunjuk tenant yang user-nya sudah di-kick** → jatuh ke tenant lain, bukan 403 misterius.
 - **User belum punya tenant** → diarahkan ke `tenants.create`, bukan exception.
 - **Session kosong (login pertama)** → ambil tenant pertama otomatis.
@@ -742,20 +748,20 @@ dan untuk kasus di luar konteks middleware, fallback ke `$tenant->hasRole($user,
 
 ### 5.1 Matriks → implementasi
 
-| Aksi (PRD) | Owner | Admin | Member | Policy method |
-| --- | :-: | :-: | :-: | --- |
-| Lihat semua data tenant | ✔ | ✔ | ✔ | `viewAny`, `view` di semua policy → `true` (tenant scope sudah membatasi) |
-| Buat account | ✔ | ✔ | ✔ | `AccountPolicy::create` |
-| Edit/hapus account | ✔ | ✔ | ✘ | `AccountPolicy::update`/`delete` → `role in [owner, admin]` |
-| Buat transaksi | ✔ | ✔ | ✔ | `TransactionPolicy::create` |
-| Edit/hapus transaksi | ✔ | ✔ | milik sendiri | `TransactionPolicy::update`/`delete` → owner/admin true; member → `$transaction->created_by === $user->id` |
-| CRUD kategori | ✔ | ✔ | ✘ | `CategoryPolicy::create/update/delete` |
-| Invite anggota | ✔ | ✔ | ✘ | `TenantInvitationPolicy::create/delete/resend` |
-| Ubah role anggota | ✔ | ✘ | ✘ | `TenantMemberPolicy::updateRole` |
-| Kick anggota | ✔ | ✔ (kecuali owner) | ✘ | `TenantMemberPolicy::remove` |
-| Ubah pengaturan tenant | ✔ | ✘ | ✘ | `TenantPolicy::update` |
-| Lihat billing | ✔ | ✘ | ✘ | `SubscriptionPolicy::viewAny/update` |
-| Hapus tenant | ✔ | ✘ | ✘ | `TenantPolicy::delete` |
+| Aksi (PRD)              | Owner |       Admin       |    Member     | Policy method                                                                                              |
+| ----------------------- | :---: | :---------------: | :-----------: | ---------------------------------------------------------------------------------------------------------- |
+| Lihat semua data tenant |   ✔   |         ✔         |       ✔       | `viewAny`, `view` di semua policy → `true` (tenant scope sudah membatasi)                                  |
+| Buat account            |   ✔   |         ✔         |       ✔       | `AccountPolicy::create`                                                                                    |
+| Edit/hapus account      |   ✔   |         ✔         |       ✘       | `AccountPolicy::update`/`delete` → `role in [owner, admin]`                                                |
+| Buat transaksi          |   ✔   |         ✔         |       ✔       | `TransactionPolicy::create`                                                                                |
+| Edit/hapus transaksi    |   ✔   |         ✔         | milik sendiri | `TransactionPolicy::update`/`delete` → owner/admin true; member → `$transaction->created_by === $user->id` |
+| CRUD kategori           |   ✔   |         ✔         |       ✘       | `CategoryPolicy::create/update/delete`                                                                     |
+| Invite anggota          |   ✔   |         ✔         |       ✘       | `TenantInvitationPolicy::create/delete/resend`                                                             |
+| Ubah role anggota       |   ✔   |         ✘         |       ✘       | `TenantMemberPolicy::updateRole`                                                                           |
+| Kick anggota            |   ✔   | ✔ (kecuali owner) |       ✘       | `TenantMemberPolicy::remove`                                                                               |
+| Ubah pengaturan tenant  |   ✔   |         ✘         |       ✘       | `TenantPolicy::update`                                                                                     |
+| Lihat billing           |   ✔   |         ✘         |       ✘       | `SubscriptionPolicy::viewAny/update`                                                                       |
+| Hapus tenant            |   ✔   |         ✘         |       ✘       | `TenantPolicy::delete`                                                                                     |
 
 Transfer mengikuti aturan transaksi (`TransferPolicy` ≡ `TransactionPolicy`).
 
@@ -832,6 +838,7 @@ composer require laravel/socialite
 ```
 
 `config/services.php` tambah:
+
 ```php
 'google' => [
     'client_id' => env('GOOGLE_CLIENT_ID'),
@@ -839,6 +846,7 @@ composer require laravel/socialite
     'redirect' => env('GOOGLE_REDIRECT_URI', '/auth/google/callback'),
 ],
 ```
+
 `.env.example` tambah `GOOGLE_CLIENT_ID=`, `GOOGLE_CLIENT_SECRET=`, `GOOGLE_REDIRECT_URI=`, plus `APP_TIMEZONE=Asia/Jakarta` dan `APP_LOCALE=id` (untuk format tanggal di email).
 
 ### 6.2 Bagaimana Socialite hidup berdampingan dengan Fortify
@@ -866,6 +874,7 @@ Fortify::authenticateUsing(function (Request $request): ?User {
 ### 6.3 Controller
 
 `app/Http/Controllers/Auth/GoogleRedirectController.php` (invokable):
+
 ```php
 public function __invoke(Request $request): RedirectResponse
 {
@@ -879,6 +888,7 @@ public function __invoke(Request $request): RedirectResponse
 ```
 
 `app/Http/Controllers/Auth/GoogleCallbackController.php`:
+
 ```php
 public function __invoke(
     Request $request,
@@ -908,11 +918,13 @@ public function __invoke(
 ```
 
 `FindOrCreateGoogleUser::handle()` urutan pencarian:
+
 1. `User::where('google_id', $googleUser->getId())` → pakai, update `avatar`.
 2. `User::where('email', $googleUser->getEmail())` → **link**: isi `google_id`, `avatar`, set `email_verified_at` kalau masih null. Ini yang membuat akun password lama bisa dipakai lewat Google.
 3. Belum ada → `User::create(['name', 'email', 'google_id', 'avatar', 'password' => null, 'email_verified_at' => now()])`.
 
 `CompleteRegistration::handle(User $user)`:
+
 ```php
 // Jangan buat tenant sendiri kalau user ini datang lewat undangan.
 if (session()->has('fluxa.invitation_token')) {
@@ -1020,13 +1032,13 @@ return Inertia::render('invitations/Show', [
 
 `resolveState()` mengembalikan salah satu string yang dikonsumsi halaman Vue — inilah seluruh percabangan PRD dalam satu tempat yang bisa dites:
 
-| `state` | Kondisi | Yang ditampilkan |
-| --- | --- | --- |
-| `guest` | belum login | Tombol "Lanjut dengan Google" + link login email/password (keduanya membawa `?invitation={token}`) |
-| `ready` | login, `invitation->matches($user)`, status pending | Tombol "Terima Undangan" (POST) |
-| `email_mismatch` | login, email berbeda | Pesan "Undangan ini untuk `budi@…`, Anda login sebagai `siti@…`" + tombol logout-dan-login-ulang. **Tidak ada tombol terima.** |
-| `already_member` | sudah ada di `tenant_user` | Tombol "Buka Tenant" (switch + redirect dashboard) |
-| `expired` / `revoked` / `accepted` | status | Pesan + instruksi minta kirim ulang |
+| `state`                            | Kondisi                                             | Yang ditampilkan                                                                                                               |
+| ---------------------------------- | --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `guest`                            | belum login                                         | Tombol "Lanjut dengan Google" + link login email/password (keduanya membawa `?invitation={token}`)                             |
+| `ready`                            | login, `invitation->matches($user)`, status pending | Tombol "Terima Undangan" (POST)                                                                                                |
+| `email_mismatch`                   | login, email berbeda                                | Pesan "Undangan ini untuk `budi@…`, Anda login sebagai `siti@…`" + tombol logout-dan-login-ulang. **Tidak ada tombol terima.** |
+| `already_member`                   | sudah ada di `tenant_user`                          | Tombol "Buka Tenant" (switch + redirect dashboard)                                                                             |
+| `expired` / `revoked` / `accepted` | status                                              | Pesan + instruksi minta kirim ulang                                                                                            |
 
 `store()` (POST, `middleware('auth')`) — **validasi ulang semuanya di server, jangan percaya `state` dari client**:
 
@@ -1060,20 +1072,20 @@ public function store(Request $request, string $token, AcceptInvitation $action)
 
 Semua controller hanya berisi method REST (`index`, `create`, `store`, `show`, `edit`, `update`, `destroy`) atau invokable. Tidak ada `where` di controller — semua lewat QueryBuilder. Otorisasi lewat `Gate::authorize()`, bukan trait.
 
-| Controller | Method | Catatan |
-| --- | --- | --- |
-| `DashboardController` | `__invoke` | §9.1 |
-| `AccountController` | index, create, store, edit, update, destroy | `destroy` = soft-guard: kalau akun punya transaksi → 422 dengan pesan "arsipkan saja"; kalau kosong → hard delete. Plus `archive()` (patch) — ini menyimpang dari REST murni, alternatif: `Route::resource('accounts.archive', ...)->only('store')`. **Rekomendasi: controller terpisah `ArchiveAccountController::__invoke`** agar `AccountController` tetap murni |
-| `CategoryController` | index, create, store, edit, update, destroy | `destroy` menolak kalau `is_default` masih dipakai transaksi → set `category_id` null via `nullOnDelete`, atau tolak dengan 422. **Rekomendasi: tolak 422** (audit finansial) |
-| `TransactionController` | index, create, store, edit, update, destroy | `index` menerima `TransactionIndexRequest` (validasi filter: `type`, `account_id`, `category_id`, `from`, `to`, `page`) lalu `->filterFromRequest($request->validated())` |
-| `TransferController` | index, create, store, edit, update, destroy | `store` validasi `from_account_id != to_account_id` (rule `different`) dan keduanya `is_archived = false` |
-| `TenantController` | create, store, edit, update, destroy | `create`/`store` di luar tenant context |
-| `TenantSwitchController` | `__invoke` | Validasi membership → set session → `back()` |
-| `MemberController` | index, update, destroy | `index` juga mengirim daftar `invitations` (satu halaman "Anggota") |
-| `InvitationController` | store, destroy | + `ResendInvitationController::__invoke` |
-| `InvitationAcceptanceController` | show, store | §7.2 |
-| `BillingController` | index, store | `store` = mock toggle |
-| `GoogleRedirectController` / `GoogleCallbackController` | `__invoke` | §6.3 |
+| Controller                                              | Method                                      | Catatan                                                                                                                                                                                                                                                                                                                                                             |
+| ------------------------------------------------------- | ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `DashboardController`                                   | `__invoke`                                  | §9.1                                                                                                                                                                                                                                                                                                                                                                |
+| `AccountController`                                     | index, create, store, edit, update, destroy | `destroy` = soft-guard: kalau akun punya transaksi → 422 dengan pesan "arsipkan saja"; kalau kosong → hard delete. Plus `archive()` (patch) — ini menyimpang dari REST murni, alternatif: `Route::resource('accounts.archive', ...)->only('store')`. **Rekomendasi: controller terpisah `ArchiveAccountController::__invoke`** agar `AccountController` tetap murni |
+| `CategoryController`                                    | index, create, store, edit, update, destroy | `destroy` menolak kalau `is_default` masih dipakai transaksi → set `category_id` null via `nullOnDelete`, atau tolak dengan 422. **Rekomendasi: tolak 422** (audit finansial)                                                                                                                                                                                       |
+| `TransactionController`                                 | index, create, store, edit, update, destroy | `index` menerima `TransactionIndexRequest` (validasi filter: `type`, `account_id`, `category_id`, `from`, `to`, `page`) lalu `->filterFromRequest($request->validated())`                                                                                                                                                                                           |
+| `TransferController`                                    | index, create, store, edit, update, destroy | `store` validasi `from_account_id != to_account_id` (rule `different`) dan keduanya `is_archived = false`                                                                                                                                                                                                                                                           |
+| `TenantController`                                      | create, store, edit, update, destroy        | `create`/`store` di luar tenant context                                                                                                                                                                                                                                                                                                                             |
+| `TenantSwitchController`                                | `__invoke`                                  | Validasi membership → set session → `back()`                                                                                                                                                                                                                                                                                                                        |
+| `MemberController`                                      | index, update, destroy                      | `index` juga mengirim daftar `invitations` (satu halaman "Anggota")                                                                                                                                                                                                                                                                                                 |
+| `InvitationController`                                  | store, destroy                              | + `ResendInvitationController::__invoke`                                                                                                                                                                                                                                                                                                                            |
+| `InvitationAcceptanceController`                        | show, store                                 | §7.2                                                                                                                                                                                                                                                                                                                                                                |
+| `BillingController`                                     | index, store                                | `store` = mock toggle                                                                                                                                                                                                                                                                                                                                               |
+| `GoogleRedirectController` / `GoogleCallbackController` | `__invoke`                                  | §6.3                                                                                                                                                                                                                                                                                                                                                                |
 
 FormRequests di `app/Http/Requests/` (ikuti struktur folder yang sudah ada, `Settings/` jadi preseden):
 
@@ -1176,13 +1188,13 @@ Mobile-first: daftar transaksi memakai `TransactionListItem` (stack) di bawah `m
 
 Opsi yang dipertimbangkan:
 
-| Opsi | Penilaian |
-| --- | --- |
+| Opsi                       | Penilaian                                                                                                                                                          |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `chart.js` + `vue-chartjs` | Matang, Vue 3 OK. Tapi +~200KB, styling via JS config (bertabrakan dengan pendekatan Tailwind token), dan warna dark-mode harus di-sync manual dengan CSS variable |
-| `@unovis/vue` | Bagus dan modern, tapi API besar untuk dua chart |
-| `apexcharts` / `echarts` | Terlalu berat untuk prototype |
-| Recharts | **Tidak bisa** — React-only |
-| **SVG tulis tangan** | ✅ 0 dependency, `currentColor` + Tailwind token bikin dark mode gratis, tidak ada masalah SSR (repo punya `build:ssr`), dan chart-nya memang cuma dua |
+| `@unovis/vue`              | Bagus dan modern, tapi API besar untuk dua chart                                                                                                                   |
+| `apexcharts` / `echarts`   | Terlalu berat untuk prototype                                                                                                                                      |
+| Recharts                   | **Tidak bisa** — React-only                                                                                                                                        |
+| **SVG tulis tangan**       | ✅ 0 dependency, `currentColor` + Tailwind token bikin dark mode gratis, tidak ada masalah SSR (repo punya `build:ssr`), dan chart-nya memang cuma dua             |
 
 **Rekomendasi: SVG tulis tangan** untuk phase 1. Dua komponen:
 
@@ -1198,25 +1210,31 @@ Kalau nanti dashboard analytics phase 2 (cash flow multi-bulan, trend saldo per 
 **Backend:** kirim **angka mentah** sebagai string decimal (`"1500000.00"`), bukan string terformat. Alasan: frontend butuh angka untuk chart, sorting, dan input; string "Rp 1.500.000" harus di-parse balik. `AccountResource`/`TransactionResource` mengirim `'amount' => (string) $this->amount`.
 
 Formatter backend tetap diperlukan untuk **email dan notifikasi** (tidak lewat Vue). Taruh di `app/Support/Rupiah.php`:
+
 ```php
 final class Rupiah
 {
     public static function format(string|float|int $amount, bool $withDecimals = false): string;
 }
 ```
+
 dan daftarkan Blade directive `@rupiah($value)` di `AppServiceProvider::boot()` untuk template mail.
 
 **Frontend:** `resources/js/lib/currency.ts`
+
 ```ts
 const idr = new Intl.NumberFormat('id-ID', {
-    style: 'currency', currency: 'IDR',
-    minimumFractionDigits: 0, maximumFractionDigits: 0,
+    style: 'currency',
+    currency: 'IDR',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
 });
 
-export function formatRupiah(value: number | string): string;   // "Rp 1.500.000"
-export function formatRupiahCompact(value: number | string): string;  // "Rp 1,5 jt" untuk kartu ringkas
-export function parseRupiah(input: string): number;             // untuk CurrencyInput
+export function formatRupiah(value: number | string): string; // "Rp 1.500.000"
+export function formatRupiahCompact(value: number | string): string; // "Rp 1,5 jt" untuk kartu ringkas
+export function parseRupiah(input: string): number; // untuk CurrencyInput
 ```
+
 plus composable tipis `useCurrency()` yang mengekspos ketiganya (supaya bisa dipakai di template tanpa import per file).
 
 `Intl.NumberFormat` dengan `'id-ID'` menghasilkan `Rp 1.500.000` (spasi non-breaking setelah Rp) — pastikan test snapshot tidak patah karena itu. `maximumFractionDigits: 0` karena Rupiah praktis tidak pakai sen; nilai desimal di DB tetap disimpan untuk kalau-kalau.
@@ -1238,6 +1256,7 @@ Idempotent (`updateOrCreate` by `slug`), dipanggil dari `DatabaseSeeder` dan ama
 ['slug' => 'pro-monthly', 'name' => 'Pro', 'price' => 35000, 'billing_period' => 'monthly',
  'features' => ['max_members' => null, 'max_accounts' => null, 'custom_subdomain' => true, 'export' => true]]
 ```
+
 (`null` = unlimited.)
 
 ### 10.2 Kategori default per tenant — **Action, bukan Seeder**
@@ -1300,6 +1319,7 @@ function assertAccountBalanceReconciles(Account $account): void;     // invarian
 ### 11.2 Test yang layak ditulis (prioritas menurun)
 
 **A. Isolasi tenant — `tests/Feature/Tenancy/TenantIsolationTest.php`** (paling penting; ini data finansial)
+
 - Transaksi tenant B tidak muncul di `transactions.index` milik tenant A.
 - `GET /transactions/{id}/edit` untuk baris tenant B → **404**, bukan 403 (global scope + route binding).
 - `PUT /transactions/{id}` untuk baris tenant B → 404.
@@ -1309,6 +1329,7 @@ function assertAccountBalanceReconciles(Account $account): void;     // invarian
 - `POST /tenants/{tenant}/switch` ke tenant yang bukan miliknya → 404.
 
 **B. Kebenaran saldo — `tests/Feature/Money/`**
+
 - `TransferTest`: transfer 100rb → `from` −100rb, `to` +100rb, total saldo tenant tetap; transfer ke akun yang sama ditolak 422; transfer ke akun tenant lain ditolak.
 - `TransactionBalanceTest`: create income/expense; update yang mengubah **amount**; update yang **memindah akun** (assert kedua akun benar); soft delete membalik saldo; restore menerapkan ulang. Setiap test diakhiri `assertAccountBalanceReconciles()`.
 - `TransferUpdateTest`: ubah `from_account_id` → tiga akun terlibat, semuanya benar.
@@ -1316,6 +1337,7 @@ function assertAccountBalanceReconciles(Account $account): void;     // invarian
 
 **C. Policy — `tests/Feature/Authorization/RoleMatrixTest.php`**
 Datasets Pest untuk matriks §5.1 — satu `it()` dengan `->with([...])` yang menyebut role, route, dan status yang diharapkan. Yang wajib ada (jalur **penolakan**, bukan cuma yang diizinkan, karena coverage tidak melihat ini):
+
 - member tidak bisa create/update/delete account, category, invitation
 - member bisa edit transaksi **miliknya sendiri** tapi 403 untuk milik orang lain
 - admin tidak bisa lihat `/billing` (403), owner bisa
@@ -1323,6 +1345,7 @@ Datasets Pest untuk matriks §5.1 — satu `it()` dengan `->with([...])` yang me
 - admin tidak bisa ubah role anggota
 
 **D. Undangan — `tests/Feature/Invitations/InvitationFlowTest.php`**
+
 - Owner mengundang → baris `tenant_invitations` dibuat, notifikasi terkirim (`Notification::fake()`).
 - Undang ulang email sama → **jumlah baris tetap 1**, token berubah, token lama 404/410.
 - Accept oleh user dengan email cocok → masuk `tenant_user`, status `accepted`.
@@ -1334,16 +1357,19 @@ Datasets Pest untuk matriks §5.1 — satu `it()` dengan `->with([...])` yang me
 
 **E. Auth — `tests/Feature/Auth/GoogleLoginTest.php`**
 Mock `Socialite::shouldReceive('driver->user')`:
+
 - user baru → dibuat dengan `password = null`, tenant otomatis, jadi owner.
 - email sudah ada (akun password) → **di-link**, bukan duplikat; jumlah user tetap.
 - user Google-only mencoba login email/password → gagal (`authenticateUsing` menolak), tidak error PHP.
 - Test Fortify yang sudah ada (`tests/Feature/Auth/*`) harus tetap hijau setelah `password` jadi nullable — jalankan sebagai regression gate.
 
 **F. Registrasi & tenant — `tests/Feature/Tenancy/TenantCreationTest.php`**
+
 - Register → 1 tenant, user jadi owner, 7 kategori default ada, subscription `free` `active`, `subdomain` unik terisi.
 - User tanpa tenant mengakses `/dashboard` → redirect ke `tenants.create`.
 
 **G. Dashboard & billing (ringan)**
+
 - Angka `total_balance`/`income_this_month` benar dan **tidak** menghitung akun terarsip / transaksi terhapus.
 - Toggle billing mengubah `subscriptions.plan_id`+`status`, dan member/admin tidak bisa memanggilnya.
 
@@ -1365,21 +1391,21 @@ Test yang **tidak** perlu ditulis untuk prototype: render tiap halaman Vue, CRUD
 
 Setiap PR harus hijau di `composer ci:check` sendiri. Ukuran target: 300–800 baris diff.
 
-| # | Judul PR | Isi | Test |
-| --- | --- | --- | --- |
-| 0 | `chore: initial commit of starter kit` | Commit repo apa adanya (belum ada commit sama sekali!). Wajib duluan supaya semua PR berikutnya punya diff yang bisa dibaca | suite bawaan hijau |
-| 1 | `chore: project setup for fluxa` | `composer require laravel/socialite`; `config/fluxa.php`; `.env.example` (Google keys, `APP_TIMEZONE`, `APP_LOCALE=id`); uncomment `RefreshDatabase` di `tests/Pest.php`; `app/Enums/*` | test enum tipis |
-| 2 | `feat(db): phase 1 migrations, models, factories` | Semua migration §1, model §2.5, QueryBuilder §2.6, factory §10.4, `PlanSeeder` | migration jalan di SQLite; factory smoke test |
-| 3 | `feat(tenancy): tenant context, global scope, switcher` | `TenantContext`, `TenantScope`, `BelongsToTenant`, `ResolveTenant`, `TenantContextMissingException`, `CreateTenant`+`SeedDefaultCategories`, route tenant, `tenants/Create.vue`, `TenantSwitcher.vue`, shared props Inertia | **TenantIsolationTest + TenantCreationTest** (PR paling penting untuk direview teliti) |
-| 4 | `feat(auth): google oauth alongside fortify` | Migration kolom users (bisa juga digabung ke #2), `Fortify::authenticateUsing`, Google controllers, `FindOrCreateGoogleUser`, `CompleteRegistration`, tombol Google di `auth/Login.vue` + `Register.vue` | GoogleLoginTest + regression auth lama |
-| 5 | `feat(accounts): crud kantong` | Policy, FormRequest, Action, controller, halaman, `MoneyText`/`CurrencyInput`, `formatRupiah` | CRUD + policy member ditolak |
-| 6 | `feat(categories): crud kategori` | Idem; default categories sudah ada dari #3 | CRUD + policy |
-| 7 | `feat(transactions): crud pemasukan & pengeluaran` | `AdjustAccountBalance` + 4 Action transaksi, filter index, halaman | **TransactionBalanceTest** (create/update/pindah akun/delete/restore) |
-| 8 | `feat(transfers): transfer antar kantong` | Action transfer + locking, halaman | **TransferTest** + test rollback |
-| 9 | `feat(members): invite, roles, member management` | Invitation actions, notification, `invitations/Show.vue`, `members/Index.vue`, `TenantMemberPolicy` | **InvitationFlowTest + RoleMatrixTest** |
-| 10 | `feat(billing): plan & mock upgrade` | `BillingController`, `ToggleSubscription`, `billing/Index.vue` | akses owner-only |
-| 11 | `feat(dashboard): ringkasan & chart` | `DashboardController`, `DonutChart`/`BarChart`, `Dashboard.vue` | angka ringkasan benar |
-| 12 | `chore(demo): demo seeder & polish mobile` | `DemoSeeder`, empty state, responsive pass, README singkat | manual QA |
+| #   | Judul PR                                                | Isi                                                                                                                                                                                                                         | Test                                                                                   |
+| --- | ------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| 0   | `chore: initial commit of starter kit`                  | Commit repo apa adanya (belum ada commit sama sekali!). Wajib duluan supaya semua PR berikutnya punya diff yang bisa dibaca                                                                                                 | suite bawaan hijau                                                                     |
+| 1   | `chore: project setup for fluxa`                        | `composer require laravel/socialite`; `config/fluxa.php`; `.env.example` (Google keys, `APP_TIMEZONE`, `APP_LOCALE=id`); uncomment `RefreshDatabase` di `tests/Pest.php`; `app/Enums/*`                                     | test enum tipis                                                                        |
+| 2   | `feat(db): phase 1 migrations, models, factories`       | Semua migration §1, model §2.5, QueryBuilder §2.6, factory §10.4, `PlanSeeder`                                                                                                                                              | migration jalan di SQLite; factory smoke test                                          |
+| 3   | `feat(tenancy): tenant context, global scope, switcher` | `TenantContext`, `TenantScope`, `BelongsToTenant`, `ResolveTenant`, `TenantContextMissingException`, `CreateTenant`+`SeedDefaultCategories`, route tenant, `tenants/Create.vue`, `TenantSwitcher.vue`, shared props Inertia | **TenantIsolationTest + TenantCreationTest** (PR paling penting untuk direview teliti) |
+| 4   | `feat(auth): google oauth alongside fortify`            | Migration kolom users (bisa juga digabung ke #2), `Fortify::authenticateUsing`, Google controllers, `FindOrCreateGoogleUser`, `CompleteRegistration`, tombol Google di `auth/Login.vue` + `Register.vue`                    | GoogleLoginTest + regression auth lama                                                 |
+| 5   | `feat(accounts): crud kantong`                          | Policy, FormRequest, Action, controller, halaman, `MoneyText`/`CurrencyInput`, `formatRupiah`                                                                                                                               | CRUD + policy member ditolak                                                           |
+| 6   | `feat(categories): crud kategori`                       | Idem; default categories sudah ada dari #3                                                                                                                                                                                  | CRUD + policy                                                                          |
+| 7   | `feat(transactions): crud pemasukan & pengeluaran`      | `AdjustAccountBalance` + 4 Action transaksi, filter index, halaman                                                                                                                                                          | **TransactionBalanceTest** (create/update/pindah akun/delete/restore)                  |
+| 8   | `feat(transfers): transfer antar kantong`               | Action transfer + locking, halaman                                                                                                                                                                                          | **TransferTest** + test rollback                                                       |
+| 9   | `feat(members): invite, roles, member management`       | Invitation actions, notification, `invitations/Show.vue`, `members/Index.vue`, `TenantMemberPolicy`                                                                                                                         | **InvitationFlowTest + RoleMatrixTest**                                                |
+| 10  | `feat(billing): plan & mock upgrade`                    | `BillingController`, `ToggleSubscription`, `billing/Index.vue`                                                                                                                                                              | akses owner-only                                                                       |
+| 11  | `feat(dashboard): ringkasan & chart`                    | `DashboardController`, `DonutChart`/`BarChart`, `Dashboard.vue`                                                                                                                                                             | angka ringkasan benar                                                                  |
+| 12  | `chore(demo): demo seeder & polish mobile`              | `DemoSeeder`, empty state, responsive pass, README singkat                                                                                                                                                                  | manual QA                                                                              |
 
 PR #3, #7, #8, #9 adalah yang butuh review paling serius — di situ letak isolasi data, integritas uang, dan otorisasi.
 

@@ -68,9 +68,12 @@ export default defineConfig({
         htmlWhitespaceSensitivity: 'css',
         ignorePatterns: [
             '.github/**',
+            '.opencode/**',
             'composer.json',
             'resources/js/components/ui/*',
             'resources/views/mail/*',
+            // Dokumen sumber dari stakeholder - jangan diformat ulang oleh tooling.
+            'PRD - SaaS Manajemen Keuangan Multi-Tenant.md',
         ],
         sortTailwindcss: {
             functions: ['clsx', 'cn', 'cva'],
