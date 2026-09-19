@@ -45,6 +45,13 @@
     --color-input: var(--input);
     --color-ring: var(--ring);
 
+    --font-numeric: Archivo, ui-sans-serif, system-ui, sans-serif;
+
+    --color-money-in: var(--money-in);
+    --color-money-out: var(--money-out);
+    --color-brand: var(--brand);
+    --color-brand-foreground: var(--brand-foreground);
+
     --color-chart-1: var(--chart-1);
     --color-chart-2: var(--chart-2);
     --color-chart-3: var(--chart-3);
@@ -90,76 +97,92 @@
 }
 
 :root {
-    --background: hsl(0 0% 100%);
-    --foreground: hsl(0 0% 3.9%);
-    --card: hsl(0 0% 100%);
-    --card-foreground: hsl(0 0% 3.9%);
-    --popover: hsl(0 0% 100%);
-    --popover-foreground: hsl(0 0% 3.9%);
-    --primary: hsl(0 0% 9%);
-    --primary-foreground: hsl(0 0% 98%);
+    /* Abu hangat, bukan putih murni: daftar transaksi dibaca berlama-lama. */
+    --background: #f7f7f5;
+    --foreground: #1b2a38;
+    --card: #ffffff;
+    --card-foreground: #1b2a38;
+    --popover: #ffffff;
+    --popover-foreground: #1b2a38;
+    --primary: #17324f;
+    --primary-foreground: #f7f7f5;
     --secondary: hsl(0 0% 92.1%);
     --secondary-foreground: hsl(0 0% 9%);
-    --muted: hsl(0 0% 96.1%);
-    --muted-foreground: hsl(0 0% 45.1%);
+    --muted: #ececea;
+    --muted-foreground: #5b6875;
     --accent: hsl(0 0% 96.1%);
     --accent-foreground: hsl(0 0% 9%);
     --destructive: hsl(0 84.2% 60.2%);
     --destructive-foreground: hsl(0 0% 98%);
-    --border: hsl(0 0% 92.8%);
-    --input: hsl(0 0% 89.8%);
-    --ring: hsl(0 0% 3.9%);
+    --border: #e2e2de;
+    --input: #d7d7d2;
+    --ring: #17324f;
+
+    /* Arah uang. Nilai chart sengaja lebih terang daripada --brand: #17324f
+       gagal uji chroma sebagai mark dan terbaca abu-abu di grafik. */
+    --brand: #17324f;
+    --brand-foreground: #f7f7f5;
+    --money-in: #17639b;
+    --money-out: #d97706;
     --chart-1: hsl(12 76% 61%);
     --chart-2: hsl(173 58% 39%);
     --chart-3: hsl(197 37% 24%);
     --chart-4: hsl(43 74% 66%);
     --chart-5: hsl(27 87% 67%);
     --radius: 0.5rem;
-    --sidebar-background: hsl(0 0% 98%);
-    --sidebar-foreground: hsl(240 5.3% 26.1%);
-    --sidebar-primary: hsl(0 0% 10%);
-    --sidebar-primary-foreground: hsl(0 0% 98%);
-    --sidebar-accent: hsl(0 0% 94%);
-    --sidebar-accent-foreground: hsl(0 0% 30%);
-    --sidebar-border: hsl(0 0% 91%);
-    --sidebar-ring: hsl(217.2 91.2% 59.8%);
-    --sidebar: hsl(0 0% 98%);
+    /* Sidebar biru tua adalah motif identitas Fluxa: satu bidang gelap yang
+       tetap sama di kedua mode, jadi aplikasi selalu dikenali dari situ. */
+    --sidebar-background: #17324f;
+    --sidebar-foreground: #c6d4e2;
+    --sidebar-primary: #ffffff;
+    --sidebar-primary-foreground: #17324f;
+    --sidebar-accent: #23486d;
+    --sidebar-accent-foreground: #ffffff;
+    --sidebar-border: #28496e;
+    --sidebar-ring: #d97706;
+    --sidebar: #17324f;
 }
 
 .dark {
-    --background: hsl(0 0% 3.9%);
-    --foreground: hsl(0 0% 98%);
-    --card: hsl(0 0% 3.9%);
-    --card-foreground: hsl(0 0% 98%);
-    --popover: hsl(0 0% 3.9%);
-    --popover-foreground: hsl(0 0% 98%);
-    --primary: hsl(0 0% 98%);
-    --primary-foreground: hsl(0 0% 9%);
-    --secondary: hsl(0 0% 14.9%);
-    --secondary-foreground: hsl(0 0% 98%);
-    --muted: hsl(0 0% 16.08%);
-    --muted-foreground: hsl(0 0% 63.9%);
-    --accent: hsl(0 0% 14.9%);
-    --accent-foreground: hsl(0 0% 98%);
+    /* Gelap bernuansa biru, bukan abu netral, supaya identitas tetap terbawa. */
+    --background: #0f1419;
+    --foreground: #e8edf2;
+    --card: #161d25;
+    --card-foreground: #e8edf2;
+    --popover: #161d25;
+    --popover-foreground: #e8edf2;
+    --primary: #e8edf2;
+    --primary-foreground: #0f1419;
+    --secondary: #1e2832;
+    --secondary-foreground: #e8edf2;
+    --muted: #1e2832;
+    --muted-foreground: #9aa8b6;
+    --accent: #1e2832;
+    --accent-foreground: #e8edf2;
     --destructive: hsl(0 84% 60%);
     --destructive-foreground: hsl(0 0% 98%);
-    --border: hsl(0 0% 14.9%);
-    --input: hsl(0 0% 14.9%);
-    --ring: hsl(0 0% 83.1%);
+    --border: #26313c;
+    --input: #26313c;
+    --ring: #3e97d4;
+
+    --brand: #0c1926;
+    --brand-foreground: #e8edf2;
+    --money-in: #3e97d4;
+    --money-out: #c8801e;
     --chart-1: hsl(220 70% 50%);
     --chart-2: hsl(160 60% 45%);
     --chart-3: hsl(30 80% 55%);
     --chart-4: hsl(280 65% 60%);
     --chart-5: hsl(340 75% 55%);
-    --sidebar-background: hsl(0 0% 7%);
-    --sidebar-foreground: hsl(0 0% 95.9%);
-    --sidebar-primary: hsl(360, 100%, 100%);
-    --sidebar-primary-foreground: hsl(0 0% 100%);
-    --sidebar-accent: hsl(0 0% 15.9%);
-    --sidebar-accent-foreground: hsl(240 4.8% 95.9%);
-    --sidebar-border: hsl(0 0% 15.9%);
-    --sidebar-ring: hsl(217.2 91.2% 59.8%);
-    --sidebar: hsl(240 5.9% 10%);
+    --sidebar-background: #0c1926;
+    --sidebar-foreground: #b6c6d6;
+    --sidebar-primary: #ffffff;
+    --sidebar-primary-foreground: #0c1926;
+    --sidebar-accent: #1c3651;
+    --sidebar-accent-foreground: #ffffff;
+    --sidebar-border: #16283a;
+    --sidebar-ring: #c8801e;
+    --sidebar: #0c1926;
 }
 
 @layer base {
@@ -168,5 +191,17 @@
     }
     body {
         @apply bg-background text-foreground;
+    }
+}
+
+/*
+  vue-sonner memberi daftar toast offset kiri 1rem sekaligus lebar 100%, jadi di
+  layar sempit ia melewati tepi kanan sejauh offset itu. Diukur dengan probe
+  overflow: right 501px pada viewport 485px.
+*/
+@media (width < 40rem) {
+    ol[data-sonner-toaster] {
+        width: calc(100% - 2rem);
+        max-width: calc(100% - 2rem);
     }
 }

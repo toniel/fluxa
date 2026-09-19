@@ -3,6 +3,7 @@ import AppContent from '@/components/AppContent.vue';
 import AppShell from '@/components/AppShell.vue';
 import AppSidebar from '@/components/AppSidebar.vue';
 import AppSidebarHeader from '@/components/AppSidebarHeader.vue';
+import MobileTabBar from '@/components/fluxa/MobileTabBar.vue';
 import { Toaster } from '@/components/ui/sonner';
 import type { BreadcrumbItem } from '@/types';
 
@@ -20,8 +21,17 @@ withDefaults(defineProps<Props>(), {
         <AppSidebar />
         <AppContent variant="sidebar" class="min-w-0 overflow-x-clip">
             <AppSidebarHeader :breadcrumbs="breadcrumbs" />
-            <slot />
+            <!--
+                Padding bawah menyediakan ruang untuk tab bar yang fixed di HP,
+                ditambah safe area, supaya baris terakhir daftar tetap terjangkau.
+            -->
+            <div
+                class="pb-[calc(3.5rem+env(safe-area-inset-bottom)+0.5rem)] md:pb-0"
+            >
+                <slot />
+            </div>
         </AppContent>
+        <MobileTabBar />
         <Toaster />
     </AppShell>
 </template>

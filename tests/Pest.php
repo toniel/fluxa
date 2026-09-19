@@ -16,6 +16,11 @@ use Tests\TestCase;
 
 pest()->extend(TestCase::class)
     ->use(RefreshDatabase::class)
+    // tenancy() adalah state singleton: satu test yang lupa mengakhirinya
+    // membuat test berikutnya melihat tenant yang salah, dan kegagalannya
+    // berpindah-pindah sehingga mahal dilacak.
+    ->beforeEach(fn () => tenancy()->end())
+    ->afterEach(fn () => tenancy()->end())
     ->in('Feature');
 
 /*
