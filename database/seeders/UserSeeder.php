@@ -13,10 +13,9 @@ use Illuminate\Support\Facades\Hash;
 /**
  * User contoh beserta keanggotaan dan role-nya, untuk pengembangan lokal.
  *
- * Dibuat dua tenant, bukan satu, dengan sengaja: tenant kedua memberi tenant
- * switcher sesuatu untuk di-switch, memberi test isolasi data pembanding yang
- * nyata, dan menyediakan subdomain kedua untuk menguji bahwa anggota tenant A
- * ditolak di subdomain tenant B.
+ * Seeder ini otoritatif: keanggotaan disamakan persis dengan yang tertulis di
+ * sini setiap kali dijalankan. Menjalankannya ulang setelah mengubah susunan
+ * di bawah akan merapikan keadaan lama, bukan menumpuk di atasnya.
  */
 class UserSeeder extends Seeder
 {
@@ -26,17 +25,22 @@ class UserSeeder extends Seeder
         $admin = $this->user('Sinta Admin', 'admin@fluxa.test');
         $member = $this->user('Rudi Anggota', 'member@fluxa.test');
 
-        $keluarga = $this->tenant('Keluarga Demo', 'keluarga-demo', $owner);
-        $this->join($keluarga, $owner, TenantRole::Owner);
-        $this->join($keluarga, $admin, TenantRole::Admin);
-        $this->join($keluarga, $member, TenantRole::Member);
+        // Budi sengaja hanya memegang satu tenant supaya login langsung masuk
+        // dashboard tanpa mampir ke pemilih tenant.
+        $this->tenant('Keluarga Demo', 'keluarga-demo', $owner, [
+            $owner->id => TenantRole::Owner,
+            $admin->id => TenantRole::Admin,
+            $member->id => TenantRole::Member,
+        ]);
 
-        // Owner yang sama memegang tenant kedua, dan di sini Sinta hanya
-        // anggota biasa — pasangan yang membuktikan role tidak bocor antar
-        // tenant: Sinta admin di Keluarga Demo, member di RT 05.
-        $rt = $this->tenant('Komunitas RT 05', 'rt-05', $owner);
-        $this->join($rt, $owner, TenantRole::Owner);
-        $this->join($rt, $admin, TenantRole::Member);
+        // Tenant kedua dipertahankan karena ia yang membuktikan role tidak bocor
+        // antar tenant: Sinta adalah Admin di Keluarga Demo dan Owner di sini.
+        // Ia juga memberi tenant switcher sesuatu untuk di-switch, dan
+        // menyediakan subdomain kedua untuk menguji penolakan akses nanti.
+        $this->tenant('Komunitas RT 05', 'rt-05', $admin, [
+            $admin->id => TenantRole::Owner,
+            $member->id => TenantRole::Member,
+        ]);
     }
 
     private function user(string $name, string $email): User
@@ -55,40 +59,54 @@ class UserSeeder extends Seeder
      * Subdomain di-set eksplisit, bukan hasil generator acak, supaya developer
      * bisa langsung mengetik http://keluarga-demo.fluxa.test tanpa membuka
      * database lebih dulu.
+     *
+     * @param  array<int, TenantRole>  $roles  user_id => role
      */
-    private function tenant(string $name, string $subdomain, User $owner): Tenant
+    private function tenant(string $name, string $subdomain, User $owner, array $roles): Tenant
     {
-        $tenant = Tenant::firstOrCreate(
-            ['name' => $name],
-            ['owner_id' => $owner->getKey()],
-        );
+        $tenant = Tenant::firstOrCreate(['name' => $name], ['owner_id' => $owner->getKey()]);
+        $tenant->update(['owner_id' => $owner->getKey()]);
 
-        $tenant->domains()->firstOrCreate(
-            ['domain' => $subdomain],
-            ['is_primary' => true],
-        );
+        $tenant->domains()->firstOrCreate(['domain' => $subdomain], ['is_primary' => true]);
+
+        $this->syncMembers($tenant, $roles);
 
         return $tenant;
     }
 
     /**
-     * Keanggotaan dan role ditulis bersamaan.
+     * Menyamakan keanggotaan tenant dengan daftar yang diberikan.
      *
-     * syncRoles() dijalankan di dalam konteks tenancy karena role spatie
-     * ter-scope per team: di luar konteks, role akan tertulis dengan tenant_id
-     * null dan berlaku di semua tenant sekaligus.
+     * Keanggotaan dan role hidup di dua tabel: pivot tenant_user dan
+     * model_has_roles milik spatie. Keduanya harus ikut dilepas saat seseorang
+     * dikeluarkan, kalau tidak ia kehilangan akses tapi role-nya tertinggal
+     * sebagai baris yatim.
+     *
+     * @param  array<int, TenantRole>  $roles  user_id => role
      */
-    private function join(Tenant $tenant, User $user, TenantRole $role): void
+    private function syncMembers(Tenant $tenant, array $roles): void
     {
-        $tenant->members()->syncWithoutDetaching([
-            $user->getKey() => ['joined_at' => now()],
-        ]);
+        $existing = $tenant->members()->pluck('users.id')->all();
+        $removed = array_diff($existing, array_keys($roles));
+
+        $tenant->members()->sync(
+            array_map(static fn (): array => ['joined_at' => now()], $roles),
+        );
 
         $previous = tenant();
 
         try {
+            // syncRoles() ter-scope per team, jadi ia harus dijalankan dari dalam
+            // konteks tenant yang bersangkutan.
             tenancy()->initialize($tenant);
-            $user->syncRoles([$role->value]);
+
+            foreach ($roles as $userId => $role) {
+                User::find((int) $userId)?->syncRoles([$role->value]);
+            }
+
+            foreach ($removed as $userId) {
+                User::find((int) $userId)?->syncRoles([]);
+            }
         } finally {
             $previous !== null ? tenancy()->initialize($previous) : tenancy()->end();
         }

@@ -95,3 +95,31 @@ test('pemilih tenant menampilkan seluruh tenant milik user', function () {
             ->where('memberships.0.url', 'http://keluarga-uji.fluxa.test/dashboard')
             ->where('memberships.0.role', 'owner'));
 });
+
+test('login inertia ke tenant lintas origin memakai X-Inertia-Location', function () {
+    $user = User::factory()->create(['password' => bcrypt('rahasia-uji')]);
+    tenantFor($user, 'Keluarga Uji', 'keluarga-uji');
+
+    // Redirect biasa tidak bisa menyeberang origin: Inertia mengikutinya lewat
+    // XHR, dan XHR lintas origin diblokir CORS sehingga user tertahan di
+    // halaman login tanpa pesan apa pun. Jawaban yang benar adalah 409 dengan
+    // header X-Inertia-Location, yang memicu kunjungan halaman penuh.
+    $this->withHeader('X-Inertia', 'true')
+        ->withHeader('X-Inertia-Version', '1')
+        ->post('/login', ['email' => $user->email, 'password' => 'rahasia-uji'])
+        ->assertStatus(409)
+        ->assertHeader('X-Inertia-Location', 'http://keluarga-uji.fluxa.test/dashboard');
+});
+
+test('login inertia ke pemilih tenant tetap redirect biasa', function () {
+    $user = User::factory()->create(['password' => bcrypt('rahasia-uji')]);
+    tenantFor($user, 'Keluarga Uji', 'keluarga-uji');
+    tenantFor($user, 'Komunitas Uji', 'komunitas-uji');
+
+    // Pemilih tenant satu origin dengan halaman login, jadi ia tidak butuh
+    // kunjungan halaman penuh.
+    $this->withHeader('X-Inertia', 'true')
+        ->withHeader('X-Inertia-Version', '1')
+        ->post('/login', ['email' => $user->email, 'password' => 'rahasia-uji'])
+        ->assertRedirect(route('tenants.index'));
+});
