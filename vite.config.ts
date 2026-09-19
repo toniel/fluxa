@@ -50,6 +50,7 @@ export default defineConfig({
             'bootstrap/ssr/**',
             'tailwind.config.js',
             'resources/js/actions/**',
+            'resources/js/generated/**',
             'resources/js/components/ui/*',
             'resources/js/routes/**',
             'resources/js/wayfinder/**',
@@ -70,6 +71,9 @@ export default defineConfig({
             '.github/**',
             '.opencode/**',
             'composer.json',
+            // Output php artisan typescript:transform. Memformatnya di sini akan
+            // membuat types:sync merah setiap kali file itu diregenerasi.
+            'resources/js/generated/**',
             'resources/js/components/ui/*',
             'resources/views/mail/*',
             // Dokumen sumber dari stakeholder - jangan diformat ulang oleh tooling.
