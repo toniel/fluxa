@@ -13,6 +13,10 @@ void createInertiaApp({
         switch (true) {
             case name === 'Welcome':
                 return null;
+            // Pemilih tenant hidup di central domain, tempat sidebar aplikasi
+            // tidak punya tujuan: seluruh isinya route subdomain.
+            case name.startsWith('tenants/'):
+                return null;
             case name.startsWith('auth/'):
                 return AuthLayout;
             case name.startsWith('settings/'):

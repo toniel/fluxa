@@ -73,7 +73,12 @@ return [
     |
     */
 
-    'home' => '/dashboard',
+    // Pemilih tenant di central domain, BUKAN '/dashboard'. Dashboard hanya
+    // dilayani di subdomain tenant, sehingga di sini ia dijawab 404 oleh
+    // PreventAccessFromCentralDomains. Nilai ini dipakai bukan hanya setelah
+    // login, tapi juga oleh RedirectIfAuthenticated dan response verifikasi
+    // email, jadi memperbaiki LoginResponse saja tidak cukup.
+    'home' => '/tenants',
 
     /*
     |--------------------------------------------------------------------------

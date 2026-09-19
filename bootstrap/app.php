@@ -17,6 +17,12 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Tujuan user yang sudah login saat membuka route tamu. Default
+        // Laravel adalah '/dashboard', yang di central domain dijawab 404
+        // karena dashboard hanya dilayani di subdomain tenant. Ini terpisah
+        // dari config('fortify.home'), jadi keduanya harus disetel.
+        $middleware->redirectUsersTo('/tenants');
+
         $middleware->encryptCookies(except: ['appearance', 'sidebar_state']);
 
         $middleware->web(append: [

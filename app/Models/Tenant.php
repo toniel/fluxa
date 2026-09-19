@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\QueryBuilders\TenantQueryBuilder;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\UseEloquentBuilder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -16,8 +18,11 @@ use Stancl\Tenancy\Database\Models\Tenant as BaseTenant;
  * @property string $name
  * @property int $owner_id
  * @property-read Domain[] $domains
+ *
+ * @method static TenantQueryBuilder query()
  */
 #[Fillable(['name', 'owner_id'])]
+#[UseEloquentBuilder(TenantQueryBuilder::class)]
 class Tenant extends BaseTenant
 {
     use HasDomains;
