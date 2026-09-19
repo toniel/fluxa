@@ -8,6 +8,10 @@ jawabannya; tidak ada butir di bawah yang dikarang oleh agent.
 Aplikasi keuangan bersama (keluarga, RT, komunitas kecil) di Indonesia, dipakai
 harian di HP, dengan bahasa visual **ringkas dan gesit**.
 
+Arah visual diperbarui mengikuti prototype KantongKita milik pemilik produk:
+hijau tua sebagai warna inti, latar putih hangat, kartu ber-radius besar,
+lencana ikon bulat, dan ringkasan saldo sebagai satu kartu hijau menonjol.
+
 Dial: **ENERGY 2 / RHYTHM 2 / MOTION 1**
 
 ## Karakter
@@ -18,37 +22,42 @@ laporan.
 
 ## Palet
 
-Tiga warna inti, satu aksen. Netral (putih, abu, hitam) tidak dihitung.
+Hijau tua sebagai inti, putih hangat sebagai latar, satu aksen amber.
 
-| Peran            | Light                | Dark      |
-| ---------------- | -------------------- | --------- |
-| Inti / identitas | `#17324F` biru tua   | `#0C1926` |
-| Latar            | `#F7F7F5` abu hangat | `#0F1419` |
-| Aksen            | `#D97706` amber      | `#C8801E` |
+| Peran            | Light                  | Dark      |
+| ---------------- | ---------------------- | --------- |
+| Inti / identitas | `#15653F` hijau tua    | `#0E3A26` |
+| Latar            | `#F5F4F1` putih hangat | `#0F1512` |
+| Teks hijau       | `#1B6B4A` (5.88:1)     | `#4FB07C` |
+| Teks amber       | `#92400E` (7.09:1)     | `#D99A4A` |
+| Aksen            | `#D98026` amber        | `#C0842A` |
 
-**Arah uang sebagai warna.** Pemasukan memakai biru, pengeluaran memakai amber.
-Warna di sini mengkodekan arah uang, bukan identitas kategori.
+Teks putih di atas kartu hero `#15653F` memberi 7.08:1.
 
-Arah uang dipisah jadi dua peran karena ambang kontrasnya memang berbeda: teks
-butuh 4.5:1, objek grafis cukup 3:1. Amber `#D97706` lolos sebagai batang chart
-tapi hanya **3.19:1** sebagai teks di atas kartu putih, jadi nominal memakai
-langkah yang lebih gelap. Biru `#17324F` sebaliknya gagal uji chroma sebagai
-mark dan terbaca abu-abu di grafik, jadi batang memakai langkah yang lebih
-terang pada hue yang sama.
+### Warna grafik
 
-| Peran              | Light              | Dark      |
-| ------------------ | ------------------ | --------- |
-| Teks pemasukan     | `#17639B`          | `#3E97D4` |
-| Teks pengeluaran   | `#B45309` (5.02:1) | `#C8801E` |
-| Batang pemasukan   | `#17639B`          | `#3E97D4` |
-| Batang pengeluaran | `#D97706`          | `#C8801E` |
+Pemasukan vs pengeluaran **tidak** memakai pasangan hijau/merah seperti
+prototype. Pasangan itu gagal uji buta warna: ΔE hanya 5.0 (deutan) di light dan
+0.9 di dark, di bawah ambang mana pun, sehingga sekitar 8% pembaca pria tidak
+bisa membedakan kedua batang. Penggantinya hijau/amber, yang lolos seluruh
+pemeriksaan.
 
-Nilai batang lolos seluruh pemeriksaan validator palet (lightness band, chroma
-floor, separasi CVD, normal-vision floor, kontras terhadap surface) pada mode
-masing-masing. Nilai teks diukur terhadap kartu dan latar di kedua mode.
+| Peran       | Light     | Dark      |
+| ----------- | --------- | --------- |
+| Pemasukan   | `#2E8B57` | `#3A9668` |
+| Pengeluaran | `#D98026` | `#C0842A` |
 
-Warna merah bawaan juga diganti: teks putih di atas `#EF4444` hanya 3.76:1,
-sedangkan `#C81E1E` memberi 5.74:1.
+Donat kategori memakai palet kategorikal lima warna yang lolos validator pada
+kedua mode, dengan nama, persentase, dan nominal tertulis di legenda sehingga
+identitas tidak pernah bergantung pada warna saja.
+
+| Slot | Light     | Dark      |
+| ---- | --------- | --------- |
+| 1    | `#2E8B57` | `#3A9668` |
+| 2    | `#2F72C4` | `#4585C9` |
+| 3    | `#E08A1E` | `#C0842A` |
+| 4    | `#D6455A` | `#CC5066` |
+| 5    | `#8155C6` | `#8768C2` |
 
 ## Tipografi
 

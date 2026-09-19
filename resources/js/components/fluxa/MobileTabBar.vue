@@ -1,36 +1,31 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import { ArrowLeftRight, House, Menu, ReceiptText, Wallet } from '@lucide/vue';
+import { House, Menu, ReceiptText, Wallet } from '@lucide/vue';
 import { useSidebar } from '@/components/ui/sidebar';
 import { useCurrentUrl } from '@/composables/useCurrentUrl';
 import { index as accounts } from '@/routes/accounts';
 import { dashboard } from '@/routes';
 import { index as transactions } from '@/routes/transactions';
-import { index as transfers } from '@/routes/transfers';
 
 const { isCurrentUrl } = useCurrentUrl();
 const { setOpenMobile } = useSidebar();
 
+// Tiga tujuan paling sering plus satu pintu ke sisanya. Transfer dan kategori
+// pindah ke menu karena keduanya dipakai jauh lebih jarang daripada mencatat
+// transaksi atau melihat saldo.
 const tabs = [
     { title: 'Beranda', href: dashboard(), icon: House },
-    { title: 'Transaksi', href: transactions(), icon: ReceiptText },
     { title: 'Kantong', href: accounts(), icon: Wallet },
-    { title: 'Transfer', href: transfers(), icon: ArrowLeftRight },
+    { title: 'Transaksi', href: transactions(), icon: ReceiptText },
 ];
 </script>
 
 <template>
-    <!--
-        Navigasi utama di HP. Tujuan yang paling sering dipakai tetap terlihat,
-        jadi menu tidak menyembunyikan satu-satunya jalan berpindah halaman.
-        Tingginya dikompensasi oleh padding bawah di AppSidebarLayout supaya
-        baris terakhir daftar tidak pernah tertutup.
-    -->
     <nav
         aria-label="Navigasi utama"
         class="bg-card fixed inset-x-0 bottom-0 z-40 border-t pb-[env(safe-area-inset-bottom)] md:hidden"
     >
-        <ul class="grid grid-cols-5">
+        <ul class="grid grid-cols-4">
             <li v-for="tab in tabs" :key="tab.title">
                 <Link
                     :href="tab.href"

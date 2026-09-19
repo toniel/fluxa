@@ -104,6 +104,14 @@ final class SampleData
             'income_this_month' => '8450000.00',
             'expense_this_month' => '650000.00',
             'period_label' => 'September 2026',
+            'greeting_name' => 'Budi',
+            'cashflow' => [
+                ['label' => 'Mgg 1', 'income' => '0.00', 'expense' => '820000.00'],
+                ['label' => 'Mgg 2', 'income' => '450000.00', 'expense' => '640000.00'],
+                ['label' => 'Mgg 3', 'income' => '8000000.00', 'expense' => '1250000.00'],
+                ['label' => 'Mgg 4', 'income' => '0.00', 'expense' => '390000.00'],
+                ['label' => 'Mgg 5', 'income' => '0.00', 'expense' => '0.00'],
+            ],
             'breakdown' => [
                 ['category' => 'Tagihan', 'icon' => 'receipt', 'total' => '340500.00'],
                 ['category' => 'Belanja', 'icon' => 'shopping-bag', 'total' => '152500.00'],

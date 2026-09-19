@@ -1,20 +1,23 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
-import { ArrowDownLeft, ArrowUpRight, Plus, Wallet } from '@lucide/vue';
-import CategoryBars from '@/components/fluxa/CategoryBars.vue';
+import { Plus, Wallet } from '@lucide/vue';
+import CashFlowChart from '@/components/fluxa/CashFlowChart.vue';
+import CategoryDonut from '@/components/fluxa/CategoryDonut.vue';
+import AccountTile from '@/components/fluxa/AccountTile.vue';
 import EmptyState from '@/components/fluxa/EmptyState.vue';
 import ErrorState from '@/components/fluxa/ErrorState.vue';
-import ListCard from '@/components/fluxa/ListCard.vue';
-import MoneyText from '@/components/fluxa/MoneyText.vue';
+import HeroBalance from '@/components/fluxa/HeroBalance.vue';
 import SampleNotice from '@/components/fluxa/SampleNotice.vue';
-import StatTile from '@/components/fluxa/StatTile.vue';
+import TransactionRow from '@/components/fluxa/TransactionRow.vue';
 import { Button } from '@/components/ui/button';
+import { categoryIcon } from '@/lib/categoryIcons';
 import { notYet } from '@/lib/notYet';
 import { index as accountsRoute } from '@/routes/accounts';
 import { dashboard } from '@/routes';
 import { index as transactionsRoute } from '@/routes/transactions';
 
-type Slice = { category: string; total: string };
+type Slice = { category: string; icon: string; total: string };
+type Bucket = { label: string; income: string; expense: string };
 type Account = {
     id: number;
     name: string;
@@ -30,6 +33,7 @@ type Recent = {
     date: string;
     account: string;
     category: string;
+    icon: string;
 };
 
 defineProps<{
@@ -39,22 +43,23 @@ defineProps<{
         income_this_month: string;
         expense_this_month: string;
         period_label: string;
+        greeting_name: string;
+        cashflow: Bucket[];
     };
     breakdown: Slice[];
     accounts: Account[];
     recent: Recent[];
+    tenant: { name: string };
 }>();
 
 defineOptions({
     layout: { breadcrumbs: [{ title: 'Beranda', href: dashboard() }] },
 });
 
-const typeLabel: Record<string, string> = {
-    cash: 'Tunai',
-    bank: 'Bank',
-    ewallet: 'E-wallet',
-    other: 'Lainnya',
-};
+const dateLabel = new Intl.DateTimeFormat('id-ID', {
+    day: 'numeric',
+    month: 'short',
+});
 </script>
 
 <template>
@@ -70,75 +75,43 @@ const typeLabel: Record<string, string> = {
         />
 
         <template v-else>
-            <!--
-                Saldo total adalah satu-satunya angka besar di layar: itu yang
-                dicari orang saat membuka aplikasi, sisanya mendukung.
-            -->
-            <section class="bg-brand text-brand-foreground rounded-xl p-4">
-                <p class="text-xs opacity-80">Saldo semua kantong</p>
-                <p class="font-numeric mt-1 text-3xl font-bold tabular-nums">
-                    <MoneyText :value="summary.total_balance" />
+            <header>
+                <p class="text-muted-foreground text-sm">
+                    Halo, {{ summary.greeting_name }}
                 </p>
-                <p class="mt-3 text-xs opacity-80">
-                    {{ summary.period_label }}
-                </p>
-            </section>
+                <h1 class="text-xl font-bold tracking-tight">
+                    {{ tenant.name }}
+                </h1>
+            </header>
 
-            <div class="grid grid-cols-2 gap-3">
-                <StatTile
-                    label="Pemasukan"
-                    :value="summary.income_this_month"
-                    direction="in"
-                    :icon="ArrowDownLeft"
-                />
-                <StatTile
-                    label="Pengeluaran"
-                    :value="summary.expense_this_month"
-                    direction="out"
-                    :icon="ArrowUpRight"
-                />
-            </div>
+            <HeroBalance
+                :total="summary.total_balance"
+                :income="summary.income_this_month"
+                :expense="summary.expense_this_month"
+                :period="summary.period_label"
+            />
 
-            <ListCard title="Pengeluaran per kategori">
-                <CategoryBars v-if="breakdown.length" :slices="breakdown" />
-                <EmptyState
-                    v-else
-                    title="Belum ada pengeluaran bulan ini"
-                    description="Begitu ada transaksi keluar, rinciannya muncul di sini."
-                />
-            </ListCard>
-
-            <ListCard title="Kantong">
-                <template #action>
+            <section class="space-y-2">
+                <div class="flex items-center justify-between gap-3">
+                    <h2 class="font-semibold">Kantong</h2>
                     <Link
                         :href="accountsRoute()"
-                        class="focus-visible:ring-ring rounded text-sm underline underline-offset-4 focus-visible:ring-2 focus-visible:outline-none"
-                        >Semua</Link
+                        class="text-money-in focus-visible:ring-ring min-h-11 rounded px-1 py-2 text-sm font-medium focus-visible:ring-2 focus-visible:outline-none"
+                        >Lihat semua</Link
                     >
-                </template>
+                </div>
 
-                <ul v-if="accounts.length" class="divide-y">
-                    <li
+                <div v-if="accounts.length" class="grid grid-cols-2 gap-2">
+                    <AccountTile
                         v-for="account in accounts.filter(
                             (a) => !a.is_archived,
                         )"
                         :key="account.id"
-                        class="flex items-center justify-between gap-3 py-2.5 first:pt-0 last:pb-0"
-                    >
-                        <span class="min-w-0">
-                            <span class="block truncate text-sm">{{
-                                account.name
-                            }}</span>
-                            <span class="text-muted-foreground text-xs">{{
-                                typeLabel[account.type] ?? account.type
-                            }}</span>
-                        </span>
-                        <MoneyText
-                            :value="account.balance"
-                            class="shrink-0 text-sm font-medium"
-                        />
-                    </li>
-                </ul>
+                        :name="account.name"
+                        :type="account.type"
+                        :balance="account.balance"
+                    />
+                </div>
                 <EmptyState
                     v-else
                     :icon="Wallet"
@@ -150,36 +123,46 @@ const typeLabel: Record<string, string> = {
                         Tambah kantong
                     </Button>
                 </EmptyState>
-            </ListCard>
+            </section>
 
-            <ListCard title="Transaksi terakhir">
-                <template #action>
+            <section class="bg-card space-y-4 rounded-2xl border p-4">
+                <div class="flex items-baseline justify-between gap-3">
+                    <h2 class="font-semibold">Arus kas</h2>
+                    <span class="text-muted-foreground text-xs">{{
+                        summary.period_label
+                    }}</span>
+                </div>
+                <CashFlowChart :buckets="summary.cashflow" />
+            </section>
+
+            <section class="bg-card space-y-4 rounded-2xl border p-4">
+                <h2 class="font-semibold">Pengeluaran per kategori</h2>
+                <CategoryDonut v-if="breakdown.length" :slices="breakdown" />
+                <EmptyState
+                    v-else
+                    title="Belum ada pengeluaran bulan ini"
+                    description="Begitu ada transaksi keluar, rinciannya muncul di sini."
+                />
+            </section>
+
+            <section class="bg-card rounded-2xl border p-4">
+                <div class="flex items-center justify-between gap-3">
+                    <h2 class="font-semibold">Transaksi terbaru</h2>
                     <Link
                         :href="transactionsRoute()"
-                        class="focus-visible:ring-ring rounded text-sm underline underline-offset-4 focus-visible:ring-2 focus-visible:outline-none"
+                        class="text-money-in focus-visible:ring-ring min-h-11 rounded px-1 py-2 text-sm font-medium focus-visible:ring-2 focus-visible:outline-none"
                         >Semua</Link
                     >
-                </template>
+                </div>
 
                 <ul v-if="recent.length" class="divide-y">
-                    <li
-                        v-for="item in recent"
-                        :key="item.id"
-                        class="flex items-start justify-between gap-3 py-2.5 first:pt-0 last:pb-0"
-                    >
-                        <span class="min-w-0">
-                            <span class="block truncate text-sm">{{
-                                item.description
-                            }}</span>
-                            <span class="text-muted-foreground text-xs">
-                                {{ item.category }} · {{ item.account }}
-                            </span>
-                        </span>
-                        <MoneyText
-                            :value="item.amount"
+                    <li v-for="item in recent" :key="item.id">
+                        <TransactionRow
+                            :icon="categoryIcon(item.icon)"
+                            :title="item.description"
+                            :meta="`${item.category} · ${item.account} · ${dateLabel.format(new Date(item.date))}`"
+                            :amount="item.amount"
                             :direction="item.type === 'income' ? 'in' : 'out'"
-                            signed
-                            class="shrink-0 text-sm font-medium"
                         />
                     </li>
                 </ul>
@@ -188,7 +171,7 @@ const typeLabel: Record<string, string> = {
                     title="Belum ada transaksi"
                     description="Catatan pemasukan dan pengeluaran akan tampil di sini."
                 />
-            </ListCard>
+            </section>
         </template>
     </div>
 </template>

@@ -51,6 +51,11 @@
     --color-money-out: var(--money-out);
     --color-chart-in: var(--chart-in);
     --color-chart-out: var(--chart-out);
+    --color-cat-1: var(--cat-1);
+    --color-cat-2: var(--cat-2);
+    --color-cat-3: var(--cat-3);
+    --color-cat-4: var(--cat-4);
+    --color-cat-5: var(--cat-5);
     --color-brand: var(--brand);
     --color-brand-foreground: var(--brand-foreground);
 
@@ -99,98 +104,113 @@
 }
 
 :root {
-    /* Abu hangat, bukan putih murni: daftar transaksi dibaca berlama-lama. */
-    --background: #f7f7f5;
-    --foreground: #1b2a38;
+    /* Putih hangat, bukan putih murni: daftar transaksi dibaca berlama-lama. */
+    --background: #f5f4f1;
+    --foreground: #16211c;
     --card: #ffffff;
-    --card-foreground: #1b2a38;
+    --card-foreground: #16211c;
     --popover: #ffffff;
-    --popover-foreground: #1b2a38;
-    --primary: #17324f;
-    --primary-foreground: #f7f7f5;
-    --secondary: hsl(0 0% 92.1%);
-    --secondary-foreground: hsl(0 0% 9%);
-    --muted: #ececea;
-    --muted-foreground: #5b6875;
-    --accent: hsl(0 0% 96.1%);
-    --accent-foreground: hsl(0 0% 9%);
+    --popover-foreground: #16211c;
+    --primary: #15653f;
+    --primary-foreground: #ffffff;
+    --secondary: #e9e7e1;
+    --secondary-foreground: #16211c;
+    --muted: #ebe9e4;
+    --muted-foreground: #5b6b63;
+    --accent: #e9f1ec;
+    --accent-foreground: #15653f;
     --destructive: #c81e1e;
     --destructive-foreground: #ffffff;
-    --border: #e2e2de;
-    --input: #d7d7d2;
-    --ring: #17324f;
+    --border: #e5e3dd;
+    --input: #d8d5cd;
+    --ring: #15653f;
 
-    /* Arah uang dipisah menjadi dua peran karena ambang kontrasnya berbeda:
-       teks butuh 4.5:1, objek grafis cukup 3:1. Amber #d97706 lolos sebagai
-       batang chart tapi hanya 3.19:1 sebagai teks di atas kartu putih, jadi
-       teksnya memakai langkah yang lebih gelap. Diukur, bukan dikira. */
-    --brand: #17324f;
-    --brand-foreground: #f7f7f5;
-    --money-in: #17639b;
-    --money-out: #b45309;
-    --chart-in: #17639b;
-    --chart-out: #d97706;
-    --chart-1: hsl(12 76% 61%);
-    --chart-2: hsl(173 58% 39%);
-    --chart-3: hsl(197 37% 24%);
-    --chart-4: hsl(43 74% 66%);
-    --chart-5: hsl(27 87% 67%);
-    --radius: 0.5rem;
-    /* Sidebar biru tua adalah motif identitas Fluxa: satu bidang gelap yang
-       tetap sama di kedua mode, jadi aplikasi selalu dikenali dari situ. */
-    --sidebar-background: #17324f;
-    --sidebar-foreground: #c6d4e2;
+    /* Arah uang dipisah dua peran: teks butuh 4.5:1, objek grafis cukup 3:1. */
+    --brand: #15653f;
+    --brand-foreground: #ffffff;
+    --money-in: #1b6b4a;
+    /* #b45309 cukup di atas kartu putih (5.02:1) tapi hanya 4.01:1 di atas
+       latar bertint seperti lencana role, sedangkan teks 12px butuh 4.5:1.
+       Diukur dengan komposit alpha yang benar, bukan dari nilai token. */
+    --money-out: #92400e;
+    --chart-in: #2e8b57;
+    --chart-out: #d98026;
+
+    /* Palet kategorikal donat. Urutannya tetap: slot tidak pernah diputar
+       ulang saat jumlah kategori berubah, supaya warna tetap milik kategori
+       yang sama. */
+    --cat-1: #2e8b57;
+    --cat-2: #2f72c4;
+    --cat-3: #e08a1e;
+    --cat-4: #d6455a;
+    --cat-5: #8155c6;
+
+    --chart-1: var(--cat-1);
+    --chart-2: var(--cat-2);
+    --chart-3: var(--cat-3);
+    --chart-4: var(--cat-4);
+    --chart-5: var(--cat-5);
+    --radius: 0.75rem;
+    --sidebar-background: #15653f;
+    --sidebar-foreground: #cfe3d8;
     --sidebar-primary: #ffffff;
-    --sidebar-primary-foreground: #17324f;
-    --sidebar-accent: #23486d;
+    --sidebar-primary-foreground: #15653f;
+    --sidebar-accent: #1d7d4f;
     --sidebar-accent-foreground: #ffffff;
-    --sidebar-border: #28496e;
-    --sidebar-ring: #d97706;
-    --sidebar: #17324f;
+    --sidebar-border: #1d7d4f;
+    --sidebar-ring: #d98026;
+    --sidebar: #15653f;
 }
 
 .dark {
-    /* Gelap bernuansa biru, bukan abu netral, supaya identitas tetap terbawa. */
-    --background: #0f1419;
-    --foreground: #e8edf2;
-    --card: #161d25;
-    --card-foreground: #e8edf2;
-    --popover: #161d25;
-    --popover-foreground: #e8edf2;
-    --primary: #e8edf2;
-    --primary-foreground: #0f1419;
-    --secondary: #1e2832;
-    --secondary-foreground: #e8edf2;
-    --muted: #1e2832;
-    --muted-foreground: #9aa8b6;
-    --accent: #1e2832;
-    --accent-foreground: #e8edf2;
+    /* Gelap bernuansa hijau, bukan abu netral, supaya identitas tetap terbawa. */
+    --background: #0f1512;
+    --foreground: #e8edea;
+    --card: #17201b;
+    --card-foreground: #e8edea;
+    --popover: #17201b;
+    --popover-foreground: #e8edea;
+    --primary: #e8edea;
+    --primary-foreground: #0f1512;
+    --secondary: #1e2a24;
+    --secondary-foreground: #e8edea;
+    --muted: #1e2a24;
+    --muted-foreground: #9aa8a2;
+    --accent: #1e2a24;
+    --accent-foreground: #e8edea;
     --destructive: hsl(0 84% 60%);
     --destructive-foreground: hsl(0 0% 98%);
-    --border: #26313c;
-    --input: #26313c;
-    --ring: #3e97d4;
+    --border: #263029;
+    --input: #263029;
+    --ring: #4fb07c;
 
-    --brand: #0c1926;
-    --brand-foreground: #e8edf2;
-    --money-in: #3e97d4;
-    --money-out: #c8801e;
-    --chart-in: #3e97d4;
-    --chart-out: #c8801e;
-    --chart-1: hsl(220 70% 50%);
-    --chart-2: hsl(160 60% 45%);
-    --chart-3: hsl(30 80% 55%);
-    --chart-4: hsl(280 65% 60%);
-    --chart-5: hsl(340 75% 55%);
-    --sidebar-background: #0c1926;
-    --sidebar-foreground: #b6c6d6;
+    --brand: #0e3a26;
+    --brand-foreground: #e8edea;
+    --money-in: #4fb07c;
+    --money-out: #d99a4a;
+    --chart-in: #3a9668;
+    --chart-out: #c0842a;
+
+    --cat-1: #3a9668;
+    --cat-2: #4585c9;
+    --cat-3: #c0842a;
+    --cat-4: #cc5066;
+    --cat-5: #8768c2;
+
+    --chart-1: var(--cat-1);
+    --chart-2: var(--cat-2);
+    --chart-3: var(--cat-3);
+    --chart-4: var(--cat-4);
+    --chart-5: var(--cat-5);
+    --sidebar-background: #0e3a26;
+    --sidebar-foreground: #b9d4c6;
     --sidebar-primary: #ffffff;
-    --sidebar-primary-foreground: #0c1926;
-    --sidebar-accent: #1c3651;
+    --sidebar-primary-foreground: #0e3a26;
+    --sidebar-accent: #175034;
     --sidebar-accent-foreground: #ffffff;
-    --sidebar-border: #16283a;
-    --sidebar-ring: #c8801e;
-    --sidebar: #0c1926;
+    --sidebar-border: #175034;
+    --sidebar-ring: #c0842a;
+    --sidebar: #0e3a26;
 }
 
 @layer base {
