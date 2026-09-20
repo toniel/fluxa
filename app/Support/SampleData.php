@@ -51,12 +51,17 @@ final class SampleData
     {
         return [
             ['id' => 1, 'type' => 'expense', 'amount' => '85000.00', 'description' => 'Belanja sayur mingguan', 'date' => '2026-09-19', 'account' => 'Kas Harian', 'category' => 'Belanja', 'icon' => 'shopping-bag', 'creator' => 'Sinta', 'can_edit' => true],
-            ['id' => 2, 'type' => 'expense', 'amount' => '340500.00', 'description' => 'Listrik September', 'date' => '2026-09-18', 'account' => 'BCA Bersama', 'category' => 'Tagihan', 'icon' => 'receipt', 'creator' => 'Budi', 'can_edit' => true],
-            ['id' => 3, 'type' => 'income', 'amount' => '8000000.00', 'description' => 'Gaji bulanan', 'date' => '2026-09-17', 'account' => 'BCA Bersama', 'category' => 'Gaji', 'icon' => 'banknote', 'creator' => 'Budi', 'can_edit' => true],
-            ['id' => 4, 'type' => 'expense', 'amount' => '32000.00', 'description' => 'Ojek ke pasar', 'date' => '2026-09-17', 'account' => 'GoPay Belanja', 'category' => 'Transport', 'icon' => 'car', 'creator' => 'Rudi', 'can_edit' => false],
-            ['id' => 5, 'type' => 'expense', 'amount' => '125000.00', 'description' => 'Makan bersama', 'date' => '2026-09-16', 'account' => 'Kas Harian', 'category' => 'Makan', 'icon' => 'utensils', 'creator' => 'Sinta', 'can_edit' => true],
-            ['id' => 6, 'type' => 'income', 'amount' => '450000.00', 'description' => 'Iuran warga blok C', 'date' => '2026-09-15', 'account' => 'BCA Bersama', 'category' => 'Iuran Warga', 'icon' => 'hand-coins', 'creator' => 'Budi', 'can_edit' => true],
-            ['id' => 7, 'type' => 'expense', 'amount' => '67500.00', 'description' => 'Galon dan gas', 'date' => '2026-09-14', 'account' => 'Kas Harian', 'category' => 'Belanja', 'icon' => 'shopping-bag', 'creator' => 'Rudi', 'can_edit' => false],
+            ['id' => 2, 'type' => 'expense', 'amount' => '32000.00', 'description' => 'Ojek ke pasar', 'date' => '2026-09-19', 'account' => 'GoPay Belanja', 'category' => 'Transport', 'icon' => 'car', 'creator' => 'Rudi', 'can_edit' => false],
+            ['id' => 3, 'type' => 'expense', 'amount' => '340500.00', 'description' => 'Listrik September', 'date' => '2026-09-18', 'account' => 'BCA Bersama', 'category' => 'Tagihan', 'icon' => 'receipt', 'creator' => 'Budi', 'can_edit' => true],
+            ['id' => 4, 'type' => 'expense', 'amount' => '289000.00', 'description' => 'Internet bulanan', 'date' => '2026-09-18', 'account' => 'BCA Bersama', 'category' => 'Tagihan', 'icon' => 'receipt', 'creator' => 'Budi', 'can_edit' => true],
+            ['id' => 5, 'type' => 'income', 'amount' => '8000000.00', 'description' => 'Gaji bulanan', 'date' => '2026-09-17', 'account' => 'BCA Bersama', 'category' => 'Gaji', 'icon' => 'banknote', 'creator' => 'Budi', 'can_edit' => true],
+            ['id' => 6, 'type' => 'expense', 'amount' => '125000.00', 'description' => 'Makan bersama', 'date' => '2026-09-16', 'account' => 'Kas Harian', 'category' => 'Makan', 'icon' => 'utensils', 'creator' => 'Sinta', 'can_edit' => true],
+            ['id' => 7, 'type' => 'expense', 'amount' => '47500.00', 'description' => 'Kopi dan roti', 'date' => '2026-09-16', 'account' => 'GoPay Belanja', 'category' => 'Makan', 'icon' => 'utensils', 'creator' => 'Rudi', 'can_edit' => false],
+            ['id' => 8, 'type' => 'income', 'amount' => '450000.00', 'description' => 'Iuran warga blok C', 'date' => '2026-09-15', 'account' => 'BCA Bersama', 'category' => 'Iuran Warga', 'icon' => 'hand-coins', 'creator' => 'Budi', 'can_edit' => true],
+            ['id' => 9, 'type' => 'expense', 'amount' => '67500.00', 'description' => 'Galon dan gas', 'date' => '2026-09-14', 'account' => 'Kas Harian', 'category' => 'Belanja', 'icon' => 'shopping-bag', 'creator' => 'Rudi', 'can_edit' => false],
+            ['id' => 10, 'type' => 'expense', 'amount' => '150000.00', 'description' => 'Servis motor', 'date' => '2026-09-12', 'account' => 'Kas Harian', 'category' => 'Transport', 'icon' => 'car', 'creator' => 'Sinta', 'can_edit' => true],
+            ['id' => 11, 'type' => 'expense', 'amount' => '95000.00', 'description' => 'Belanja bulanan tambahan', 'date' => '2026-09-10', 'account' => 'GoPay Belanja', 'category' => 'Belanja', 'icon' => 'shopping-bag', 'creator' => 'Sinta', 'can_edit' => true],
+            ['id' => 12, 'type' => 'income', 'amount' => '250000.00', 'description' => 'Iuran warga blok A', 'date' => '2026-09-08', 'account' => 'BCA Bersama', 'category' => 'Iuran Warga', 'icon' => 'hand-coins', 'creator' => 'Budi', 'can_edit' => true],
         ];
     }
 

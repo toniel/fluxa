@@ -1,12 +1,15 @@
 <script setup lang="ts">
 import { Head } from '@inertiajs/vue3';
-import { Plus, ReceiptText } from '@lucide/vue';
+import { Plus, ReceiptText, Search } from '@lucide/vue';
+import { computed, ref } from 'vue';
 import EmptyState from '@/components/fluxa/EmptyState.vue';
 import ErrorState from '@/components/fluxa/ErrorState.vue';
 import MoneyText from '@/components/fluxa/MoneyText.vue';
-import PageHeader from '@/components/fluxa/PageHeader.vue';
 import SampleNotice from '@/components/fluxa/SampleNotice.vue';
+import TransactionRow from '@/components/fluxa/TransactionRow.vue';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { categoryIcon } from '@/lib/categoryIcons';
 import { notYet } from '@/lib/notYet';
 import { index as transactionsRoute } from '@/routes/transactions';
 
@@ -18,6 +21,7 @@ type Transaction = {
     date: string;
     account: string;
     category: string;
+    icon: string;
     creator: string;
     can_edit: boolean;
 };
@@ -30,22 +34,94 @@ defineOptions({
     },
 });
 
-const dateLabel = new Intl.DateTimeFormat('id-ID', {
+const search = ref('');
+const type = ref<'all' | 'income' | 'expense'>('all');
+const account = ref('');
+const category = ref('');
+const from = ref('');
+const until = ref('');
+
+const unique = (key: 'account' | 'category') =>
+    [...new Set(props.transactions.map((t) => t[key]))].sort();
+
+const accounts = computed(() => unique('account'));
+const categories = computed(() => unique('category'));
+
+const filtered = computed(() =>
+    props.transactions.filter((t) => {
+        const q = search.value.trim().toLowerCase();
+
+        return (
+            (!q || t.description.toLowerCase().includes(q)) &&
+            (type.value === 'all' || t.type === type.value) &&
+            (!account.value || t.account === account.value) &&
+            (!category.value || t.category === category.value) &&
+            (!from.value || t.date >= from.value) &&
+            (!until.value || t.date <= until.value)
+        );
+    }),
+);
+
+const sum = (rows: Transaction[], kind: 'income' | 'expense') =>
+    rows
+        .filter((t) => t.type === kind)
+        .reduce((acc, t) => acc + Number.parseFloat(t.amount), 0);
+
+const income = computed(() => sum(filtered.value, 'income'));
+const expense = computed(() => sum(filtered.value, 'expense'));
+
+const hasFilter = computed(
+    () =>
+        Boolean(
+            search.value ||
+            account.value ||
+            category.value ||
+            from.value ||
+            until.value,
+        ) || type.value !== 'all',
+);
+
+function resetFilters(): void {
+    search.value = '';
+    type.value = 'all';
+    account.value = '';
+    category.value = '';
+    from.value = '';
+    until.value = '';
+}
+
+const dayLabel = new Intl.DateTimeFormat('id-ID', {
+    weekday: 'long',
     day: 'numeric',
     month: 'long',
+    year: 'numeric',
 });
 
-function groupedByDate(): { date: string; items: Transaction[] }[] {
-    const groups = new Map<string, Transaction[]>();
+const rowDate = new Intl.DateTimeFormat('id-ID', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+});
 
-    for (const item of props.transactions) {
-        const bucket = groups.get(item.date) ?? [];
-        bucket.push(item);
-        groups.set(item.date, bucket);
+/** Dikelompokkan per tanggal, dengan selisih harian sebagai ringkasan kelompok. */
+const groups = computed(() => {
+    const map = new Map<string, Transaction[]>();
+
+    for (const item of filtered.value) {
+        map.set(item.date, [...(map.get(item.date) ?? []), item]);
     }
 
-    return [...groups.entries()].map(([date, items]) => ({ date, items }));
-}
+    return [...map.entries()]
+        .sort((a, b) => b[0].localeCompare(a[0]))
+        .map(([date, items]) => ({
+            date,
+            items,
+            net: sum(items, 'income') - sum(items, 'expense'),
+        }));
+});
+
+const selectClass =
+    'border-input bg-card focus-visible:ring-ring min-h-11 w-full rounded-lg border px-3 text-sm focus-visible:ring-2 focus-visible:outline-none';
 </script>
 
 <template>
@@ -54,17 +130,22 @@ function groupedByDate(): { date: string; items: Transaction[] }[] {
     <div class="space-y-4 p-4">
         <SampleNotice />
 
-        <PageHeader
-            title="Transaksi"
-            description="Pemasukan dan pengeluaran seluruh anggota."
-        >
-            <template #action>
-                <Button class="min-h-11" @click="notYet('Catat transaksi')">
-                    <Plus class="size-4" aria-hidden="true" />
-                    Catat
-                </Button>
-            </template>
-        </PageHeader>
+        <header class="flex items-start justify-between gap-3">
+            <div class="min-w-0">
+                <h1 class="text-xl font-bold tracking-tight">Transaksi</h1>
+                <p class="text-muted-foreground text-sm">
+                    {{ filtered.length }} dari
+                    {{ transactions.length }} transaksi
+                </p>
+            </div>
+            <Button
+                class="min-h-11 shrink-0"
+                @click="notYet('Catat transaksi')"
+            >
+                <Plus class="size-4" aria-hidden="true" />
+                Tambah
+            </Button>
+        </header>
 
         <ErrorState
             v-if="state === 'failed'"
@@ -84,56 +165,164 @@ function groupedByDate(): { date: string; items: Transaction[] }[] {
             </Button>
         </EmptyState>
 
-        <!--
-            Dikelompokkan per tanggal, bukan tabel dengan kolom tanggal berulang:
-            di HP tanggal sebagai judul kelompok memakan jauh lebih sedikit lebar
-            daripada satu kolom tersendiri.
-        -->
-        <section
-            v-for="group in groupedByDate()"
-            v-else
-            :key="group.date"
-            class="space-y-2"
-        >
-            <h2 class="text-muted-foreground px-1 text-xs font-medium">
-                {{ dateLabel.format(new Date(group.date)) }}
-            </h2>
-            <ul class="bg-card divide-y rounded-lg border">
-                <li
-                    v-for="item in group.items"
-                    :key="item.id"
-                    class="flex items-start justify-between gap-3 p-3"
+        <template v-else>
+            <section class="bg-card space-y-3 rounded-2xl border p-3">
+                <div class="relative">
+                    <Search
+                        class="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2"
+                        aria-hidden="true"
+                    />
+                    <Input
+                        v-model="search"
+                        type="search"
+                        class="min-h-11 rounded-lg pl-9"
+                        placeholder="Cari deskripsi"
+                        aria-label="Cari deskripsi transaksi"
+                    />
+                </div>
+
+                <div
+                    class="bg-muted grid grid-cols-3 gap-1 rounded-lg p-1"
+                    role="group"
+                    aria-label="Saring menurut jenis"
                 >
-                    <div class="min-w-0">
-                        <p class="truncate font-medium">
-                            {{ item.description }}
-                        </p>
-                        <p class="text-muted-foreground mt-0.5 text-xs">
-                            {{ item.category }} · {{ item.account }}
-                        </p>
-                        <p class="text-muted-foreground mt-0.5 text-xs">
-                            oleh {{ item.creator }}
-                        </p>
-                    </div>
-                    <div class="flex shrink-0 flex-col items-end gap-1">
-                        <MoneyText
-                            :value="item.amount"
-                            :direction="item.type === 'income' ? 'in' : 'out'"
-                            signed
-                            class="font-semibold"
-                        />
-                        <Button
-                            v-if="item.can_edit"
-                            variant="ghost"
-                            size="sm"
-                            class="min-h-11 px-2 text-xs md:min-h-9"
-                            @click="notYet('Ubah transaksi')"
+                    <button
+                        v-for="option in [
+                            { value: 'all', label: 'Semua' },
+                            { value: 'income', label: 'Pemasukan' },
+                            { value: 'expense', label: 'Pengeluaran' },
+                        ]"
+                        :key="option.value"
+                        type="button"
+                        class="focus-visible:ring-ring min-h-11 rounded-md px-2 text-sm font-medium focus-visible:ring-2 focus-visible:outline-none"
+                        :class="
+                            type === option.value
+                                ? 'bg-card shadow-sm'
+                                : 'text-muted-foreground'
+                        "
+                        :aria-pressed="type === option.value"
+                        @click="type = option.value as typeof type"
+                    >
+                        {{ option.label }}
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2">
+                    <select
+                        v-model="account"
+                        :class="selectClass"
+                        aria-label="Saring menurut kantong"
+                    >
+                        <option value="">Semua kantong</option>
+                        <option
+                            v-for="name in accounts"
+                            :key="name"
+                            :value="name"
                         >
-                            Ubah
-                        </Button>
-                    </div>
-                </li>
-            </ul>
-        </section>
+                            {{ name }}
+                        </option>
+                    </select>
+                    <select
+                        v-model="category"
+                        :class="selectClass"
+                        aria-label="Saring menurut kategori"
+                    >
+                        <option value="">Semua kategori</option>
+                        <option
+                            v-for="name in categories"
+                            :key="name"
+                            :value="name"
+                        >
+                            {{ name }}
+                        </option>
+                    </select>
+
+                    <Input
+                        v-model="from"
+                        type="date"
+                        class="min-h-11 rounded-lg"
+                        aria-label="Tanggal mulai"
+                    />
+                    <Input
+                        v-model="until"
+                        type="date"
+                        class="min-h-11 rounded-lg"
+                        aria-label="Tanggal akhir"
+                    />
+                </div>
+
+                <Button
+                    v-if="hasFilter"
+                    variant="ghost"
+                    class="min-h-11 w-full"
+                    @click="resetFilters"
+                >
+                    Bersihkan saringan
+                </Button>
+            </section>
+
+            <div class="grid grid-cols-2 gap-2">
+                <div class="bg-card rounded-xl border p-3">
+                    <p class="text-muted-foreground text-xs">Pemasukan</p>
+                    <p class="mt-0.5 font-semibold">
+                        <MoneyText :value="income" direction="in" />
+                    </p>
+                </div>
+                <div class="bg-card rounded-xl border p-3">
+                    <p class="text-muted-foreground text-xs">Pengeluaran</p>
+                    <p class="mt-0.5 font-semibold">
+                        <MoneyText :value="expense" direction="out" />
+                    </p>
+                </div>
+            </div>
+
+            <EmptyState
+                v-if="!filtered.length"
+                :icon="Search"
+                title="Tidak ada yang cocok"
+                description="Coba longgarkan saringan atau ubah rentang tanggalnya."
+            >
+                <Button
+                    variant="outline"
+                    class="min-h-11"
+                    @click="resetFilters"
+                >
+                    Bersihkan saringan
+                </Button>
+            </EmptyState>
+
+            <section
+                v-for="group in groups"
+                v-else
+                :key="group.date"
+                class="space-y-2"
+            >
+                <div class="flex items-baseline justify-between gap-3 px-1">
+                    <h2
+                        class="text-muted-foreground text-xs font-semibold tracking-wide uppercase"
+                    >
+                        {{ dayLabel.format(new Date(group.date)) }}
+                    </h2>
+                    <MoneyText
+                        :value="Math.abs(group.net)"
+                        :direction="group.net < 0 ? 'out' : 'in'"
+                        signed
+                        class="shrink-0 text-xs"
+                    />
+                </div>
+
+                <ul class="bg-card divide-y rounded-2xl border px-3">
+                    <li v-for="item in group.items" :key="item.id">
+                        <TransactionRow
+                            :icon="categoryIcon(item.icon)"
+                            :title="item.description"
+                            :meta="`${item.category} · ${item.account} · ${rowDate.format(new Date(item.date))}`"
+                            :amount="item.amount"
+                            :direction="item.type === 'income' ? 'in' : 'out'"
+                        />
+                    </li>
+                </ul>
+            </section>
+        </template>
     </div>
 </template>
