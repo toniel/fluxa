@@ -141,6 +141,16 @@ final class SampleData
             'period_end' => null,
             'usage' => ['members' => 3, 'max_members' => 3, 'accounts' => 4, 'max_accounts' => 3],
             'upgrade' => ['name' => 'Pro', 'price' => '35000.00', 'billing_period' => 'monthly'],
+            // Baris diturunkan dari skema plans.features di PRD (max_members,
+            // max_accounts, custom_subdomain, export) - bukan daftar fitur
+            // bebas, supaya perbandingan ini konsisten dengan apa yang memang
+            // dirancang untuk paket berbayar.
+            'comparison' => [
+                ['feature' => 'Kantong', 'free' => '3', 'pro' => 'Tanpa batas'],
+                ['feature' => 'Anggota tenant', 'free' => '3', 'pro' => 'Tanpa batas'],
+                ['feature' => 'Subdomain', 'free' => 'Acak', 'pro' => 'Pilihan sendiri'],
+                ['feature' => 'Export laporan (PDF/Excel)', 'free' => false, 'pro' => true],
+            ],
         ];
     }
 

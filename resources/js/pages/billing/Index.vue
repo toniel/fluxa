@@ -1,14 +1,20 @@
 <script setup lang="ts">
 import { Head } from '@inertiajs/vue3';
 import { Check, TriangleAlert } from '@lucide/vue';
+import { computed } from 'vue';
 import ErrorState from '@/components/fluxa/ErrorState.vue';
 import MoneyText from '@/components/fluxa/MoneyText.vue';
-import PageHeader from '@/components/fluxa/PageHeader.vue';
 import SampleNotice from '@/components/fluxa/SampleNotice.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { notYet } from '@/lib/notYet';
 import { index as billingRoute } from '@/routes/billing';
+
+type Row = {
+    feature: string;
+    free: string | boolean;
+    pro: string | boolean;
+};
 
 type Billing = {
     plan: { name: string; slug: string; price: string; billing_period: string };
@@ -21,6 +27,7 @@ type Billing = {
         max_accounts: number;
     };
     upgrade: { name: string; price: string; billing_period: string };
+    comparison: Row[];
 };
 
 defineProps<{ state: string; billing: Billing }>();
@@ -33,6 +40,12 @@ const periodLabel: Record<string, string> = {
     monthly: 'bulan',
     yearly: 'tahun',
 };
+
+// "Nilai" dari sudut pandang tabel: teks apa adanya, atau centang/strip untuk
+// baris yang murni ada/tidaknya sebuah fitur.
+function isBoolean(value: string | boolean): value is boolean {
+    return typeof value === 'boolean';
+}
 </script>
 
 <template>
@@ -41,10 +54,12 @@ const periodLabel: Record<string, string> = {
     <div class="space-y-4 p-4">
         <SampleNotice />
 
-        <PageHeader
-            title="Langganan"
-            description="Paket yang sedang dipakai tenant ini."
-        />
+        <header>
+            <h1 class="text-xl font-bold tracking-tight">Langganan</h1>
+            <p class="text-muted-foreground text-sm">
+                Paket yang sedang dipakai tenant ini
+            </p>
+        </header>
 
         <ErrorState
             v-if="state === 'failed'"
@@ -53,19 +68,19 @@ const periodLabel: Record<string, string> = {
         />
 
         <template v-else>
-            <section class="bg-card space-y-3 rounded-lg border p-4">
+            <section class="bg-brand text-brand-foreground rounded-2xl p-4">
                 <div class="flex items-start justify-between gap-3">
                     <div>
-                        <p class="text-muted-foreground text-xs">Paket aktif</p>
-                        <p class="text-lg font-semibold">
+                        <p class="text-xs opacity-80">Plan aktif</p>
+                        <p class="text-lg font-bold">
                             {{ billing.plan.name }}
                         </p>
                     </div>
-                    <Badge variant="secondary">Aktif</Badge>
+                    <Badge class="bg-white/15 text-white">Aktif</Badge>
                 </div>
-                <p class="font-numeric text-2xl font-bold tabular-nums">
+                <p class="font-numeric mt-2 text-2xl font-bold tabular-nums">
                     <MoneyText :value="billing.plan.price" />
-                    <span class="text-muted-foreground text-sm font-normal"
+                    <span class="text-sm font-normal opacity-80"
                         >/{{
                             periodLabel[billing.plan.billing_period] ??
                             billing.plan.billing_period
@@ -74,12 +89,7 @@ const periodLabel: Record<string, string> = {
                 </p>
             </section>
 
-            <!--
-                Pemakaian ditampilkan sebagai angka berbanding batas, bukan
-                progress bar dekoratif: yang perlu diketahui adalah apakah batas
-                sudah terlewat, dan berapa selisihnya.
-            -->
-            <section class="bg-card space-y-3 rounded-lg border p-4">
+            <section class="bg-card space-y-3 rounded-2xl border p-4">
                 <h2 class="text-sm font-semibold">Pemakaian</h2>
                 <dl class="space-y-2 text-sm">
                     <div class="flex items-center justify-between gap-3">
@@ -121,49 +131,88 @@ const periodLabel: Record<string, string> = {
                 </p>
             </section>
 
-            <section class="border-brand/30 space-y-3 rounded-lg border p-4">
-                <div>
-                    <p class="text-muted-foreground text-xs">Naik ke</p>
-                    <p class="text-lg font-semibold">
-                        {{ billing.upgrade.name }}
-                    </p>
+            <!--
+                Tabel dua kolom, bukan <table> HTML: pada 390px sebuah <table>
+                sungguhan gampang meluber, sedangkan grid tiga kolom dengan
+                lebar label yang fleksibel selalu muat karena nilainya pendek
+                ("3", "Tanpa batas", centang, strip).
+            -->
+            <section class="bg-card overflow-hidden rounded-2xl border">
+                <div
+                    class="text-muted-foreground grid grid-cols-[1fr_5rem_5rem] gap-2 border-b px-4 py-2.5 text-xs font-semibold tracking-wide uppercase"
+                >
+                    <span>Fitur</span>
+                    <span class="text-center">Free</span>
+                    <span class="text-money-in text-center">Pro</span>
                 </div>
-                <p class="font-numeric text-2xl font-bold tabular-nums">
-                    <MoneyText :value="billing.upgrade.price" />
-                    <span class="text-muted-foreground text-sm font-normal"
-                        >/{{
-                            periodLabel[billing.upgrade.billing_period] ??
-                            billing.upgrade.billing_period
-                        }}</span
+
+                <div class="divide-y">
+                    <div
+                        v-for="row in billing.comparison"
+                        :key="row.feature"
+                        class="grid grid-cols-[1fr_5rem_5rem] items-center gap-2 px-4 py-3 text-sm"
                     >
-                </p>
-                <ul class="space-y-1.5 text-sm">
-                    <li
-                        v-for="feature in [
-                            'Anggota tanpa batas',
-                            'Kantong dan kategori tanpa batas',
-                            'Subdomain pilihan sendiri',
-                            'Ekspor laporan',
-                        ]"
-                        :key="feature"
-                        class="flex items-start gap-2"
+                        <span>{{ row.feature }}</span>
+
+                        <span class="flex justify-center">
+                            <Check
+                                v-if="isBoolean(row.free) && row.free"
+                                class="text-money-in size-4"
+                                aria-hidden="true"
+                            />
+                            <span
+                                v-else-if="isBoolean(row.free)"
+                                class="text-muted-foreground"
+                                aria-hidden="true"
+                                >&mdash;</span
+                            >
+                            <span v-else class="text-center">{{
+                                row.free
+                            }}</span>
+                        </span>
+
+                        <span class="flex justify-center font-medium">
+                            <Check
+                                v-if="isBoolean(row.pro) && row.pro"
+                                class="text-money-in size-4"
+                                aria-hidden="true"
+                            />
+                            <span
+                                v-else-if="isBoolean(row.pro)"
+                                class="text-muted-foreground"
+                                aria-hidden="true"
+                                >&mdash;</span
+                            >
+                            <span v-else class="text-center">{{
+                                row.pro
+                            }}</span>
+                        </span>
+                    </div>
+
+                    <div
+                        class="grid grid-cols-[1fr_5rem_5rem] items-center gap-2 px-4 py-3 text-sm font-semibold"
                     >
-                        <Check
-                            class="text-money-in mt-0.5 size-4 shrink-0"
-                            aria-hidden="true"
-                        />
-                        {{ feature }}
-                    </li>
-                </ul>
+                        <span>Harga</span>
+                        <span class="text-center">
+                            <MoneyText :value="billing.plan.price" compact />
+                        </span>
+                        <span class="text-center">
+                            <MoneyText :value="billing.upgrade.price" compact />
+                        </span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="space-y-3">
                 <Button
                     class="min-h-11 w-full"
                     @click="notYet('Pembayaran langganan')"
                 >
                     Naik ke paket Pro
                 </Button>
-                <p class="text-muted-foreground text-xs">
-                    Pembayaran belum tersambung. Integrasinya dikerjakan di
-                    tahap terakhir.
+                <p class="text-muted-foreground text-center text-xs">
+                    Hanya Owner yang bisa mengubah langganan. Pembayaran
+                    diproses lewat Xendit (simulasi, belum tersambung).
                 </p>
             </section>
         </template>
