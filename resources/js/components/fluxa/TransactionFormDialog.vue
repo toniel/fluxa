@@ -29,6 +29,14 @@ const props = defineProps<{
 
 const open = defineModel<boolean>('open', { default: false });
 
+/**
+ * bg-chart-out sengaja hampir sama gelapnya di kedua tema (ia juga dipakai
+ * sebagai warna mark chart), sehingga tidak ada token teks bawaan yang
+ * lolos 4.5:1 di keduanya sekaligus. Lihat categories/Index.vue untuk
+ * angka pengukurannya.
+ */
+const activeExpenseTextClass = 'text-[#16211c]';
+
 const today = new Date().toISOString().slice(0, 10);
 
 const type = ref<'expense' | 'income'>('expense');
@@ -115,7 +123,7 @@ const selectClass =
                         class="focus-visible:ring-ring min-h-11 rounded-lg text-sm font-semibold focus-visible:ring-2 focus-visible:outline-none"
                         :class="
                             type === 'expense'
-                                ? 'bg-chart-out text-white shadow-sm'
+                                ? `bg-chart-out ${activeExpenseTextClass} shadow-sm`
                                 : 'text-muted-foreground'
                         "
                         :aria-pressed="type === 'expense'"
