@@ -20,6 +20,10 @@ class TransactionController extends Controller
         return Inertia::render('transactions/Index', [
             'state' => $state,
             'transactions' => $state->rows(SampleData::transactions()),
+            // Pilihan form dikirim apa adanya, tidak ikut state kosong:
+            // tidak punya transaksi bukan berarti tidak punya kantong.
+            'accounts' => SampleData::accounts(),
+            'categories' => SampleData::categories(),
             'tenant' => SampleData::tenant(),
         ]);
     }

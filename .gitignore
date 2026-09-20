@@ -46,3 +46,6 @@ yarn-error.log
 
 # Manifest hash milik typescript:transform, bukan artefak yang perlu di-review
 /resources/js/generated/typescript-transformer-manifest.json
+
+# Rekaman devtools Inertia, bukan artefak project
+/storage/inertia-devtools

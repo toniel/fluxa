@@ -5,7 +5,6 @@ use App\Http\Middleware\HandleInertiaRequests;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
-use Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
 use Illuminate\Http\Request;
 use Stancl\Tenancy\Exceptions\TenantCouldNotBeIdentifiedOnDomainException;
 use Symfony\Component\HttpFoundation\Response;
@@ -25,10 +24,15 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->encryptCookies(except: ['appearance', 'sidebar_state']);
 
+        // AddLinkHeadersForPreloadedAssets sengaja tidak dipasang. Ia mengirim
+        // header Link berisi seluruh aset halaman, dan header itu tumbuh tiap
+        // kali komponen bertambah: pada /transactions ia sudah 3090 byte,
+        // membuat total header melewati 4096 byte dan nginx menjawab 502
+        // "upstream sent too big header". Manfaat preload-nya kecil untuk
+        // aplikasi Inertia yang asetnya sudah disebut di HTML.
         $middleware->web(append: [
             HandleAppearance::class,
             HandleInertiaRequests::class,
-            AddLinkHeadersForPreloadedAssets::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

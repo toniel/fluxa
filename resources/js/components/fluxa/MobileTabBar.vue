@@ -3,7 +3,6 @@ import { Link } from '@inertiajs/vue3';
 import { House, Menu, Plus, ReceiptText, Wallet } from '@lucide/vue';
 import { useSidebar } from '@/components/ui/sidebar';
 import { useCurrentUrl } from '@/composables/useCurrentUrl';
-import { notYet } from '@/lib/notYet';
 import { index as accounts } from '@/routes/accounts';
 import { dashboard } from '@/routes';
 import { index as transactions } from '@/routes/transactions';
@@ -53,14 +52,13 @@ const right = [{ title: 'Transaksi', href: transactions(), icon: ReceiptText }];
                 satu baris di dalam menu.
             -->
             <li class="flex justify-center">
-                <button
-                    type="button"
+                <Link
+                    :href="transactions({ query: { catat: '' } })"
                     class="bg-primary text-primary-foreground focus-visible:ring-ring flex size-14 items-center justify-center rounded-full shadow-sm focus-visible:ring-2 focus-visible:outline-none"
                     aria-label="Catat transaksi"
-                    @click="notYet('Catat transaksi')"
                 >
                     <Plus class="size-6" aria-hidden="true" />
-                </button>
+                </Link>
             </li>
 
             <li v-for="tab in right" :key="tab.title">

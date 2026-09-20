@@ -6,12 +6,20 @@ import EmptyState from '@/components/fluxa/EmptyState.vue';
 import ErrorState from '@/components/fluxa/ErrorState.vue';
 import MoneyText from '@/components/fluxa/MoneyText.vue';
 import SampleNotice from '@/components/fluxa/SampleNotice.vue';
+import TransactionFormDialog from '@/components/fluxa/TransactionFormDialog.vue';
 import TransactionRow from '@/components/fluxa/TransactionRow.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { categoryIcon } from '@/lib/categoryIcons';
-import { notYet } from '@/lib/notYet';
 import { index as transactionsRoute } from '@/routes/transactions';
+
+type Account = {
+    id: number;
+    name: string;
+    balance: string;
+    is_archived: boolean;
+};
+type Category = { id: number; name: string; type: 'income' | 'expense' };
 
 type Transaction = {
     id: number;
@@ -26,13 +34,22 @@ type Transaction = {
     can_edit: boolean;
 };
 
-const props = defineProps<{ state: string; transactions: Transaction[] }>();
+const props = defineProps<{
+    state: string;
+    transactions: Transaction[];
+    accounts: Account[];
+    categories: Category[];
+}>();
 
 defineOptions({
     layout: {
         breadcrumbs: [{ title: 'Transaksi', href: transactionsRoute() }],
     },
 });
+
+// Tombol catat di navigasi bawah menautkan ke halaman ini dengan ?catat,
+// jadi ia membuka form yang sama tanpa perlu state global.
+const creating = ref(new URLSearchParams(window.location.search).has('catat'));
 
 const search = ref('');
 const type = ref<'all' | 'income' | 'expense'>('all');
@@ -44,8 +61,10 @@ const until = ref('');
 const unique = (key: 'account' | 'category') =>
     [...new Set(props.transactions.map((t) => t[key]))].sort();
 
-const accounts = computed(() => unique('account'));
-const categories = computed(() => unique('category'));
+// Diberi nama berbeda dari prop accounts/categories: yang ini daftar nama
+// untuk saringan, bukan objek pilihan form.
+const accountNames = computed(() => unique('account'));
+const categoryNames = computed(() => unique('category'));
 
 const filtered = computed(() =>
     props.transactions.filter((t) => {
@@ -130,6 +149,12 @@ const selectClass =
     <div class="space-y-4 p-4">
         <SampleNotice />
 
+        <TransactionFormDialog
+            v-model:open="creating"
+            :accounts="accounts"
+            :categories="categories"
+        />
+
         <header class="flex items-start justify-between gap-3">
             <div class="min-w-0">
                 <h1 class="text-xl font-bold tracking-tight">Transaksi</h1>
@@ -138,10 +163,7 @@ const selectClass =
                     {{ transactions.length }} transaksi
                 </p>
             </div>
-            <Button
-                class="min-h-11 shrink-0"
-                @click="notYet('Catat transaksi')"
-            >
+            <Button class="min-h-11 shrink-0" @click="creating = true">
                 <Plus class="size-4" aria-hidden="true" />
                 Tambah
             </Button>
@@ -159,7 +181,7 @@ const selectClass =
             title="Belum ada transaksi"
             description="Catat pemasukan atau pengeluaran pertama untuk mulai melihat ringkasannya."
         >
-            <Button class="min-h-11" @click="notYet('Catat transaksi')">
+            <Button class="min-h-11" @click="creating = true">
                 <Plus class="size-4" aria-hidden="true" />
                 Catat transaksi
             </Button>
@@ -215,7 +237,7 @@ const selectClass =
                     >
                         <option value="">Semua kantong</option>
                         <option
-                            v-for="name in accounts"
+                            v-for="name in accountNames"
                             :key="name"
                             :value="name"
                         >
@@ -229,7 +251,7 @@ const selectClass =
                     >
                         <option value="">Semua kategori</option>
                         <option
-                            v-for="name in categories"
+                            v-for="name in categoryNames"
                             :key="name"
                             :value="name"
                         >
