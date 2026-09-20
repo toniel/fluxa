@@ -82,10 +82,14 @@ final class SampleData
      */
     public static function members(): array
     {
+        // Sudut pandang di sini adalah Budi, sang owner. Matriks role di
+        // TenantRole::permissions() menentukan can_remove/can_change_role:
+        // owner boleh keduanya untuk admin/member, tidak pernah untuk dirinya
+        // sendiri maupun sesama owner.
         return [
-            ['id' => 1, 'name' => 'Budi Pemilik', 'email' => 'owner@fluxa.test', 'role' => 'owner', 'joined_at' => '2026-01-12', 'can_manage' => false],
-            ['id' => 2, 'name' => 'Sinta Admin', 'email' => 'admin@fluxa.test', 'role' => 'admin', 'joined_at' => '2026-02-03', 'can_manage' => true],
-            ['id' => 3, 'name' => 'Rudi Anggota', 'email' => 'member@fluxa.test', 'role' => 'member', 'joined_at' => '2026-05-21', 'can_manage' => true],
+            ['id' => 1, 'name' => 'Budi Pemilik', 'email' => 'owner@fluxa.test', 'role' => 'owner', 'joined_at' => '2026-01-12', 'tx_count' => 18, 'is_current_user' => true, 'can_change_role' => false, 'can_remove' => false],
+            ['id' => 2, 'name' => 'Sinta Admin', 'email' => 'admin@fluxa.test', 'role' => 'admin', 'joined_at' => '2026-02-03', 'tx_count' => 6, 'is_current_user' => false, 'can_change_role' => true, 'can_remove' => true],
+            ['id' => 3, 'name' => 'Rudi Anggota', 'email' => 'member@fluxa.test', 'role' => 'member', 'joined_at' => '2026-05-21', 'tx_count' => 4, 'is_current_user' => false, 'can_change_role' => true, 'can_remove' => true],
         ];
     }
 

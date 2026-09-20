@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { Head } from '@inertiajs/vue3';
-import { Copy, MailPlus, Users } from '@lucide/vue';
+import { Copy, ShieldCheck, UserPlus, UserX, Users } from '@lucide/vue';
+import { computed, ref } from 'vue';
 import EmptyState from '@/components/fluxa/EmptyState.vue';
 import ErrorState from '@/components/fluxa/ErrorState.vue';
-import PageHeader from '@/components/fluxa/PageHeader.vue';
+import InviteMemberDialog from '@/components/fluxa/InviteMemberDialog.vue';
 import SampleNotice from '@/components/fluxa/SampleNotice.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -14,9 +15,12 @@ type Member = {
     id: number;
     name: string;
     email: string;
-    role: string;
+    role: 'owner' | 'admin' | 'member';
     joined_at: string;
-    can_manage: boolean;
+    tx_count: number;
+    is_current_user: boolean;
+    can_change_role: boolean;
+    can_remove: boolean;
 };
 
 type Invitation = {
@@ -27,7 +31,7 @@ type Invitation = {
     expires_at: string;
 };
 
-defineProps<{
+const props = defineProps<{
     state: string;
     members: Member[];
     invitations: Invitation[];
@@ -37,10 +41,18 @@ defineOptions({
     layout: { breadcrumbs: [{ title: 'Anggota', href: membersRoute() }] },
 });
 
+const inviting = ref(false);
+
 const roleLabel: Record<string, string> = {
-    owner: 'Pemilik',
+    owner: 'Owner',
     admin: 'Admin',
-    member: 'Anggota',
+    member: 'Member',
+};
+
+const roleBadgeVariant: Record<string, 'default' | 'secondary' | 'outline'> = {
+    owner: 'default',
+    admin: 'secondary',
+    member: 'outline',
 };
 
 const dateLabel = new Intl.DateTimeFormat('id-ID', {
@@ -56,6 +68,26 @@ function initials(name: string): string {
         .map((part) => part.charAt(0).toUpperCase())
         .join('');
 }
+
+const currentRole = computed(
+    () => props.members.find((m) => m.is_current_user)?.role,
+);
+
+const accessNotes = [
+    {
+        role: 'Owner',
+        description:
+            'Semua akses termasuk billing, pengaturan tenant, hapus anggota',
+    },
+    {
+        role: 'Admin',
+        description: 'Kelola kantong, kategori, undang anggota & ubah role',
+    },
+    {
+        role: 'Member',
+        description: 'Catat transaksi & transfer, lihat laporan',
+    },
+];
 </script>
 
 <template>
@@ -64,17 +96,21 @@ function initials(name: string): string {
     <div class="space-y-4 p-4">
         <SampleNotice />
 
-        <PageHeader
-            title="Anggota"
-            description="Orang yang bisa melihat dan mengelola uang di tenant ini."
-        >
-            <template #action>
-                <Button class="min-h-11" @click="notYet('Undang anggota')">
-                    <MailPlus class="size-4" aria-hidden="true" />
-                    Undang
-                </Button>
-            </template>
-        </PageHeader>
+        <InviteMemberDialog v-model:open="inviting" />
+
+        <header class="flex items-start justify-between gap-3">
+            <div class="min-w-0">
+                <h1 class="text-xl font-bold tracking-tight">Anggota</h1>
+                <p class="text-muted-foreground text-sm">
+                    {{ members.length }} anggota · kamu masuk sebagai
+                    {{ roleLabel[currentRole ?? 'member'] }}
+                </p>
+            </div>
+            <Button class="min-h-11 shrink-0" @click="inviting = true">
+                <UserPlus class="size-4" aria-hidden="true" />
+                Undang
+            </Button>
+        </header>
 
         <ErrorState
             v-if="state === 'failed'"
@@ -88,82 +124,97 @@ function initials(name: string): string {
             title="Belum ada anggota lain"
             description="Undang lewat email supaya uang bisa dikelola bersama."
         >
-            <Button class="min-h-11" @click="notYet('Undang anggota')">
-                <MailPlus class="size-4" aria-hidden="true" />
+            <Button class="min-h-11" @click="inviting = true">
+                <UserPlus class="size-4" aria-hidden="true" />
                 Undang anggota
             </Button>
         </EmptyState>
 
         <template v-else>
-            <ul class="bg-card divide-y rounded-lg border">
+            <ul class="bg-card divide-y rounded-2xl border px-3">
                 <li
                     v-for="member in members"
                     :key="member.id"
-                    class="flex items-center justify-between gap-3 p-3"
+                    class="flex items-center gap-3 py-3"
                 >
-                    <div class="flex min-w-0 items-center gap-3">
-                        <!--
-                            Inisial, bukan foto: tidak ada foto asli yang dimiliki,
-                            dan avatar karangan akan tampil seolah data sungguhan.
-                        -->
-                        <span
-                            class="bg-muted text-muted-foreground flex size-10 shrink-0 items-center justify-center rounded-full text-xs font-semibold"
-                            aria-hidden="true"
-                            >{{ initials(member.name) }}</span
-                        >
-                        <span class="min-w-0">
-                            <span class="block truncate font-medium">{{
+                    <span
+                        class="bg-accent text-money-in flex size-10 shrink-0 items-center justify-center rounded-full text-xs font-semibold"
+                        aria-hidden="true"
+                        >{{ initials(member.name) }}</span
+                    >
+
+                    <div class="min-w-0 flex-1">
+                        <p class="flex flex-wrap items-baseline gap-x-1.5">
+                            <span class="truncate text-sm font-medium">{{
                                 member.name
                             }}</span>
                             <span
-                                class="text-muted-foreground block truncate text-xs"
-                                >{{ member.email }}</span
+                                v-if="member.is_current_user"
+                                class="text-muted-foreground text-xs"
+                                >(kamu)</span
                             >
-                            <span class="text-muted-foreground block text-xs"
-                                >Bergabung
-                                {{
-                                    dateLabel.format(new Date(member.joined_at))
-                                }}</span
-                            >
-                        </span>
+                        </p>
+                        <p class="text-muted-foreground truncate text-xs">
+                            {{ member.email }} · {{ member.tx_count }} transaksi
+                        </p>
                     </div>
-                    <div class="flex shrink-0 flex-col items-end gap-1">
-                        <Badge
-                            :variant="
-                                member.role === 'owner'
-                                    ? 'default'
-                                    : 'secondary'
-                            "
-                            >{{ roleLabel[member.role] ?? member.role }}</Badge
-                        >
+
+                    <Badge
+                        :variant="roleBadgeVariant[member.role]"
+                        class="shrink-0"
+                        >{{ roleLabel[member.role] }}</Badge
+                    >
+
+                    <!--
+                        Baris "kamu" dan role owner tidak pernah mendapat tombol
+                        aksi, mengikuti PermissionEnum::MembersManageRole dan
+                        guard "owner tidak bisa dikeluarkan dari tenantnya
+                        sendiri" - ini menampilkan izin sungguhan, bukan
+                        menyembunyikan tombol yang seharusnya tetap ada.
+                    -->
+                    <div
+                        v-if="member.can_change_role || member.can_remove"
+                        class="flex shrink-0 items-center gap-1"
+                    >
                         <Button
-                            v-if="member.can_manage"
+                            v-if="member.can_change_role"
                             variant="ghost"
-                            size="sm"
-                            class="min-h-11 px-2 text-xs md:min-h-9"
-                            @click="notYet('Kelola anggota')"
+                            size="icon"
+                            class="size-11"
+                            :aria-label="`Ubah role ${member.name}`"
+                            @click="notYet(`Ubah role ${member.name}`)"
                         >
-                            Kelola
+                            <ShieldCheck class="size-4" aria-hidden="true" />
+                        </Button>
+                        <Button
+                            v-if="member.can_remove"
+                            variant="ghost"
+                            size="icon"
+                            class="text-money-out size-11"
+                            :aria-label="`Keluarkan ${member.name}`"
+                            @click="notYet(`Keluarkan ${member.name}`)"
+                        >
+                            <UserX class="size-4" aria-hidden="true" />
                         </Button>
                     </div>
                 </li>
             </ul>
 
             <section v-if="invitations.length" class="space-y-2">
-                <h2 class="text-muted-foreground px-1 text-xs font-medium">
+                <h2 class="text-muted-foreground px-1 text-xs font-semibold">
                     Undangan menunggu
                 </h2>
-                <ul class="bg-card divide-y rounded-lg border">
+                <ul class="bg-card divide-y rounded-2xl border px-3">
                     <li
                         v-for="invitation in invitations"
                         :key="invitation.id"
-                        class="flex items-center justify-between gap-3 p-3"
+                        class="flex items-center gap-3 py-3"
                     >
-                        <span class="min-w-0">
-                            <span class="block truncate text-sm">{{
-                                invitation.email
-                            }}</span>
-                            <span class="text-muted-foreground block text-xs">
+                        <div class="min-w-0 flex-1">
+                            <p class="truncate text-sm font-medium">
+                                {{ invitation.email }}
+                            </p>
+                            <p class="text-muted-foreground truncate text-xs">
                                 {{
                                     roleLabel[invitation.role] ??
                                     invitation.role
@@ -174,12 +225,12 @@ function initials(name: string): string {
                                         new Date(invitation.expires_at),
                                     )
                                 }}
-                            </span>
-                        </span>
+                            </p>
+                        </div>
                         <Button
                             variant="outline"
                             size="sm"
-                            class="min-h-11 shrink-0 md:min-h-9"
+                            class="min-h-11 shrink-0"
                             @click="notYet('Salin tautan undangan')"
                         >
                             <Copy class="size-3.5" aria-hidden="true" />
@@ -187,6 +238,22 @@ function initials(name: string): string {
                         </Button>
                     </li>
                 </ul>
+            </section>
+
+            <section class="bg-card rounded-2xl border p-4">
+                <h2 class="font-semibold">Hak akses per role</h2>
+                <div class="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3">
+                    <div
+                        v-for="note in accessNotes"
+                        :key="note.role"
+                        class="bg-muted rounded-xl p-3"
+                    >
+                        <p class="text-sm font-semibold">{{ note.role }}</p>
+                        <p class="text-muted-foreground mt-1 text-xs">
+                            {{ note.description }}
+                        </p>
+                    </div>
+                </div>
             </section>
         </template>
     </div>
