@@ -18,6 +18,9 @@ class TenantSettingController extends Controller
         return Inertia::render('tenant/Settings', [
             'state' => PreviewState::fromRequest($request),
             'tenant' => SampleData::tenant(),
+            // Plan tenant ini, dari sumber yang sama dengan halaman billing -
+            // supaya keduanya tidak pernah berbeda cerita.
+            'plan' => SampleData::billing()['plan'],
         ]);
     }
 }

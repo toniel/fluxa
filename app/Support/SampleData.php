@@ -162,6 +162,7 @@ final class SampleData
         return [
             'name' => 'Keluarga Demo',
             'subdomain' => 'keluarga-demo',
+            'created_at' => '2026-01-12',
             'member_count' => 3,
             'memberships' => [
                 ['id' => 1, 'name' => 'Keluarga Demo', 'role' => 'owner', 'subdomain' => 'keluarga-demo', 'is_current' => true],
