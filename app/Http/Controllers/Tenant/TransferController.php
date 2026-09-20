@@ -20,6 +20,9 @@ class TransferController extends Controller
         return Inertia::render('transfers/Index', [
             'state' => $state,
             'transfers' => $state->rows(SampleData::transfers()),
+            // Pilihan kantong dikirim apa adanya: belum pernah transfer
+            // bukan berarti tidak punya kantong untuk ditransfer.
+            'accounts' => SampleData::accounts(),
             'tenant' => SampleData::tenant(),
         ]);
     }
