@@ -3,12 +3,12 @@ import { Head } from '@inertiajs/vue3';
 import { ChevronRight, Plus, Wallet } from '@lucide/vue';
 import { computed, ref } from 'vue';
 import AccountCard from '@/components/fluxa/AccountCard.vue';
+import AccountFormDialog from '@/components/fluxa/AccountFormDialog.vue';
 import EmptyState from '@/components/fluxa/EmptyState.vue';
 import ErrorState from '@/components/fluxa/ErrorState.vue';
 import MoneyText from '@/components/fluxa/MoneyText.vue';
 import SampleNotice from '@/components/fluxa/SampleNotice.vue';
 import { Button } from '@/components/ui/button';
-import { notYet } from '@/lib/notYet';
 import { index as accountsRoute } from '@/routes/accounts';
 
 type Account = {
@@ -36,6 +36,8 @@ const total = computed(() =>
 // Kantong terarsip disembunyikan secara bawaan: ia jarang dibuka, tapi
 // menghapusnya dari halaman akan membuat saldo lama terasa hilang.
 const showArchived = ref(false);
+
+const creating = ref(false);
 </script>
 
 <template>
@@ -43,6 +45,8 @@ const showArchived = ref(false);
 
     <div class="space-y-4 p-4">
         <SampleNotice />
+
+        <AccountFormDialog v-model:open="creating" />
 
         <header class="flex items-start justify-between gap-3">
             <div class="min-w-0">
@@ -52,7 +56,7 @@ const showArchived = ref(false);
                     <MoneyText :value="total" />
                 </p>
             </div>
-            <Button class="min-h-11 shrink-0" @click="notYet('Tambah kantong')">
+            <Button class="min-h-11 shrink-0" @click="creating = true">
                 <Plus class="size-4" aria-hidden="true" />
                 Tambah
             </Button>
@@ -70,7 +74,7 @@ const showArchived = ref(false);
             title="Belum ada kantong"
             description="Buat kantong pertama supaya transaksi punya tempat masuk dan keluar."
         >
-            <Button class="min-h-11" @click="notYet('Tambah kantong')">
+            <Button class="min-h-11" @click="creating = true">
                 <Plus class="size-4" aria-hidden="true" />
                 Tambah kantong
             </Button>

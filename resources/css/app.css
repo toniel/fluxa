@@ -51,6 +51,15 @@
     --color-money-out: var(--money-out);
     --color-chart-in: var(--chart-in);
     --color-chart-out: var(--chart-out);
+    --color-swatch-1: var(--swatch-1);
+    --color-swatch-2: var(--swatch-2);
+    --color-swatch-3: var(--swatch-3);
+    --color-swatch-4: var(--swatch-4);
+    --color-swatch-5: var(--swatch-5);
+    --color-swatch-6: var(--swatch-6);
+    --color-swatch-7: var(--swatch-7);
+    --color-swatch-8: var(--swatch-8);
+
     --color-cat-1: var(--cat-1);
     --color-cat-2: var(--cat-2);
     --color-cat-3: var(--cat-3);
@@ -139,6 +148,20 @@
     /* Palet kategorikal donat. Urutannya tetap: slot tidak pernah diputar
        ulang saat jumlah kategori berubah, supaya warna tetap milik kategori
        yang sama. */
+    /* Warna kantong adalah personalisasi, bukan pengkodean data: nama, ikon,
+       dan label tipe selalu tampil di sebelahnya. Delapan hue tidak mungkin
+       lolos uji seluruh pasangan buta warna (hijau, merah, dan oranye melebur
+       bagi mata deutan), jadi yang dijaga di sini adalah kedelapannya terbaca
+       sebagai warna: lightness band dan chroma floor sama-sama lolos. */
+    --swatch-1: #2e8b57;
+    --swatch-2: #2f72c4;
+    --swatch-3: #12968d;
+    --swatch-4: #e08a1e;
+    --swatch-5: #d2691e;
+    --swatch-6: #d6455a;
+    --swatch-7: #8155c6;
+    --swatch-8: #a86a28;
+
     --cat-1: #2e8b57;
     --cat-2: #2f72c4;
     --cat-3: #e08a1e;
