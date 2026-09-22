@@ -3,6 +3,7 @@ import { Head, Link, useForm } from '@inertiajs/vue3';
 import { Pencil, Plus, Tags, Trash2 } from '@lucide/vue';
 import { computed, ref } from 'vue';
 import EmptyState from '@/components/fluxa/EmptyState.vue';
+import ConfirmDeleteDialog from '@/components/fluxa/ConfirmDeleteDialog.vue';
 import { Button } from '@/components/ui/button';
 import { categoryIcon } from '@/lib/categoryIcons';
 import {
@@ -39,8 +40,23 @@ const visible = computed(() =>
 
 const deleteForm = useForm({});
 
-function remove(category: App.Data.CategoryData): void {
-    if (!window.confirm(`Hapus kategori "${category.name}"?`)) {
+// Bukan window.confirm: konfirmasi memakai dialog aplikasi sendiri di bawah,
+// yang konsisten di HP maupun desktop.
+const deleteTarget = ref<App.Data.CategoryData | null>(null);
+
+const deleteOpen = computed({
+    get: () => deleteTarget.value !== null,
+    set: (open: boolean) => {
+        if (!open) {
+            deleteTarget.value = null;
+        }
+    },
+});
+
+function confirmDelete(): void {
+    const category = deleteTarget.value;
+
+    if (category === null) {
         return;
     }
 
@@ -60,6 +76,14 @@ const activeExpenseTextClass = 'text-[#16211c]';
     <Head title="Kategori" />
 
     <div class="space-y-4 p-4">
+        <ConfirmDeleteDialog
+            v-model:open="deleteOpen"
+            title="Hapus kategori"
+            :description="`Kategori \u201C${deleteTarget?.name ?? ''}\u201D akan dihapus permanen.`"
+            confirm-label="Hapus kategori"
+            @confirm="confirmDelete"
+        />
+
         <header class="flex items-start justify-between gap-3">
             <div class="min-w-0">
                 <h1 class="text-xl font-bold tracking-tight">Kategori</h1>
@@ -183,7 +207,7 @@ const activeExpenseTextClass = 'text-[#16211c]';
                             size="icon"
                             class="text-money-out hover:text-money-out size-11"
                             :aria-label="`Hapus kategori ${category.name}`"
-                            @click="remove(category)"
+                            @click="deleteTarget = category"
                         >
                             <Trash2 class="size-4" aria-hidden="true" />
                         </Button>

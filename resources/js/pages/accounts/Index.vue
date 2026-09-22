@@ -11,6 +11,7 @@ import {
 } from '@lucide/vue';
 import { computed, ref } from 'vue';
 import AccountCard from '@/components/fluxa/AccountCard.vue';
+import ConfirmDeleteDialog from '@/components/fluxa/ConfirmDeleteDialog.vue';
 import EmptyState from '@/components/fluxa/EmptyState.vue';
 import MoneyText from '@/components/fluxa/MoneyText.vue';
 import { Button } from '@/components/ui/button';
@@ -47,12 +48,27 @@ const showArchived = ref(false);
 const archiveForm = useForm({});
 const deleteForm = useForm({});
 
+// Bukan window.confirm: konfirmasi memakai dialog aplikasi sendiri di bawah,
+// yang konsisten di HP maupun desktop.
+const deleteTarget = ref<App.Data.AccountData | null>(null);
+
+const deleteOpen = computed({
+    get: () => deleteTarget.value !== null,
+    set: (open: boolean) => {
+        if (!open) {
+            deleteTarget.value = null;
+        }
+    },
+});
+
 function toggleArchive(account: App.Data.AccountData): void {
     archiveForm.patch(archiveRoute.url(account.id), { preserveScroll: true });
 }
 
-function remove(account: App.Data.AccountData): void {
-    if (!window.confirm(`Hapus kantong "${account.name}"?`)) {
+function confirmDelete(): void {
+    const account = deleteTarget.value;
+
+    if (account === null) {
         return;
     }
 
@@ -64,6 +80,14 @@ function remove(account: App.Data.AccountData): void {
     <Head title="Kantong" />
 
     <div class="space-y-4 p-4">
+        <ConfirmDeleteDialog
+            v-model:open="deleteOpen"
+            title="Hapus kantong"
+            :description="`Kantong \u201C${deleteTarget?.name ?? ''}\u201D akan dihapus permanen, saldo ikut hilang.`"
+            confirm-label="Hapus kantong"
+            @confirm="confirmDelete"
+        />
+
         <header class="flex items-start justify-between gap-3">
             <div class="min-w-0">
                 <h1 class="text-xl font-bold tracking-tight">Kantong</h1>
@@ -130,7 +154,7 @@ function remove(account: App.Data.AccountData): void {
                             size="icon"
                             class="text-money-out hover:text-money-out size-11"
                             :aria-label="`Hapus kantong ${account.name}`"
-                            @click="remove(account)"
+                            @click="deleteTarget = account"
                         >
                             <Trash2 class="size-4" aria-hidden="true" />
                         </Button>
@@ -192,7 +216,7 @@ function remove(account: App.Data.AccountData): void {
                                 size="icon"
                                 class="text-money-out hover:text-money-out size-11"
                                 :aria-label="`Hapus kantong ${account.name}`"
-                                @click="remove(account)"
+                                @click="deleteTarget = account"
                             >
                                 <Trash2 class="size-4" aria-hidden="true" />
                             </Button>
