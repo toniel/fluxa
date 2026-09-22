@@ -56,6 +56,12 @@ class UpsertAccountAction
 
     private function applyLogo(Account $account, ?UploadedFile $logo, bool $removeLogo): void
     {
+        // Logo single-file: medialibrary mengganti file lama OTOMATIS saat
+        // koleksi bernama 'logo' menerima file baru — file lama dihapus
+        // belakangan, setelah yang baru berhasil tersimpan. Menghapus
+        // koleksi manual duluan (clearMediaCollection) bikin dua operasi
+        // disk terpisah yang di lingkungan ini kadang bentrok di tengah
+        // proses (file lama hilang, file baru belum sempat masuk).
         if ($removeLogo) {
             $account->clearMediaCollection('logo');
 

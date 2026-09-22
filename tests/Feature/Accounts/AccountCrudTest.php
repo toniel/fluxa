@@ -6,9 +6,11 @@ use App\Models\Account;
 use App\Support\TenantContext;
 use Database\Seeders\PermissionSeeder;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Testing\AssertableInertia as Assert;
 
 beforeEach(function () {
+    Storage::fake('public');
     $this->seed(PermissionSeeder::class);
 });
 
