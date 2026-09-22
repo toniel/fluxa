@@ -74,12 +74,12 @@ const direction = computed(() =>
         <div class="relative flex items-start justify-between gap-3">
             <span
                 v-if="logoUrl"
-                class="flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-full"
+                class="flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-xl border bg-white"
             >
                 <img
                     :src="logoUrl"
                     :alt="`Logo ${name}`"
-                    class="size-full object-cover"
+                    class="size-full object-contain"
                 />
             </span>
             <span

@@ -31,6 +31,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import CurrencyInput from '@/components/fluxa/CurrencyInput.vue';
 import { notYet } from '@/lib/notYet';
 
 const open = defineModel<boolean>('open', { default: false });
@@ -77,16 +78,10 @@ const icons = [
 const form = ref({
     name: '',
     type: 'cash',
-    initial: '',
+    initial: null as number | null,
     color: 'hijau',
     icon: 'wallet',
 });
-
-/** Hanya digit yang disimpan; pemisah ribuan ditambahkan saat ditampilkan. */
-function onAmountInput(event: Event): void {
-    const digits = (event.target as HTMLInputElement).value.replace(/\D/g, '');
-    form.value.initial = digits ? Number(digits).toLocaleString('id-ID') : '';
-}
 
 function submit(): void {
     notYet('Simpan kantong');
@@ -159,13 +154,11 @@ function submit(): void {
                             aria-hidden="true"
                             >Rp</span
                         >
-                        <Input
+                        <CurrencyInput
                             id="account-initial"
-                            :model-value="form.initial"
-                            inputmode="numeric"
+                            v-model="form.initial"
                             class="font-numeric min-h-11 rounded-xl pl-10 text-lg font-bold tabular-nums"
                             placeholder="0"
-                            @input="onAmountInput"
                         />
                     </div>
                 </div>
