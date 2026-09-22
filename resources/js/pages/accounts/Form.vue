@@ -3,10 +3,10 @@ import { Head, useForm } from '@inertiajs/vue3';
 import { Camera, Landmark, PiggyBank, Smartphone, Wallet } from '@lucide/vue';
 import { computed, ref } from 'vue';
 import InputError from '@/components/InputError.vue';
+import CurrencyInput from '@/components/fluxa/CurrencyInput.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { formatRupiah } from '@/lib/currency';
 
 const props = withDefaults(
     defineProps<{
@@ -29,7 +29,9 @@ const typeOptions: Record<string, { label: string; icon: typeof Wallet }> = {
 const form = useForm({
     name: props.account?.name ?? '',
     type: props.account?.type ?? 'cash',
-    initial_balance: props.account?.initial_balance ?? '',
+    initial_balance: (props.account?.initial_balance
+        ? Number(props.account.initial_balance)
+        : null) as number | null,
     logo: null as File | null,
     remove_logo: false,
 });
@@ -39,27 +41,8 @@ const errorFor = computed<Record<string, string | undefined>>(
     () => form.errors as Record<string, string | undefined>,
 );
 
-// Saldo sekarang hanya menampilkan prakiraan angka saat user mengetik; nilai
-// yang dikirim tetap string mentah, bukan string "Rp ..." yang harus di-parse.
-const balancePreview = computed(() =>
-    form.initial_balance === '' ? '' : formatRupiah(form.initial_balance),
-);
-
 const isEdit = props.method === 'put';
 const logoPreview = ref<string>(props.account?.logo_url ?? '');
-
-// Indonesia memakai koma untuk desimal dan titik untuk ribuan. Diterjemahkan
-// ke angka polos yang bisa divalidasi Numeric di backend: "25.000" -> "25000",
-// "25000,50" -> "25000.50". Tidak menebak-nebak maksud koma/titik.
-function toPlainNumber(value: string): string {
-    const cleaned = value.replace(/[^\d.,]/g, '');
-
-    if (cleaned.includes(',')) {
-        return cleaned.replace(/\./g, '').replace(',', '.');
-    }
-
-    return cleaned.replace(/\./g, '');
-}
 
 function onLogoChange(event: Event): void {
     const input = event.target as HTMLInputElement;
@@ -89,7 +72,15 @@ function clearLogo(): void {
 }
 
 function submit(): void {
-    form.initial_balance = toPlainNumber(form.initial_balance);
+    // Library mengirim angka, backend menerima string numerik. Ubah di
+    // transform (tidak mengubah nilai lokal) supaya kontrak payload tetap.
+    form.transform((data) => ({
+        ...data,
+        initial_balance:
+            data.initial_balance === null || data.initial_balance === undefined
+                ? ''
+                : String(data.initial_balance),
+    }));
 
     if (isEdit) {
         form.put(props.action);
@@ -158,14 +149,12 @@ function submit(): void {
                     >
                         Rp
                     </span>
-                    <Input
+                    <CurrencyInput
                         id="account-initial"
                         v-model="form.initial_balance"
                         name="initial_balance"
-                        type="text"
-                        inputmode="decimal"
                         required
-                        class="min-h-11 pr-4 pl-10"
+                        class="font-numeric min-h-11 pr-4 pl-10 text-lg font-bold tabular-nums"
                         placeholder="0"
                         autocomplete="off"
                         :readonly="isEdit"
@@ -176,10 +165,7 @@ function submit(): void {
                     Saldo awal tidak bisa diubah setelah kantong dibuat.
                 </p>
                 <p v-else class="text-muted-foreground text-sm">
-                    Pakai koma untuk desimal, mis. 25000,50.
-                    <span v-if="balancePreview" class="font-medium">
-                        → {{ balancePreview }}
-                    </span>
+                    Diketik biasa, titik ribuan muncul otomatis.
                 </p>
                 <InputError :message="errorFor.initial_balance" />
             </div>
@@ -188,15 +174,15 @@ function submit(): void {
                 <Label for="account-logo">Logo kantong</Label>
                 <div class="flex items-center gap-3">
                     <span
-                        class="bg-muted text-muted-foreground flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-full"
+                        class="bg-muted text-muted-foreground flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-xl border"
                     >
                         <img
                             v-if="logoPreview"
                             :src="logoPreview"
                             :alt="`Logo ${form.name || 'kantong'}`"
-                            class="size-full object-cover"
+                            class="size-full bg-white object-contain"
                         />
-                        <Camera class="size-6" aria-hidden="true" />
+                        <Camera v-else class="size-6" aria-hidden="true" />
                     </span>
                     <Input
                         id="account-logo"
