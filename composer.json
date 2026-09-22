@@ -70,9 +70,14 @@
         ],
         "ci:check": [
             "Composer\\Config::disableProcessTimeout",
+            "@types:sync",
             "npm run check",
             "npm run types:check",
             "@test"
+        ],
+        "types:sync": [
+            "@php artisan typescript:transform --silent",
+            "git diff --exit-code -- resources/js/generated/generated.d.ts"
         ],
         "types:check": [
             "phpstan analyse"
@@ -81,7 +86,18 @@
             "@php artisan config:clear --ansi",
             "@lint:check",
             "@types:check",
-            "@php artisan test"
+            "@php artisan test --coverage --min=90 --coverage-clover=storage/coverage/clover.xml",
+            "@php bin/no-zero-coverage.php storage/coverage/clover.xml"
+        ],
+        "test:coverage": [
+            "Composer\\Config::disableProcessTimeout",
+            "@php artisan config:clear --ansi",
+            "@php artisan test --coverage"
+        ],
+        "test:coverage:html": [
+            "Composer\\Config::disableProcessTimeout",
+            "@php artisan config:clear --ansi",
+            "@php artisan test --coverage-html=storage/coverage"
         ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",

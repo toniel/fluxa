@@ -7,41 +7,66 @@ Repo: `/home/toni2/Sites/fluxa` (branch `master`, belum ada commit sama sekali).
 
 ## 0. Keputusan Arsitektur Utama (baca ini dulu)
 
-### 0.1 Konvensi CRUD: rekomendasi **opsi (b+)** — bukan (a), bukan (b) polos
+### 0.1 Konvensi CRUD — diadopsi penuh dari `CRUD_FLOW.md` (perubahan 26 Sep 2026)
 
-**Rekomendasi: JANGAN install stack package di `CRUD_FLOW.md`. Pakai FormRequest + Controller + Inertia props, TAPI adopsi bagian `CRUD_FLOW.md` yang sudah native di Laravel 13 dan gratis.**
+Keputusan awal bagian ini — opsi **(b+)**: FormRequest + JsonResource, JANGAN
+install stack `CRUD_FLOW.md` — **sudah digantikan.** Sejak keputusan itu
+ditulis, stack `CRUD_FLOW.md` ternyata sudah terpasang di `composer.json`
+(`spatie/laravel-data`, `spatie/laravel-permission`,
+`spatie/laravel-typescript-transformer`, `lacodix/laravel-model-filter`,
+`lorisleiva/laravel-actions`, `laravel/wayfinder`) dan
+`resources/js/generated/generated.d.ts` sudah di-commit. Karena stack-nya ada,
+aturan-aturannya juga dibawa utuh dari aiu-alumni: `CRUD_FLOW.md`,
+`tests/Unit/ConventionsTest.php`, `bin/no-zero-coverage.php`, floor coverage
+90%, `composer types:sync` — semuanya.
 
-Alasan (dengan bukti dari repo):
+Kenapa opsi (a) penuh sekarang menang:
 
-1. **Package-nya memang tidak ada.** `composer.json` hanya punya inertia, fortify, wayfinder, chisel, tinker. Tidak ada `spatie/laravel-data`, `spatie/laravel-medialibrary`, `spatie/laravel-permission`, `lorisleiva/laravel-actions`, `lacodix/laravel-model-filter`. `package.json` tidak punya `@tanstack/vue-query`. Opsi (a) = 5 package PHP + 1 npm + `spatie/laravel-typescript-transformer` + script `composer types:sync` + file `resources/js/generated/generated.d.ts` yang wajib di-commit. Itu hari kerja tersendiri sebelum satu baris fitur Fluxa ditulis.
-2. **`CRUD_FLOW.md` ditulis untuk repo lain.** Dia merujuk `composer test:coverage`, `composer types:sync`, `bin/no-zero-coverage.php`, `tests/Unit/ConventionsTest.php`, `resources/js/services/`, `app/Data/`, `EventPolicy` — **tidak satupun ada di repo ini**. `composer ci:check` di sini hanya `npm run check` + `vue-tsc` + `pint --test` + `phpstan` + `artisan test`, tanpa coverage floor. Jadi "mengikuti CRUD_FLOW.md" saat ini berarti membangun ulang seluruh infrastruktur enforcement-nya juga.
-3. **`spatie/laravel-permission` salah bentuk untuk kasus ini.** Role Fluxa adalah role _per-tenant_ di pivot `tenant_user`, dan PRD sendiri sudah menetapkan `Tenant::hasRole($user, $roles)` + Policy. Teams feature spatie/permission akan jadi lapisan kedua yang bertabrakan dengan `tenant_id` scoping.
-4. **TanStack Query justru menambah permukaan risiko keamanan.** Konvensi 3 di `CRUD_FLOW.md` mengharuskan tabel menembak endpoint `Api/` JSON terpisah. Untuk aplikasi finansial multi-tenant itu berarti **dua jalur akses data yang keduanya harus di-scope dan di-policy dengan benar**. Untuk prototype, Inertia props adalah satu jalur saja — lebih aman dan lebih cepat.
-5. **Yang paling berharga dari `CRUD_FLOW.md` ternyata sudah native di Laravel 13.** Sudah diverifikasi di `vendor/laravel/framework/src/Illuminate/Database/Eloquent/Attributes/`: `Fillable.php`, `UseEloquentBuilder.php`, `ScopedBy.php`, `UsePolicy.php`, `UseResource.php`, `ObservedBy.php` semuanya ada. Jadi konvensi "no scopes on model, query logic ke `app/QueryBuilders/`" bisa diikuti **tanpa package apapun**.
+1. **Biaya "install 5 package + npm" sudah lunas.** Argumen pembunuh opsi (b+)
+   dulu adalah hari kerja sebelum satu fitur ditulis; itu sudah terbayar oleh
+   package yang terpasang. Yang tersisa hanya mengikuti pola yang dokumentasi
+   dan test-nya juga sudah diport.
+2. **spatie/permission sudah dipakai.** `User` memakai `HasRoles`, enum
+   `PermissionEnum` sudah ada, dan kekhawatiran lama soal "teams feature
+   bertabrakan dengan tenant scoping" dijawab bukan dengan menghindari package,
+   tapi dengan membiarkan scoping tenant tetap di global scope dan role
+   per-tenant tetap di data + helper `Tenant::hasRole()`. Permission menjawab
+   "role boleh aksi jenis apa"; baris milik siapa tetap dijawab Policy.
+3. **Satu pola lebih murah diverifikasi.** Dua pola (FormRequest+JsonResource di
+   satu belahan, Data object di belahan lain) membuat konvensi tidak bisa
+   diuji satu aturan. `ConventionsTest` menguji `app/Data` dan tidak tahu
+   apa-apa tentang JsonResource — itulah argumen untuk memilih satu.
+4. **TanStack Query tetap tidak dipakai.** Konvensi 3 `CRUD_FLOW.md` hanya
+   mewajibkan `axios` terkunci di `resources/js/services/`. Selama frontend
+   memakai Inertia props, itu hijau trivially; lapisan `Api/` JSON bisa datang
+   belakangan lewat `services/` tanpa mengubah pola halaman.
 
-**Jadi yang DIADOPSI dari `CRUD_FLOW.md`:**
+Jadi yang DIADOPSI sekarang (diperbarui):
 
-| Aturan CRUD_FLOW                                                             | Adopsi?   | Pengganti di rencana ini                                                            |
-| ---------------------------------------------------------------------------- | --------- | ----------------------------------------------------------------------------------- |
-| `#[Fillable]` di model                                                       | Ya        | Native Laravel 13 (sudah dipakai `app/Models/User.php`)                             |
-| Query logic ke `app/QueryBuilders/` + `#[UseEloquentBuilder]`                | Ya        | Native. Wajib — ini yang menjaga `where` keluar dari controller                     |
-| Write logic ke `app/Actions/`                                                | Ya        | **Plain invokable class** (`__invoke`/`handle`), tanpa `lorisleiva/laravel-actions` |
-| Authorization lewat Policy + `Gate::authorize()`, bukan `AuthorizesRequests` | Ya        | Native                                                                              |
-| `denyAsNotFound()` untuk baris yang seharusnya tak terlihat                  | Ya        | Native, penting untuk isolasi tenant                                                |
-| Semua URL dari Wayfinder                                                     | Ya        | Sudah terpasang, `formVariants: true` di `vite.config.ts`                           |
-| `Inertia::flash('toast', ...)`                                               | Ya        | `resources/js/lib/flashToast.ts` sudah ada                                          |
-| Pola halaman `Form.vue` + `Create.vue`/`Edit.vue`                            | Ya        | Gratis                                                                              |
-| File `.vue` > 300 baris dipecah                                              | Ya        | Disiplin, tanpa test enforcement                                                    |
-| 2 Spatie Data object per resource                                            | **Tidak** | **FormRequest** (inbound) + **JsonResource** (outbound)                             |
-| `#[TypeScript]` → `generated.d.ts`                                           | **Tidak** | TS interface tulis tangan di `resources/js/types/fluxa.d.ts`                        |
-| lacodix filter traits                                                        | **Tidak** | Filter sederhana di QueryBuilder (`filterFromRequest(array)`)                       |
-| TanStack Query + `Api/` controller + `services/`                             | **Tidak** | Inertia props + `router.reload({ only: [...] })`                                    |
-| spatie/permission                                                            | **Tidak** | `Tenant::hasRole()` + Policy (sesuai PRD)                                           |
-| spatie/media-library                                                         | **Tidak** | Phase 1 tidak ada upload; icon = nama string Lucide                                 |
+| Aturan CRUD_FLOW                                                   | Adopsi | Catatan                                                                                 |
+| ------------------------------------------------------------------ | ------ | --------------------------------------------------------------------------------------- |
+| `#[Fillable]` di model                                             | Ya     | Native Laravel 13; sudah dipakai `User`, `Tenant`                                       |
+| Query logic ke `app/QueryBuilders/` + `#[UseEloquentBuilder]`      | Ya     | Native; disepakati sejak awal                                                           |
+| Write logic ke `app/Actions/`                                      | Ya     | `lorisleiva/laravel-actions` terpasang → pola `UpsertXAction` (`AsAction`)              |
+| Policy + `Gate::authorize()`, didaftar `#[UsePolicy]`              | Ya     | Native; role dibaca `TenantContext::role()` (0 query)                                   |
+| `denyAsNotFound()` untuk baris yang tak boleh dikonfirmasi         | Ya     | Penting untuk resource yang tidak ber-global-scope: members, invitations, tenant switch |
+| Semua URL dari Wayfinder, `--with-form`                            | Ya     | Sudah terpasang, `formVariants: true` di `vite.config.ts`                               |
+| `Inertia::flash('toast', ...)`                                     | Ya     | `resources/js/lib/flashToast.ts` sudah ada                                              |
+| Pola `Form.vue` + `Create.vue`/`Edit.vue`                          | Ya     | Gratis                                                                                  |
+| File `.vue` ≤ 300 baris                                            | Ya     | Enforced; 3 file pratinjau dibaseline di `ConventionsTest`                              |
+| 2 Data object per resource (`XData`/`XFormData`) + `#[TypeScript]` | Ya     | `spatie/laravel-data` + typescript-transformer terpasang                                |
+| lacodix `IsSearchable`/`IsSortable`/`HasFilters`                   | Ya     | Package terpasang; `filterFromRequest()` di §2.6 **dibatalkan**                         |
+| `ConventionsTest` + coverage 90% + `bin/no-zero-coverage.php`      | Ya     | Enforcement diport dari aiu-alumni                                                      |
+| TanStack Query + `Api/` controller + `services/`                   | Belum  | `axios` hanya boleh di `services/`; selama Inertia props dipakai, aturan ini hijau      |
+| spatie/permission role per-tenant                                  | Ya     | `PermissionEnum` + `Tenant::hasRole()`; scoping tenant tetap global scope               |
 
-**Catatan tentang `JsonResource` sebagai pengganti outbound Data object:** ini yang menjawab kebutuhan `can_edit`/`can_delete` per item dan formatting — satu tempat, framework-native, `#[UseResource]` bisa dipakai kalau mau.
-
-**Skill `anthropic-skills:laravel-inertia-vue-crud` — ada dan relevan.** Sudah diperiksa di `/home/toni2/.claude/skills/synced/.../laravel-inertia-vue-crud/` (SKILL.md + `references/{backend,frontend,routing,conventions}.md`). Skill itu adalah versi generator dari opsi (a): stack-nya persis sama dengan `CRUD_FLOW.md` (Spatie Data, Media Library, Spatie Permission, lorisleiva Actions, lacodix filter, TanStack Query, shadcn-vue, vue-sonner). **Rencana ini sengaja TIDAK memanggil skill itu**, karena scaffolding-nya akan mengasumsikan 6 package yang belum terpasang. Kalau nanti diputuskan pindah ke opsi (a) (misal saat naik dari prototype ke produk), skill itu adalah jalur yang benar — install package-nya dulu, lalu panggil skill per resource. Migrasi FormRequest → `XFormData` dan JsonResource → `XData` bersifat mekanis, jadi keputusan ini tidak mengunci apapun.
+**Dampak ke bagian lain dokumen ini:** referensi yang menyebut `JsonResource`
+(§5.4), `filterFromRequest()` pada QueryBuilder (§2.6), dan "2 Spatie Data TIDAK"
+diintro jadi usang. Ganti mentalnya begini: **outbound memakai `XData`, inbound
+memakai `XFormData`, keduanya `#[TypeScript]`; `can_edit`/`can_delete`
+dihitung di Policy dan disisipkan saat collect** — bukan di JsonResource.
+`CRUD_FLOW.md` di repo root adalah acuan pola yang berlaku; dokumen ini tetap
+acuan rencana tenancy, integritas balance, dan fase pembangunan.
 
 ### 0.2 Keputusan teknis lain yang mengikat seluruh rencana
 
