@@ -35,6 +35,13 @@ jobs:
           node-version: '22'
 
       - name: Setup Application
+        env:
+          # .env.example menunjuk MySQL, sedangkan CI tidak punya service
+          # MySQL. Setup hanya butuh database agar migrate jalan, jadi pakai
+          # sqlite seperti local. Env di sini hanya untuk langkah ini: langkah
+          # test tetap memakai sqlite :memory: dari phpunit.xml.
+          DB_CONNECTION: sqlite
+          DB_DATABASE: ${{ github.workspace }}/database/database.sqlite
         run: composer setup
 
       - name: Run CI Checks
