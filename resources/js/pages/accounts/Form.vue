@@ -29,9 +29,9 @@ const typeOptions: Record<string, { label: string; icon: typeof Wallet }> = {
 const form = useForm({
     name: props.account?.name ?? '',
     type: props.account?.type ?? 'cash',
-    initial_balance: (
-        props.account?.initial_balance ? Number(props.account.initial_balance) : null
-    ) as number | null,
+    initial_balance: (props.account?.initial_balance
+        ? Number(props.account.initial_balance)
+        : null) as number | null,
     logo: null as File | null,
     remove_logo: false,
 });
