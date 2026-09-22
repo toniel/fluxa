@@ -3,13 +3,18 @@ import { Landmark, PiggyBank, Smartphone, Wallet } from '@lucide/vue';
 import { computed } from 'vue';
 import MoneyText from '@/components/fluxa/MoneyText.vue';
 
-const props = defineProps<{
-    name: string;
-    type: string;
-    balance: number | string;
-    txCount: number;
-    archived?: boolean;
-}>();
+const props = withDefaults(
+    defineProps<{
+        name: string;
+        type: string;
+        balance: number | string;
+        // Absent saat belum ada data transaksi, yang menyembunyikan baris jumlah.
+        txCount?: number;
+        archived?: boolean;
+        logoUrl?: string;
+    }>(),
+    { txCount: undefined, archived: false, logoUrl: '' },
+);
 
 /**
  * Tipe kantong menentukan ikon sekaligus warnanya, jadi satu jenis kantong
@@ -68,6 +73,17 @@ const direction = computed(() =>
 
         <div class="relative flex items-start justify-between gap-3">
             <span
+                v-if="logoUrl"
+                class="flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-full"
+            >
+                <img
+                    :src="logoUrl"
+                    :alt="`Logo ${name}`"
+                    class="size-full object-cover"
+                />
+            </span>
+            <span
+                v-else
                 class="flex size-11 shrink-0 items-center justify-center rounded-full"
                 :class="style.tint"
                 aria-hidden="true"
@@ -87,9 +103,19 @@ const direction = computed(() =>
             <p class="text-xl font-bold">
                 <MoneyText :value="balance" :direction="direction" />
             </p>
-            <p class="text-muted-foreground mt-0.5 text-xs">
+            <p
+                v-if="txCount !== undefined"
+                class="text-muted-foreground mt-0.5 text-xs"
+            >
                 {{ txCount }} transaksi
             </p>
+        </div>
+
+        <div
+            v-if="$slots.actions"
+            class="relative mt-3 flex items-center gap-1 border-t pt-2"
+        >
+            <slot name="actions" />
         </div>
     </article>
 </template>
