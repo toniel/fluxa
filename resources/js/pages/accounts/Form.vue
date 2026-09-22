@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Head, useForm } from '@inertiajs/vue3';
-import { computed } from 'vue';
+import { Camera, Landmark, PiggyBank, Smartphone, Wallet } from '@lucide/vue';
+import { computed, ref } from 'vue';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,17 +19,19 @@ const props = withDefaults(
     { method: 'post', types: () => [], account: null },
 );
 
-const typeLabels: Record<string, string> = {
-    cash: 'Tunai',
-    bank: 'Rekening bank',
-    ewallet: 'E-wallet',
-    other: 'Lainnya',
+const typeOptions: Record<string, { label: string; icon: typeof Wallet }> = {
+    cash: { label: 'Tunai', icon: Wallet },
+    bank: { label: 'Rekening bank', icon: Landmark },
+    ewallet: { label: 'E-wallet', icon: Smartphone },
+    other: { label: 'Lainnya', icon: PiggyBank },
 };
 
 const form = useForm({
     name: props.account?.name ?? '',
     type: props.account?.type ?? 'cash',
     initial_balance: props.account?.initial_balance ?? '',
+    logo: null as File | null,
+    remove_logo: false,
 });
 
 // transform() merusak tipe form.errors, baca lewat cast (lihat CRUD_FLOW §6).
@@ -43,8 +46,51 @@ const balancePreview = computed(() =>
 );
 
 const isEdit = props.method === 'put';
+const logoPreview = ref<string>(props.account?.logo_url ?? '');
+
+// Indonesia memakai koma untuk desimal dan titik untuk ribuan. Diterjemahkan
+// ke angka polos yang bisa divalidasi Numeric di backend: "25.000" -> "25000",
+// "25000,50" -> "25000.50". Tidak menebak-nebak maksud koma/titik.
+function toPlainNumber(value: string): string {
+    const cleaned = value.replace(/[^\d.,]/g, '');
+
+    if (cleaned.includes(',')) {
+        return cleaned.replace(/\./g, '').replace(',', '.');
+    }
+
+    return cleaned.replace(/\./g, '');
+}
+
+function onLogoChange(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0] ?? null;
+
+    if (file === null) {
+        return;
+    }
+
+    if (logoPreview.value.startsWith('blob:')) {
+        URL.revokeObjectURL(logoPreview.value);
+    }
+
+    form.logo = file;
+    form.remove_logo = false;
+    logoPreview.value = URL.createObjectURL(file);
+}
+
+function clearLogo(): void {
+    if (logoPreview.value.startsWith('blob:')) {
+        URL.revokeObjectURL(logoPreview.value);
+    }
+
+    form.logo = null;
+    form.remove_logo = true;
+    logoPreview.value = '';
+}
 
 function submit(): void {
+    form.initial_balance = toPlainNumber(form.initial_balance);
+
     if (isEdit) {
         form.put(props.action);
 
@@ -76,21 +122,28 @@ function submit(): void {
 
             <fieldset class="grid gap-2">
                 <legend class="text-sm leading-none font-medium">Jenis</legend>
-                <div class="bg-muted grid grid-cols-2 gap-1 rounded-xl p-1">
+                <div class="grid grid-cols-2 gap-2">
                     <button
                         v-for="type in types"
                         :key="type"
                         type="button"
-                        class="focus-visible:ring-ring min-h-11 rounded-lg text-sm font-semibold focus-visible:ring-2 focus-visible:outline-none"
+                        class="focus-visible:ring-ring flex min-h-14 items-center gap-2.5 rounded-xl border px-3 text-sm font-semibold focus-visible:ring-2 focus-visible:outline-none"
                         :class="
                             form.type === type
-                                ? 'bg-primary text-primary-foreground shadow-sm'
-                                : 'text-muted-foreground'
+                                ? 'border-primary bg-primary/10 text-primary'
+                                : 'border-input text-muted-foreground hover:bg-accent'
                         "
                         :aria-pressed="form.type === type"
                         @click="form.type = type as App.Enums.AccountType"
                     >
-                        {{ typeLabels[type] ?? type }}
+                        <component
+                            :is="typeOptions[type]?.icon ?? Wallet"
+                            class="size-5 shrink-0"
+                            aria-hidden="true"
+                        />
+                        <span class="truncate">
+                            {{ typeOptions[type]?.label ?? type }}
+                        </span>
                     </button>
                 </div>
                 <InputError :message="errorFor.type" />
@@ -109,24 +162,61 @@ function submit(): void {
                         id="account-initial"
                         v-model="form.initial_balance"
                         name="initial_balance"
-                        type="number"
+                        type="text"
                         inputmode="decimal"
-                        step="0.01"
-                        min="0"
                         required
                         class="min-h-11 pr-4 pl-10"
                         placeholder="0"
+                        autocomplete="off"
                         :readonly="isEdit"
                         :aria-readonly="isEdit"
                     />
                 </div>
-                <p v-if="balancePreview" class="text-muted-foreground text-sm">
-                    {{ balancePreview }}
-                </p>
-                <p v-else-if="isEdit" class="text-muted-foreground text-sm">
+                <p v-if="isEdit" class="text-muted-foreground text-sm">
                     Saldo awal tidak bisa diubah setelah kantong dibuat.
                 </p>
+                <p v-else class="text-muted-foreground text-sm">
+                    Pakai koma untuk desimal, mis. 25000,50.
+                    <span v-if="balancePreview" class="font-medium">
+                        → {{ balancePreview }}
+                    </span>
+                </p>
                 <InputError :message="errorFor.initial_balance" />
+            </div>
+
+            <div class="grid gap-2">
+                <Label for="account-logo">Logo kantong</Label>
+                <div class="flex items-center gap-3">
+                    <span
+                        class="bg-muted text-muted-foreground flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-full"
+                    >
+                        <img
+                            v-if="logoPreview"
+                            :src="logoPreview"
+                            :alt="`Logo ${form.name || 'kantong'}`"
+                            class="size-full object-cover"
+                        />
+                        <Camera class="size-6" aria-hidden="true" />
+                    </span>
+                    <Input
+                        id="account-logo"
+                        name="logo"
+                        type="file"
+                        accept="image/*"
+                        class="file:text-foreground min-h-11 file:border-0 file:bg-transparent file:text-sm file:font-medium"
+                        @change="onLogoChange"
+                    />
+                    <Button
+                        v-if="logoPreview"
+                        type="button"
+                        variant="ghost"
+                        class="min-h-11 shrink-0"
+                        @click="clearLogo"
+                    >
+                        Hapus
+                    </Button>
+                </div>
+                <InputError :message="errorFor.logo" />
             </div>
 
             <Button

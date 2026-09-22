@@ -11,8 +11,9 @@ const props = withDefaults(
         // Absent saat belum ada data transaksi, yang menyembunyikan baris jumlah.
         txCount?: number;
         archived?: boolean;
+        logoUrl?: string;
     }>(),
-    { txCount: undefined, archived: false },
+    { txCount: undefined, archived: false, logoUrl: '' },
 );
 
 /**
@@ -72,6 +73,17 @@ const direction = computed(() =>
 
         <div class="relative flex items-start justify-between gap-3">
             <span
+                v-if="logoUrl"
+                class="flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-full"
+            >
+                <img
+                    :src="logoUrl"
+                    :alt="`Logo ${name}`"
+                    class="size-full object-cover"
+                />
+            </span>
+            <span
+                v-else
                 class="flex size-11 shrink-0 items-center justify-center rounded-full"
                 :class="style.tint"
                 aria-hidden="true"

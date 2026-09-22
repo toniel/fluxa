@@ -5,6 +5,7 @@ use App\Enums\TenantRole;
 use App\Models\Account;
 use App\Support\TenantContext;
 use Database\Seeders\PermissionSeeder;
+use Illuminate\Http\UploadedFile;
 use Inertia\Testing\AssertableInertia as Assert;
 
 beforeEach(function () {
@@ -333,4 +334,75 @@ test('relasi creator menunjuk user yang membuat kantong', function () {
     $account = Account::factory()->for($tenant)->create(['created_by' => $owner->getKey()]);
 
     expect($account->creator->is($owner))->toBeTrue();
+});
+
+test('mengunggah logo menyimpan media dan url logo masuk data keluar', function () {
+    ['user' => $owner] = categoryTenant('keluarga-uji');
+    $url = categoryBaseUrl('keluarga-uji');
+
+    $this->actingAs($owner)
+        ->post($url.'/accounts', [
+            ...accountPayload(),
+            'logo' => UploadedFile::fake()->image('logo.png'),
+        ])
+        ->assertRedirect()
+        ->assertSessionHasNoErrors();
+
+    $account = Account::query()->firstOrFail();
+
+    expect($account->getMedia('logo'))->toHaveCount(1)
+        ->and($account->logo_url)->toContain('/storage/');
+
+    $this->actingAs($owner)
+        ->get($url.'/accounts')
+        ->assertOk()
+        ->assertInertia(
+            fn (Assert $page) => $page->where('accounts.0.logo_url', $account->logo_url),
+        );
+});
+
+test('mengganti logo lewat update tetap satu file, remove_logo menghapusnya', function () {
+    ['user' => $owner] = categoryTenant('keluarga-uji');
+    $url = categoryBaseUrl('keluarga-uji');
+
+    $this->actingAs($owner)
+        ->post($url.'/accounts', [
+            ...accountPayload(),
+            'logo' => UploadedFile::fake()->image('logo.png'),
+        ])
+        ->assertRedirect();
+
+    $account = Account::query()->firstOrFail();
+
+    $this->actingAs($owner)
+        ->put($url.'/accounts/'.$account->getKey(), [
+            ...accountPayload(),
+            'logo' => UploadedFile::fake()->image('baru.png'),
+        ])
+        ->assertRedirect()
+        ->assertSessionHasNoErrors();
+
+    expect($account->refresh()->getMedia('logo'))->toHaveCount(1);
+
+    $this->actingAs($owner)
+        ->put($url.'/accounts/'.$account->getKey(), [
+            ...accountPayload(),
+            'remove_logo' => true,
+        ])
+        ->assertRedirect();
+
+    expect($account->refresh()->getMedia('logo'))->toHaveCount(0);
+});
+
+test('logo yang bukan gambar ditolak', function () {
+    ['user' => $owner] = categoryTenant('keluarga-uji');
+
+    $this->actingAs($owner)
+        ->post(categoryBaseUrl('keluarga-uji').'/accounts', [
+            ...accountPayload(),
+            'logo' => UploadedFile::fake()->create('logo.txt', 1),
+        ])
+        ->assertSessionHasErrors(['logo']);
+
+    expect(Account::query()->count())->toBe(0);
 });

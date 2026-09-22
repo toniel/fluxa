@@ -23,5 +23,6 @@ class AccountData extends Data
         public string $balance,
         public string $initial_balance,
         public bool $is_archived,
+        public string $logo_url,
     ) {}
 }

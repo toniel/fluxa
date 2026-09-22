@@ -7,6 +7,7 @@ type: App.Enums.AccountType,
 balance: string,
 initial_balance: string,
 is_archived: boolean,
+logo_url: string,
 };
 export type AccountFormData = {
 name: string,

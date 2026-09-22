@@ -20,6 +20,9 @@ use Lacodix\LaravelModelFilter\Filters\EnumFilter;
 use Lacodix\LaravelModelFilter\Traits\HasFilters;
 use Lacodix\LaravelModelFilter\Traits\IsSearchable;
 use Lacodix\LaravelModelFilter\Traits\IsSortable;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 /**
  * @property int $id
@@ -32,6 +35,7 @@ use Lacodix\LaravelModelFilter\Traits\IsSortable;
  * @property string|null $color
  * @property bool $is_archived
  * @property int $created_by
+ * @property-read string $logo_url
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  *
@@ -42,10 +46,10 @@ use Lacodix\LaravelModelFilter\Traits\IsSortable;
 #[Fillable(['name', 'type', 'initial_balance', 'icon', 'color', 'is_archived', 'created_by'])]
 #[UseEloquentBuilder(AccountQueryBuilder::class)]
 #[UsePolicy(AccountPolicy::class)]
-class Account extends Model
+class Account extends Model implements HasMedia
 {
     /** @use HasFactory<AccountFactory> */
-    use BelongsToTenant, HasFactory, HasFilters, IsSearchable, IsSortable;
+    use BelongsToTenant, HasFactory, HasFilters, InteractsWithMedia, IsSearchable, IsSortable;
 
     /**
      * `balance` sengaja TIDAK fillable: satu-satunya penulisnya adalah
@@ -84,5 +88,25 @@ class Account extends Model
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('logo')->singleFile();
+    }
+
+    public function registerMediaConversions(?Media $media = null): void
+    {
+        // nonQueued() disebut duluan: method asli Conversion yang
+        // mengembalikan Conversion; width()/height() lewat @mixin ImageDriver.
+        $this->addMediaConversion('thumb')->nonQueued()->width(96)->height(96);
+    }
+
+    /**
+     * URL logo kantong; kosong kalau belum diunggah.
+     */
+    public function getLogoUrlAttribute(): string
+    {
+        return $this->getFirstMediaUrl('logo', 'thumb');
     }
 }

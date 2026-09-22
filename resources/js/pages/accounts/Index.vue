@@ -102,6 +102,7 @@ function remove(account: App.Data.AccountData): void {
                     :name="account.name"
                     :type="account.type"
                     :balance="account.balance"
+                    :logo-url="account.logo_url"
                 >
                     <template v-if="can.manage" #actions>
                         <Button
@@ -159,6 +160,7 @@ function remove(account: App.Data.AccountData): void {
                         :name="account.name"
                         :type="account.type"
                         :balance="account.balance"
+                        :logo-url="account.logo_url"
                         archived
                     >
                         <template v-if="can.manage" #actions>

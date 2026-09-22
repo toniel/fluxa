@@ -23,7 +23,7 @@ class AccountController extends Controller
     {
         return Inertia::render('accounts/Index', [
             'accounts' => AccountData::collect(
-                Account::query()->orderedForListing()->get(),
+                Account::query()->orderedForListing()->with('media')->get(),
             ),
             'can' => [
                 'create' => $request->user()->can('create', Account::class),
@@ -48,7 +48,14 @@ class AccountController extends Controller
     ): RedirectResponse {
         Gate::authorize('create', Account::class);
 
-        $action->handle($data, user: $request->user());
+        $request->validate(['logo' => ['nullable', 'image', 'max:2048']]);
+
+        $action->handle(
+            $data,
+            user: $request->user(),
+            logo: $request->file('logo'),
+            removeLogo: $request->boolean('remove_logo'),
+        );
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Kantong disimpan.']);
 
@@ -60,7 +67,7 @@ class AccountController extends Controller
         Gate::authorize('update', $account);
 
         return Inertia::render('accounts/Edit', [
-            'account' => AccountData::from($account),
+            'account' => AccountData::from($account->load('media')),
             'types' => AccountType::values(),
         ]);
     }
@@ -73,7 +80,15 @@ class AccountController extends Controller
     ): RedirectResponse {
         Gate::authorize('update', $account);
 
-        $action->handle($data, $account, $request->user());
+        $request->validate(['logo' => ['nullable', 'image', 'max:2048']]);
+
+        $action->handle(
+            $data,
+            $account,
+            $request->user(),
+            $request->file('logo'),
+            $request->boolean('remove_logo'),
+        );
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Kantong disimpan.']);
 
