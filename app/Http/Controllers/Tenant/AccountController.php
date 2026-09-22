@@ -4,10 +4,16 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Tenant;
 
+use App\Actions\UpsertAccountAction;
+use App\Data\AccountData;
+use App\Data\AccountFormData;
+use App\Enums\AccountType;
+use App\Enums\PermissionEnum;
 use App\Http\Controllers\Controller;
-use App\Support\PreviewState;
-use App\Support\SampleData;
+use App\Models\Account;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -15,12 +21,78 @@ class AccountController extends Controller
 {
     public function index(Request $request): Response
     {
-        $state = PreviewState::fromRequest($request);
-
         return Inertia::render('accounts/Index', [
-            'state' => $state,
-            'accounts' => $state->rows(SampleData::accounts()),
-            'tenant' => SampleData::tenant(),
+            'accounts' => AccountData::collect(
+                Account::query()->orderedForListing()->get(),
+            ),
+            'can' => [
+                'create' => $request->user()->can('create', Account::class),
+                'manage' => $this->canManage($request),
+            ],
         ]);
+    }
+
+    public function create(Request $request): Response
+    {
+        Gate::authorize('create', Account::class);
+
+        return Inertia::render('accounts/Create', [
+            'types' => AccountType::values(),
+        ]);
+    }
+
+    public function store(
+        AccountFormData $data,
+        Request $request,
+        UpsertAccountAction $action,
+    ): RedirectResponse {
+        Gate::authorize('create', Account::class);
+
+        $action->handle($data, user: $request->user());
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => 'Kantong disimpan.']);
+
+        return to_route('accounts.index');
+    }
+
+    public function edit(Account $account): Response
+    {
+        Gate::authorize('update', $account);
+
+        return Inertia::render('accounts/Edit', [
+            'account' => AccountData::from($account),
+            'types' => AccountType::values(),
+        ]);
+    }
+
+    public function update(
+        AccountFormData $data,
+        Account $account,
+        Request $request,
+        UpsertAccountAction $action,
+    ): RedirectResponse {
+        Gate::authorize('update', $account);
+
+        $action->handle($data, $account, $request->user());
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => 'Kantong disimpan.']);
+
+        return to_route('accounts.index');
+    }
+
+    public function destroy(Account $account): RedirectResponse
+    {
+        Gate::authorize('delete', $account);
+
+        $account->delete();
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => 'Kantong dihapus.']);
+
+        return to_route('accounts.index');
+    }
+
+    private function canManage(Request $request): bool
+    {
+        return $request->user()->can(PermissionEnum::AccountsManage->value);
     }
 }

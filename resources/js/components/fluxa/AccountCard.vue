@@ -3,13 +3,17 @@ import { Landmark, PiggyBank, Smartphone, Wallet } from '@lucide/vue';
 import { computed } from 'vue';
 import MoneyText from '@/components/fluxa/MoneyText.vue';
 
-const props = defineProps<{
-    name: string;
-    type: string;
-    balance: number | string;
-    txCount: number;
-    archived?: boolean;
-}>();
+const props = withDefaults(
+    defineProps<{
+        name: string;
+        type: string;
+        balance: number | string;
+        // Absent saat belum ada data transaksi, yang menyembunyikan baris jumlah.
+        txCount?: number;
+        archived?: boolean;
+    }>(),
+    { txCount: undefined, archived: false },
+);
 
 /**
  * Tipe kantong menentukan ikon sekaligus warnanya, jadi satu jenis kantong
@@ -87,9 +91,19 @@ const direction = computed(() =>
             <p class="text-xl font-bold">
                 <MoneyText :value="balance" :direction="direction" />
             </p>
-            <p class="text-muted-foreground mt-0.5 text-xs">
+            <p
+                v-if="txCount !== undefined"
+                class="text-muted-foreground mt-0.5 text-xs"
+            >
                 {{ txCount }} transaksi
             </p>
+        </div>
+
+        <div
+            v-if="$slots.actions"
+            class="relative mt-3 flex items-center gap-1 border-t pt-2"
+        >
+            <slot name="actions" />
         </div>
     </article>
 </template>

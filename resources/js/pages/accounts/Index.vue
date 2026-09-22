@@ -1,29 +1,36 @@
 <script setup lang="ts">
-import { Head } from '@inertiajs/vue3';
-import { ChevronRight, Plus, Wallet } from '@lucide/vue';
+import { Head, Link, useForm } from '@inertiajs/vue3';
+import {
+    Archive,
+    ArchiveRestore,
+    ChevronRight,
+    Pencil,
+    Plus,
+    Trash2,
+    Wallet,
+} from '@lucide/vue';
 import { computed, ref } from 'vue';
 import AccountCard from '@/components/fluxa/AccountCard.vue';
-import AccountFormDialog from '@/components/fluxa/AccountFormDialog.vue';
 import EmptyState from '@/components/fluxa/EmptyState.vue';
-import ErrorState from '@/components/fluxa/ErrorState.vue';
 import MoneyText from '@/components/fluxa/MoneyText.vue';
-import SampleNotice from '@/components/fluxa/SampleNotice.vue';
 import { Button } from '@/components/ui/button';
-import { index as accountsRoute } from '@/routes/accounts';
+import {
+    archive as archiveRoute,
+    create as createRoute,
+    destroy,
+    edit as editRoute,
+    index as indexRoute,
+} from '@/routes/accounts';
 
-type Account = {
-    id: number;
-    name: string;
-    type: string;
-    balance: string;
-    is_archived: boolean;
-    tx_count: number;
-};
-
-const props = defineProps<{ state: string; accounts: Account[] }>();
+const props = defineProps<{
+    accounts: App.Data.AccountData[];
+    can: { create: boolean; manage: boolean };
+}>();
 
 defineOptions({
-    layout: { breadcrumbs: [{ title: 'Kantong', href: accountsRoute() }] },
+    layout: {
+        breadcrumbs: [{ title: 'Kantong', href: indexRoute.url() }],
+    },
 });
 
 const active = computed(() => props.accounts.filter((a) => !a.is_archived));
@@ -37,17 +44,26 @@ const total = computed(() =>
 // menghapusnya dari halaman akan membuat saldo lama terasa hilang.
 const showArchived = ref(false);
 
-const creating = ref(false);
+const archiveForm = useForm({});
+const deleteForm = useForm({});
+
+function toggleArchive(account: App.Data.AccountData): void {
+    archiveForm.patch(archiveRoute.url(account.id), { preserveScroll: true });
+}
+
+function remove(account: App.Data.AccountData): void {
+    if (!window.confirm(`Hapus kantong "${account.name}"?`)) {
+        return;
+    }
+
+    deleteForm.delete(destroy.url(account.id), { preserveScroll: true });
+}
 </script>
 
 <template>
     <Head title="Kantong" />
 
     <div class="space-y-4 p-4">
-        <SampleNotice />
-
-        <AccountFormDialog v-model:open="creating" />
-
         <header class="flex items-start justify-between gap-3">
             <div class="min-w-0">
                 <h1 class="text-xl font-bold tracking-tight">Kantong</h1>
@@ -56,27 +72,25 @@ const creating = ref(false);
                     <MoneyText :value="total" />
                 </p>
             </div>
-            <Button class="min-h-11 shrink-0" @click="creating = true">
-                <Plus class="size-4" aria-hidden="true" />
-                Tambah
+            <Button v-if="can.create" as-child class="min-h-11 shrink-0">
+                <Link :href="createRoute.url()">
+                    <Plus class="size-4" aria-hidden="true" />
+                    Tambah
+                </Link>
             </Button>
         </header>
 
-        <ErrorState
-            v-if="state === 'failed'"
-            title="Daftar kantong gagal dimuat"
-            description="Data tidak bisa diambil saat ini. Coba muat ulang halaman."
-        />
-
         <EmptyState
-            v-else-if="!accounts.length"
+            v-if="!accounts.length"
             :icon="Wallet"
             title="Belum ada kantong"
             description="Buat kantong pertama supaya transaksi punya tempat masuk dan keluar."
         >
-            <Button class="min-h-11" @click="creating = true">
-                <Plus class="size-4" aria-hidden="true" />
-                Tambah kantong
+            <Button v-if="can.create" as-child class="min-h-11">
+                <Link :href="createRoute.url()">
+                    <Plus class="size-4" aria-hidden="true" />
+                    Tambah kantong
+                </Link>
             </Button>
         </EmptyState>
 
@@ -88,8 +102,39 @@ const creating = ref(false);
                     :name="account.name"
                     :type="account.type"
                     :balance="account.balance"
-                    :tx-count="account.tx_count"
-                />
+                >
+                    <template v-if="can.manage" #actions>
+                        <Button
+                            as-child
+                            variant="ghost"
+                            size="icon"
+                            class="size-11"
+                            :aria-label="`Ubah kantong ${account.name}`"
+                        >
+                            <Link :href="editRoute.url(account.id)">
+                                <Pencil class="size-4" aria-hidden="true" />
+                            </Link>
+                        </Button>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            class="size-11"
+                            :aria-label="`Arsipkan kantong ${account.name}`"
+                            @click="toggleArchive(account)"
+                        >
+                            <Archive class="size-4" aria-hidden="true" />
+                        </Button>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            class="text-money-out hover:text-money-out size-11"
+                            :aria-label="`Hapus kantong ${account.name}`"
+                            @click="remove(account)"
+                        >
+                            <Trash2 class="size-4" aria-hidden="true" />
+                        </Button>
+                    </template>
+                </AccountCard>
             </div>
 
             <section v-if="archived.length" class="space-y-3">
@@ -114,9 +159,43 @@ const creating = ref(false);
                         :name="account.name"
                         :type="account.type"
                         :balance="account.balance"
-                        :tx-count="account.tx_count"
                         archived
-                    />
+                    >
+                        <template v-if="can.manage" #actions>
+                            <Button
+                                as-child
+                                variant="ghost"
+                                size="icon"
+                                class="size-11"
+                                :aria-label="`Ubah kantong ${account.name}`"
+                            >
+                                <Link :href="editRoute.url(account.id)">
+                                    <Pencil class="size-4" aria-hidden="true" />
+                                </Link>
+                            </Button>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                class="size-11"
+                                :aria-label="`Kembalikan kantong ${account.name}`"
+                                @click="toggleArchive(account)"
+                            >
+                                <ArchiveRestore
+                                    class="size-4"
+                                    aria-hidden="true"
+                                />
+                            </Button>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                class="text-money-out hover:text-money-out size-11"
+                                :aria-label="`Hapus kantong ${account.name}`"
+                                @click="remove(account)"
+                            >
+                                <Trash2 class="size-4" aria-hidden="true" />
+                            </Button>
+                        </template>
+                    </AccountCard>
                 </div>
             </section>
         </template>
