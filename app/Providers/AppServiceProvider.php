@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Support\TenantContext;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Date;
@@ -16,7 +17,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Scoped (bukan singleton) supaya aman di Octane: setiap request
+        // mendapat instance TenantContext yang bersih.
+        $this->app->scoped(TenantContext::class);
     }
 
     /**

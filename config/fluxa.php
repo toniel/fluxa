@@ -41,4 +41,52 @@ return [
         ['name' => 'Lainnya', 'type' => 'expense', 'icon' => 'ellipsis'],
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Ikon Kategori
+    |--------------------------------------------------------------------------
+    |
+    | Nama yang boleh dipilih untuk field ikon di form kategori. Pemetaan nama
+    | ke komponen ikonnya hidup di resources/js/lib/categoryIcons.ts, jadi
+    | daftar ini dan map itu harus dijaga selaras.
+    |
+    */
+
+    'category_icons' => [
+        'baby',
+        'banknote',
+        'briefcase',
+        'broom',
+        'bus',
+        'car',
+        'circle-dollar-sign',
+        'circle-plus',
+        'coins',
+        'credit-card',
+        'dumbbell',
+        'ellipsis',
+        'gamepad-2',
+        'gift',
+        'graduation-cap',
+        'hand-coins',
+        'heart-pulse',
+        'house',
+        'key',
+        'landmark',
+        'laptop',
+        'paw-print',
+        'piggy-bank',
+        'plane',
+        'receipt',
+        'shirt',
+        'shopping-bag',
+        'shopping-basket',
+        'shopping-cart',
+        'smartphone',
+        'stethoscope',
+        'utensils',
+        'wallet',
+        'wrench',
+    ],
+
 ];
