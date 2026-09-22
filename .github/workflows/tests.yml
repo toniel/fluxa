@@ -22,9 +22,12 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # v2
         with:
-          php-version: '8.3'
+          # composer.lock mengunci paket (symfony 8.x, pest 5, phpunit 13)
+          # yang butuh PHP >= 8.4; 8.3 menolak install.
+          php-version: '8.4'
           tools: composer:v2
-          coverage: none
+          # composer ci:check enforces a coverage floor, which needs a driver.
+          coverage: pcov
 
       - name: Setup Node
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
@@ -32,6 +35,13 @@ jobs:
           node-version: '22'
 
       - name: Setup Application
+        env:
+          # .env.example menunjuk MySQL, sedangkan CI tidak punya service
+          # MySQL. Setup hanya butuh database agar migrate jalan, jadi pakai
+          # sqlite seperti local. Env di sini hanya untuk langkah ini: langkah
+          # test tetap memakai sqlite :memory: dari phpunit.xml.
+          DB_CONNECTION: sqlite
+          DB_DATABASE: ${{ github.workspace }}/database/database.sqlite
         run: composer setup
 
       - name: Run CI Checks

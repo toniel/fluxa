@@ -1,28 +1,26 @@
 <script setup lang="ts">
-import { Head } from '@inertiajs/vue3';
+import { Head, Link, useForm } from '@inertiajs/vue3';
 import { Pencil, Plus, Tags, Trash2 } from '@lucide/vue';
 import { computed, ref } from 'vue';
 import EmptyState from '@/components/fluxa/EmptyState.vue';
-import ErrorState from '@/components/fluxa/ErrorState.vue';
-import SampleNotice from '@/components/fluxa/SampleNotice.vue';
 import { Button } from '@/components/ui/button';
 import { categoryIcon } from '@/lib/categoryIcons';
-import { notYet } from '@/lib/notYet';
-import { index as categoriesRoute } from '@/routes/categories';
+import {
+    create as createRoute,
+    destroy,
+    edit as editRoute,
+    index as indexRoute,
+} from '@/routes/categories';
 
-type Category = {
-    id: number;
-    name: string;
-    type: 'income' | 'expense';
-    icon: string;
-    is_default: boolean;
-    usage: number;
-};
-
-const props = defineProps<{ state: string; categories: Category[] }>();
+const props = defineProps<{
+    categories: App.Data.CategoryData[];
+    can: { create: boolean; manage: boolean };
+}>();
 
 defineOptions({
-    layout: { breadcrumbs: [{ title: 'Kategori', href: categoriesRoute() }] },
+    layout: {
+        breadcrumbs: [{ title: 'Kategori', href: indexRoute.url() }],
+    },
 });
 
 const expenseCount = computed(
@@ -39,13 +37,21 @@ const visible = computed(() =>
     props.categories.filter((c) => c.type === tab.value),
 );
 
+const deleteForm = useForm({});
+
+function remove(category: App.Data.CategoryData): void {
+    if (!window.confirm(`Hapus kategori "${category.name}"?`)) {
+        return;
+    }
+
+    deleteForm.delete(destroy.url(category.id), { preserveScroll: true });
+}
+
 /**
  * bg-chart-out sengaja hampir sama gelapnya di kedua tema (ia juga dipakai
  * sebagai warna mark chart), sehingga tidak ada token teks bawaan yang lolos
- * 4.5:1 di keduanya sekaligus: text-foreground lolos light (5.57:1) tapi
- * gagal dark (2.70:1); text-background sebaliknya (2.70:1 light, 5.79:1
- * dark). Nilai literal ini diukur terhadap kedua warna chart-out dan lolos
- * pada keduanya (5.57:1 dan 5.35:1).
+ * 4.5:1 di keduanya sekaligus. Nilai literal ini diukur terhadap kedua warna
+ * chart-out dan lolos pada keduanya (5.57:1 dan 5.35:1).
  */
 const activeExpenseTextClass = 'text-[#16211c]';
 </script>
@@ -54,8 +60,6 @@ const activeExpenseTextClass = 'text-[#16211c]';
     <Head title="Kategori" />
 
     <div class="space-y-4 p-4">
-        <SampleNotice />
-
         <header class="flex items-start justify-between gap-3">
             <div class="min-w-0">
                 <h1 class="text-xl font-bold tracking-tight">Kategori</h1>
@@ -63,30 +67,25 @@ const activeExpenseTextClass = 'text-[#16211c]';
                     Kelompokkan transaksi supaya laporan lebih jelas
                 </p>
             </div>
-            <Button
-                class="min-h-11 shrink-0"
-                @click="notYet('Tambah kategori')"
-            >
-                <Plus class="size-4" aria-hidden="true" />
-                Tambah
+            <Button v-if="can.create" as-child class="min-h-11 shrink-0">
+                <Link :href="createRoute.url()">
+                    <Plus class="size-4" aria-hidden="true" />
+                    Tambah
+                </Link>
             </Button>
         </header>
 
-        <ErrorState
-            v-if="state === 'failed'"
-            title="Daftar kategori gagal dimuat"
-            description="Data tidak bisa diambil saat ini. Coba muat ulang halaman."
-        />
-
         <EmptyState
-            v-else-if="!categories.length"
+            v-if="!categories.length"
             :icon="Tags"
             title="Belum ada kategori"
             description="Kategori default biasanya dibuat otomatis saat tenant baru dibuat."
         >
-            <Button class="min-h-11" @click="notYet('Tambah kategori')">
-                <Plus class="size-4" aria-hidden="true" />
-                Tambah kategori
+            <Button v-if="can.create" as-child class="min-h-11">
+                <Link :href="createRoute.url()">
+                    <Plus class="size-4" aria-hidden="true" />
+                    Tambah kategori
+                </Link>
             </Button>
         </EmptyState>
 
@@ -157,33 +156,34 @@ const activeExpenseTextClass = 'text-[#16211c]';
                         <p class="truncate text-sm font-medium">
                             {{ category.name }}
                         </p>
-                        <p class="text-muted-foreground text-xs">
-                            {{ category.usage }} transaksi
+                        <p
+                            v-if="category.is_default"
+                            class="text-muted-foreground text-xs"
+                        >
+                            Bawaan
                         </p>
                     </div>
 
                     <div class="flex shrink-0 items-center gap-1">
                         <Button
+                            v-if="can.manage"
+                            as-child
                             variant="ghost"
                             size="icon"
                             class="size-11"
                             :aria-label="`Ubah kategori ${category.name}`"
-                            @click="notYet(`Ubah kategori ${category.name}`)"
                         >
-                            <Pencil class="size-4" aria-hidden="true" />
+                            <Link :href="editRoute.url(category.id)">
+                                <Pencil class="size-4" aria-hidden="true" />
+                            </Link>
                         </Button>
-                        <!--
-                            Kategori bawaan tetap bisa dihapus di rujukan: tenant
-                            berhak menghilangkan kategori yang tidak dipakainya.
-                            Yang dijaga bukan penghapusan, tapi transaksi lama
-                            yang masih memakainya - itu urusan backend nanti.
-                        -->
                         <Button
+                            v-if="can.manage"
                             variant="ghost"
                             size="icon"
                             class="text-money-out hover:text-money-out size-11"
                             :aria-label="`Hapus kategori ${category.name}`"
-                            @click="notYet(`Hapus kategori ${category.name}`)"
+                            @click="remove(category)"
                         >
                             <Trash2 class="size-4" aria-hidden="true" />
                         </Button>
