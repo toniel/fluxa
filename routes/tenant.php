@@ -7,6 +7,7 @@ use App\Http\Controllers\Tenant\ArchiveAccountController;
 use App\Http\Controllers\Tenant\BillingController;
 use App\Http\Controllers\Tenant\CategoryController;
 use App\Http\Controllers\Tenant\DashboardController;
+use App\Http\Controllers\Tenant\InvitationController;
 use App\Http\Controllers\Tenant\MemberController;
 use App\Http\Controllers\Tenant\TenantSettingController;
 use App\Http\Controllers\Tenant\TransactionController;
@@ -45,6 +46,10 @@ Route::middleware([
     Route::resource('transfers', TransferController::class);
     Route::resource('categories', CategoryController::class)->except('show');
     Route::get('members', [MemberController::class, 'index'])->name('members.index');
+    Route::patch('members/{user}', [MemberController::class, 'update'])->name('members.update');
+    Route::delete('members/{user}', [MemberController::class, 'destroy'])->name('members.destroy');
+
+    Route::resource('invitations', InvitationController::class)->only(['store', 'destroy']);
     Route::get('billing', [BillingController::class, 'index'])->name('billing.index');
     Route::get('settings/tenant', [TenantSettingController::class, 'edit'])->name('tenant.settings');
 });
