@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\InvitationAcceptanceController;
 use App\Http\Controllers\TenantPickerController;
 use Illuminate\Support\Facades\Route;
 
@@ -18,5 +19,11 @@ Route::inertia('/', 'Welcome')->name('home');
 Route::middleware(['auth'])->group(function (): void {
     Route::get('tenants', [TenantPickerController::class, 'index'])->name('tenants.index');
 });
+
+// Halaman terima undangan hidup di central domain, di luar tenant context:
+// pengklik belum tentu login atau punya tenant, token-lah otoritasnya.
+Route::get('invitations/{token}', [InvitationAcceptanceController::class, 'show'])->name('invitations.show');
+Route::post('invitations/{token}/accept', [InvitationAcceptanceController::class, 'store'])
+    ->middleware('auth')->name('invitations.accept');
 
 require __DIR__.'/settings.php';

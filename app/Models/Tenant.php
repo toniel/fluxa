@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Policies\TenantPolicy;
 use App\QueryBuilders\TenantQueryBuilder;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\UseEloquentBuilder;
+use Illuminate\Database\Eloquent\Attributes\UsePolicy;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -23,6 +25,7 @@ use Stancl\Tenancy\Database\Models\Tenant as BaseTenant;
  */
 #[Fillable(['name', 'owner_id'])]
 #[UseEloquentBuilder(TenantQueryBuilder::class)]
+#[UsePolicy(TenantPolicy::class)]
 class Tenant extends BaseTenant
 {
     use HasDomains;

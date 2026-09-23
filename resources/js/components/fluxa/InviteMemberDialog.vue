@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { useForm } from '@inertiajs/vue3';
+import { computed, ref, watch } from 'vue';
 import {
     Dialog,
     DialogContent,
@@ -11,25 +12,48 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { notYet } from '@/lib/notYet';
+
+const props = withDefaults(
+    defineProps<{
+        action: string;
+        roles?: string[];
+    }>(),
+    { roles: () => ['admin', 'member'] },
+);
 
 const open = defineModel<boolean>('open', { default: false });
 
-const email = ref('');
-const role = ref<'admin' | 'member'>('member');
+const form = useForm({
+    email: '',
+    role: 'member',
+});
+
+const roleHint: Record<string, string> = {
+    admin: 'Admin — kelola kantong & anggota',
+    member: 'Anggota — catat transaksi & lihat laporan',
+};
 
 watch(open, (isOpen) => {
     if (!isOpen) {
         return;
     }
 
-    email.value = '';
-    role.value = 'member';
+    form.reset();
+    form.clearErrors();
 });
 
+// transform() merusak tipe form.errors, baca lewat cast (lihat CRUD_FLOW §6).
+const errorFor = computed<Record<string, string | undefined>>(
+    () => form.errors as Record<string, string | undefined>,
+);
+
 function submit(): void {
-    notYet('Kirim undangan');
-    open.value = false;
+    form.post(props.action, {
+        preserveScroll: true,
+        onSuccess: () => {
+            open.value = false;
+        },
+    });
 }
 </script>
 
@@ -47,19 +71,31 @@ function submit(): void {
                 </DialogDescription>
             </DialogHeader>
 
-            <form class="space-y-4 px-5 py-4" @submit.prevent="submit">
+            <form
+                id="invite-member-form"
+                class="space-y-4 px-5 py-4"
+                @submit.prevent="submit"
+            >
                 <div class="space-y-1.5">
                     <Label for="invite-email" class="text-xs font-semibold"
                         >Email</Label
                     >
                     <Input
                         id="invite-email"
-                        v-model="email"
+                        v-model="form.email"
                         type="email"
                         required
                         class="min-h-11 rounded-xl"
                         placeholder="nama@email.com"
+                        autocomplete="off"
                     />
+                    <p
+                        v-if="errorFor.email"
+                        class="text-destructive text-xs"
+                        role="alert"
+                    >
+                        {{ errorFor.email }}
+                    </p>
                 </div>
 
                 <div class="space-y-1.5">
@@ -68,21 +104,26 @@ function submit(): void {
                     >
                     <select
                         id="invite-role"
-                        v-model="role"
+                        v-model="form.role"
                         class="border-input bg-card focus-visible:ring-ring min-h-11 w-full rounded-xl border px-3 text-sm focus-visible:ring-2 focus-visible:outline-none"
                     >
-                        <option value="admin">
-                            Admin — kelola kantong &amp; anggota
-                        </option>
-                        <option value="member">
-                            Member — catat transaksi &amp; lihat laporan
+                        <option v-for="role in roles" :key="role" :value="role">
+                            {{ roleHint[role] ?? role }}
                         </option>
                     </select>
+                    <p
+                        v-if="errorFor.role"
+                        class="text-destructive text-xs"
+                        role="alert"
+                    >
+                        {{ errorFor.role }}
+                    </p>
                 </div>
 
                 <p class="text-muted-foreground text-xs">
-                    Undangan dikirim lewat email. Anggota muncul dengan status
-                    Menunggu sampai menerima.
+                    Undangan dikirim lewat email dan kedaluwarsa dalam 7 hari.
+                    Mengundang email yang sama akan mengirim ulang dengan tautan
+                    baru.
                 </p>
             </form>
 
@@ -97,7 +138,12 @@ function submit(): void {
                 >
                     Batal
                 </Button>
-                <Button type="button" class="min-h-11" @click="submit">
+                <Button
+                    type="submit"
+                    form="invite-member-form"
+                    class="min-h-11"
+                    :disabled="form.processing"
+                >
                     Kirim undangan
                 </Button>
             </DialogFooter>

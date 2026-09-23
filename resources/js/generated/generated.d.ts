@@ -54,6 +54,34 @@ default_interest_rate_monthly: string,
 default_admin_fee_percentage: string,
 credit_limit: string | null,
 };
+export type InvitationFormData = {
+email: string,
+role: App.Enums.TenantRole,
+};
+export type MemberRoleFormData = {
+role: App.Enums.TenantRole,
+};
+export type TenantInvitationData = {
+id: number,
+email: string,
+role: App.Enums.TenantRole,
+status: App.Enums.InvitationStatus,
+expires_at: string,
+accept_url: string,
+can_resend: boolean,
+can_revoke: boolean,
+};
+export type TenantMemberData = {
+id: number,
+name: string,
+email: string,
+role: string,
+joined_at: string | null,
+is_owner: boolean,
+is_current_user: boolean,
+can_change_role: boolean,
+can_remove: boolean,
+};
 export type TransactionData = {
 id: number,
 account_id: number,
@@ -107,6 +135,7 @@ transfer_date: string,
 namespace Enums {
 export type AccountType = 'cash' | 'bank' | 'ewallet' | 'credit_card' | 'paylater' | 'other';
 export type CategoryType = 'income' | 'expense';
+export type InvitationStatus = 'pending' | 'accepted' | 'expired' | 'revoked';
 export type PermissionEnum = 'tenant.view' | 'tenant.settings' | 'tenant.delete' | 'accounts.create' | 'accounts.manage' | 'categories.manage' | 'transactions.create' | 'transactions.manage' | 'transactions.manage-own' | 'transfers.create' | 'transfers.manage' | 'transfers.manage-own' | 'members.invite' | 'members.remove' | 'members.manage-role' | 'billing.view' | 'billing.manage';
 export type TenantRole = 'owner' | 'admin' | 'member';
 export type TransactionType = 'income' | 'expense' | 'bill_payment';
