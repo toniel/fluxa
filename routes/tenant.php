@@ -41,7 +41,7 @@ Route::middleware([
 
     Route::resource('accounts', AccountController::class)->except('show');
     Route::patch('accounts/{account}/archive', ArchiveAccountController::class)->name('accounts.archive');
-    Route::get('transactions', [TransactionController::class, 'index'])->name('transactions.index');
+    Route::resource('transactions', TransactionController::class);
     Route::get('transfers', [TransferController::class, 'index'])->name('transfers.index');
     Route::resource('categories', CategoryController::class)->except('show');
     Route::get('members', [MemberController::class, 'index'])->name('members.index');
