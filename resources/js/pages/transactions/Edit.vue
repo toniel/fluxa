@@ -5,7 +5,7 @@ import { index, update } from '@/routes/transactions';
 
 const props = defineProps<{
     transaction: App.Data.TransactionData;
-    accounts: { id: number; name: string; balance: string }[];
+    accounts: { id: number; name: string; type: string; balance: string }[];
     categories: { id: number; name: string; type: string }[];
     types: string[];
 }>();

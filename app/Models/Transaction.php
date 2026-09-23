@@ -30,6 +30,7 @@ use Spatie\MediaLibrary\InteractsWithMedia;
  * @property int $tenant_id
  * @property int $account_id
  * @property int|null $category_id
+ * @property int|null $linked_account_id
  * @property TransactionType $type
  * @property numeric-string $amount
  * @property string|null $description
@@ -44,7 +45,7 @@ use Spatie\MediaLibrary\InteractsWithMedia;
  *
  * @mixin TransactionQueryBuilder
  */
-#[Fillable(['account_id', 'category_id', 'type', 'amount', 'description', 'transaction_date', 'created_by'])]
+#[Fillable(['account_id', 'category_id', 'linked_account_id', 'type', 'amount', 'description', 'transaction_date', 'created_by'])]
 #[UseEloquentBuilder(TransactionQueryBuilder::class)]
 #[UsePolicy(TransactionPolicy::class)]
 class Transaction extends Model implements HasMedia
@@ -98,6 +99,14 @@ class Transaction extends Model implements HasMedia
     }
 
     /**
+     * @return BelongsTo<Account, $this>
+     */
+    public function linkedAccount(): BelongsTo
+    {
+        return $this->belongsTo(Account::class, 'linked_account_id');
+    }
+
+    /**
      * @return BelongsTo<User, $this>
      */
     public function creator(): BelongsTo
@@ -115,8 +124,16 @@ class Transaction extends Model implements HasMedia
         return $this->getFirstMediaUrl('receipt');
     }
 
-    public function signedAmount(): string
+    /**
+     * Nominal bertanda untuk satu kaki saldo: belanja di kartu kredit
+     * menaikkan balance (utang), pelunasan menurunkannya di kedua kaki.
+     */
+    public function signedAmount(Account $account): string
     {
-        return bcmul($this->amount, (string) $this->type->signum(), 2);
+        if ($this->type === TransactionType::BillPayment) {
+            return bcmul($this->amount, '-1', 2);
+        }
+
+        return bcmul($this->amount, (string) ($this->type->signum() * $account->type->balanceDirection()), 2);
     }
 }

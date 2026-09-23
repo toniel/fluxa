@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Tenant;
 use App\Actions\UpsertAccountAction;
 use App\Data\AccountData;
 use App\Data\AccountFormData;
+use App\Data\CreditCardDetailData;
 use App\Enums\AccountType;
 use App\Enums\PermissionEnum;
 use App\Http\Controllers\Controller;
@@ -22,9 +23,11 @@ class AccountController extends Controller
     public function index(Request $request): Response
     {
         return Inertia::render('accounts/Index', [
-            'accounts' => AccountData::collect(
-                Account::query()->orderedForListing()->with('media')->get(),
-            ),
+            'accounts' => Account::query()->orderedForListing()
+                ->with(['media', 'creditCardDetail'])
+                ->get()
+                ->map(fn (Account $account) => $this->toData($account))
+                ->all(),
             'can' => [
                 'create' => $request->user()->can('create', Account::class),
                 'manage' => $this->canManage($request),
@@ -67,7 +70,7 @@ class AccountController extends Controller
         Gate::authorize('update', $account);
 
         return Inertia::render('accounts/Edit', [
-            'account' => AccountData::from($account->load('media')),
+            'account' => $this->toData($account->load(['media', 'creditCardDetail'])),
             'types' => AccountType::values(),
         ]);
     }
@@ -109,5 +112,28 @@ class AccountController extends Controller
     private function canManage(Request $request): bool
     {
         return $request->user()->can(PermissionEnum::AccountsManage->value);
+    }
+
+    private function toData(Account $account): AccountData
+    {
+        $detail = $account->creditCardDetail;
+
+        return new AccountData(
+            id: $account->getKey(),
+            name: $account->name,
+            type: $account->type,
+            balance: (string) $account->balance,
+            initial_balance: (string) $account->initial_balance,
+            is_archived: $account->is_archived,
+            logo_url: $account->logo_url,
+            credit_detail: $detail === null ? null : new CreditCardDetailData(
+                billing_cycle_start_day: $detail->billing_cycle_start_day,
+                billing_cycle_end_day: $detail->billing_cycle_end_day,
+                payment_due_offset_days: $detail->payment_due_offset_days,
+                default_interest_rate_monthly: (string) $detail->default_interest_rate_monthly,
+                default_admin_fee_percentage: (string) $detail->default_admin_fee_percentage,
+                credit_limit: $detail->credit_limit === null ? null : (string) $detail->credit_limit,
+            ),
+        );
     }
 }

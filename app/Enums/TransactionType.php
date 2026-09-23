@@ -11,12 +11,14 @@ enum TransactionType: string
 {
     case Income = 'income';
     case Expense = 'expense';
+    case BillPayment = 'bill_payment';
 
     public function label(): string
     {
         return match ($this) {
             self::Income => 'Pemasukan',
             self::Expense => 'Pengeluaran',
+            self::BillPayment => 'Bayar tagihan',
         };
     }
 
@@ -32,7 +34,7 @@ enum TransactionType: string
     {
         return match ($this) {
             self::Income => 1,
-            self::Expense => -1,
+            self::Expense, self::BillPayment => -1,
         };
     }
 }

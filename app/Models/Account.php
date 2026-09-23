@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Attributes\UsePolicy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Carbon;
 use Lacodix\LaravelModelFilter\Filters\EnumFilter;
 use Lacodix\LaravelModelFilter\Traits\HasFilters;
@@ -88,6 +89,14 @@ class Account extends Model implements HasMedia
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    /**
+     * @return HasOne<CreditCardDetail, $this>
+     */
+    public function creditCardDetail(): HasOne
+    {
+        return $this->hasOne(CreditCardDetail::class);
     }
 
     public function registerMediaCollections(): void

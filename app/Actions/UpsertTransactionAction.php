@@ -23,9 +23,9 @@ class UpsertTransactionAction
      * Buat transaksi, atau perbarui yang dikirim pemanggil.
      *
      * Target update datang dari route binding, bukan dari payload. Setiap
-     * tulis berjalan dalam satu transaksi DB: baris akun dikunci urut id
-     * menaik, lalu saldo disesuaikan lewat ekspresi SQL supaya dua request
-     * bersamaan tidak saling menimpa.
+     * tulis berjalan dalam satu transaksi DB: SEMUA akun yang terlibat
+     * (termasuk kaki pelunasan) dikunci urut id menaik, lalu tiap kaki
+     * disesuaikan supaya dua request bersamaan tidak saling menimpa.
      *
      * Struk difoto lewat spatie medialibrary (koleksi `receipt`, satu file)
      * dan selalu opsional. `removeReceipt` menghapus struk yang ada.
@@ -38,29 +38,42 @@ class UpsertTransactionAction
         bool $removeReceipt = false,
     ): Transaction {
         $account = $this->accountFor($data->account_id);
+        $linked = $this->linkedFor($data, $account);
         $this->checkCategory($data->category_id, $data->type);
 
         if ($transaction instanceof Transaction) {
-            return DB::transaction(function () use ($data, $transaction, $account, $receipt, $removeReceipt): Transaction {
-                $oldAccountId = $transaction->account_id;
-                $oldSigned = $transaction->signedAmount();
+            return DB::transaction(function () use ($data, $transaction, $account, $linked, $receipt, $removeReceipt): Transaction {
+                $oldAccount = $this->accountFor($transaction->account_id);
+                $oldLinked = $transaction->linked_account_id !== null
+                    ? $this->accountFor($transaction->linked_account_id)
+                    : null;
 
-                $ids = array_unique([$oldAccountId, $account->getKey()]);
+                $ids = array_unique(array_filter([
+                    $oldAccount->getKey(),
+                    $oldLinked?->getKey(),
+                    $account->getKey(),
+                    $linked?->getKey(),
+                ]));
                 sort($ids);
                 Account::query()->lockedByIds($ids);
 
-                $this->adjust($oldAccountId, $this->negate($oldSigned));
+                foreach ($this->legsFor($transaction->type, $transaction->amount, $oldAccount, $oldLinked) as [$legId, $legDelta]) {
+                    $this->adjust($legId, $this->negate($legDelta));
+                }
 
                 $transaction->update([
                     'account_id' => $data->account_id,
                     'category_id' => $data->category_id,
+                    'linked_account_id' => $data->linked_account_id,
                     'type' => $data->type->value,
                     'amount' => $data->amount,
                     'description' => $data->description,
                     'transaction_date' => $data->transaction_date,
                 ]);
 
-                $this->adjust($data->account_id, $transaction->fresh()?->signedAmount() ?? $this->signed($data->type, $data->amount));
+                foreach ($this->legsFor($data->type, $data->amount, $account, $linked) as [$legId, $legDelta]) {
+                    $this->adjust($legId, $legDelta);
+                }
 
                 $this->applyReceipt($transaction, $receipt, $removeReceipt);
 
@@ -68,12 +81,15 @@ class UpsertTransactionAction
             });
         }
 
-        return DB::transaction(function () use ($data, $account, $user, $receipt, $removeReceipt): Transaction {
-            Account::query()->lockedByIds([$account->getKey()]);
+        return DB::transaction(function () use ($data, $account, $linked, $user, $receipt, $removeReceipt): Transaction {
+            $ids = array_unique(array_filter([$account->getKey(), $linked?->getKey()]));
+            sort($ids);
+            Account::query()->lockedByIds($ids);
 
             $transaction = new Transaction([
                 'account_id' => $data->account_id,
                 'category_id' => $data->category_id,
+                'linked_account_id' => $data->linked_account_id,
                 'type' => $data->type->value,
                 'amount' => $data->amount,
                 'description' => $data->description,
@@ -82,7 +98,9 @@ class UpsertTransactionAction
             ]);
             $transaction->save();
 
-            $this->adjust($transaction->account_id, $transaction->signedAmount());
+            foreach ($this->legsFor($data->type, $data->amount, $account, $linked) as [$legId, $legDelta]) {
+                $this->adjust($legId, $legDelta);
+            }
 
             $this->applyReceipt($transaction, $receipt, $removeReceipt);
 
@@ -96,9 +114,18 @@ class UpsertTransactionAction
     public function delete(Transaction $transaction): void
     {
         DB::transaction(function () use ($transaction): void {
-            Account::query()->lockedByIds([$transaction->account_id]);
+            $account = $this->accountFor($transaction->account_id);
+            $linked = $transaction->linked_account_id !== null
+                ? $this->accountFor($transaction->linked_account_id)
+                : null;
 
-            $this->adjust($transaction->account_id, $this->negate($transaction->signedAmount()));
+            $ids = array_unique(array_filter([$account->getKey(), $linked?->getKey()]));
+            sort($ids);
+            Account::query()->lockedByIds($ids);
+
+            foreach ($this->legsFor($transaction->type, $transaction->amount, $account, $linked) as [$legId, $legDelta]) {
+                $this->adjust($legId, $this->negate($legDelta));
+            }
 
             $transaction->delete();
         });
@@ -141,6 +168,16 @@ class UpsertTransactionAction
 
     private function checkCategory(?int $categoryId, TransactionType $type): void
     {
+        if ($type === TransactionType::BillPayment) {
+            if ($categoryId !== null) {
+                throw ValidationException::withMessages([
+                    'category_id' => 'Pelunasan tagihan tidak memakai kategori.',
+                ]);
+            }
+
+            return;
+        }
+
         if ($categoryId === null) {
             return;
         }
@@ -158,6 +195,82 @@ class UpsertTransactionAction
                 'category_id' => 'Kategori tidak sesuai dengan jenis transaksi.',
             ]);
         }
+    }
+
+    /**
+     * Akun sumber pelunasan: wajib untuk bill_payment, terlarang untuk jenis
+     * lain. Sumbernya harus kantong aset (membayar kartu dengan kartu tidak
+     * didukung) dan berbeda dari kartunya.
+     */
+    private function linkedFor(TransactionFormData $data, Account $account): ?Account
+    {
+        if ($data->type !== TransactionType::BillPayment) {
+            if ($data->linked_account_id !== null) {
+                throw ValidationException::withMessages([
+                    'linked_account_id' => 'Akun sumber hanya untuk bayar tagihan.',
+                ]);
+            }
+
+            return null;
+        }
+
+        if (! $account->type->isLiability()) {
+            throw ValidationException::withMessages([
+                'account_id' => 'Bayar tagihan hanya untuk kantong kartu kredit atau paylater.',
+            ]);
+        }
+
+        if ($data->linked_account_id === null) {
+            throw ValidationException::withMessages([
+                'linked_account_id' => 'Pilih kantong sumber pembayaran.',
+            ]);
+        }
+
+        $linked = $this->accountFor($data->linked_account_id);
+
+        if ($linked->getKey() === $account->getKey()) {
+            throw ValidationException::withMessages([
+                'linked_account_id' => 'Sumber pembayaran tidak boleh sama dengan kartunya.',
+            ]);
+        }
+
+        if ($linked->type->isLiability()) {
+            throw ValidationException::withMessages([
+                'linked_account_id' => 'Sumber pembayaran harus kantong aset, bukan utang.',
+            ]);
+        }
+
+        return $linked;
+    }
+
+    /**
+     * Kaki-kaki saldo transaksi: pasangan [account_id, delta]. Pelunasan
+     * menurunkan kedua kaki; selain itu arah mengikuti jenis akun.
+     *
+     * @return list<array{int, string}>
+     */
+    private function legsFor(TransactionType $type, string $amount, Account $account, ?Account $linked): array
+    {
+        if (! is_numeric($amount)) {
+            throw ValidationException::withMessages(['amount' => 'Nominal tidak valid.']);
+        }
+
+        if ($type === TransactionType::BillPayment) {
+            if (! $linked instanceof Account) {
+                throw ValidationException::withMessages([
+                    'linked_account_id' => 'Pilih kantong sumber pembayaran.',
+                ]);
+            }
+
+            $delta = bcmul($amount, '-1', 2);
+
+            return [
+                [$account->getKey(), $delta],
+                [$linked->getKey(), $delta],
+            ];
+        }
+
+        return [[$account->getKey(), $this->signed($type, $amount, $account->type->balanceDirection())]];
     }
 
     private function adjust(int $accountId, string $delta): void
@@ -180,13 +293,13 @@ class UpsertTransactionAction
         }
     }
 
-    private function signed(TransactionType $type, string $amount): string
+    private function signed(TransactionType $type, string $amount, int $direction): string
     {
         if (! is_numeric($amount)) {
             throw ValidationException::withMessages(['amount' => 'Nominal tidak valid.']);
         }
 
-        return bcmul($amount, (string) $type->signum(), 2);
+        return bcmul($amount, (string) ($type->signum() * $direction), 2);
     }
 
     private function negate(string $signed): string

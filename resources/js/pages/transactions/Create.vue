@@ -4,7 +4,7 @@ import TransactionForm from './Form.vue';
 import { index, store } from '@/routes/transactions';
 
 defineProps<{
-    accounts: { id: number; name: string; balance: string }[];
+    accounts: { id: number; name: string; type: string; balance: string }[];
     categories: { id: number; name: string; type: string }[];
     types: string[];
 }>();

@@ -24,6 +24,10 @@ class TransactionData extends Data
         public string $transaction_date,
         public string $creator_name,
         public string $receipt_url,
+        public ?int $linked_account_id,
+        public ?string $linked_account_name,
+        public ?string $statement_period_end,
+        public ?string $due_date,
         public bool $can_edit = false,
         public bool $can_delete = false,
     ) {}

@@ -127,6 +127,7 @@ function confirmDelete(): void {
                     :type="account.type"
                     :balance="account.balance"
                     :logo-url="account.logo_url"
+                    :credit-limit="account.credit_detail?.credit_limit ?? null"
                 >
                     <template v-if="can.manage" #actions>
                         <Button
@@ -185,6 +186,9 @@ function confirmDelete(): void {
                         :type="account.type"
                         :balance="account.balance"
                         :logo-url="account.logo_url"
+                        :credit-limit="
+                            account.credit_detail?.credit_limit ?? null
+                        "
                         archived
                     >
                         <template v-if="can.manage" #actions>

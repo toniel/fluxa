@@ -1,7 +1,15 @@
 <script setup lang="ts">
-import { Landmark, PiggyBank, Smartphone, Wallet } from '@lucide/vue';
+import {
+    CreditCard,
+    HandCoins,
+    Landmark,
+    PiggyBank,
+    Smartphone,
+    Wallet,
+} from '@lucide/vue';
 import { computed } from 'vue';
 import MoneyText from '@/components/fluxa/MoneyText.vue';
+import { formatRupiah } from '@/lib/currency';
 
 const props = withDefaults(
     defineProps<{
@@ -12,8 +20,10 @@ const props = withDefaults(
         txCount?: number;
         archived?: boolean;
         logoUrl?: string;
+        // Absent untuk kantong aset atau kartu tanpa limit.
+        creditLimit?: string | null;
     }>(),
-    { txCount: undefined, archived: false, logoUrl: '' },
+    { txCount: undefined, archived: false, logoUrl: '', creditLimit: null },
 );
 
 /**
@@ -39,6 +49,18 @@ const styles = {
         tint: 'bg-cat-5/12 text-cat-5',
         blob: 'bg-cat-5/12',
     },
+    credit_card: {
+        icon: CreditCard,
+        label: 'Kartu kredit',
+        tint: 'bg-cat-4/12 text-cat-4',
+        blob: 'bg-cat-4/12',
+    },
+    paylater: {
+        icon: HandCoins,
+        label: 'Paylater',
+        tint: 'bg-cat-4/12 text-cat-4',
+        blob: 'bg-cat-4/12',
+    },
     other: {
         icon: PiggyBank,
         label: 'Lainnya',
@@ -56,6 +78,20 @@ const style = computed(
 const direction = computed(() =>
     Number.parseFloat(String(props.balance)) < 0 ? 'out' : 'neutral',
 );
+
+// Persen limit terpakai; null kalau tak ada limit atau limit nol.
+const utilization = computed(() => {
+    const limit = Number.parseFloat(props.creditLimit ?? '');
+
+    if (!Number.isFinite(limit) || limit <= 0) {
+        return null;
+    }
+
+    return Math.max(
+        0,
+        Math.round((Number.parseFloat(String(props.balance)) / limit) * 100),
+    );
+});
 </script>
 
 <template>
@@ -104,7 +140,14 @@ const direction = computed(() =>
                 <MoneyText :value="balance" :direction="direction" />
             </p>
             <p
-                v-if="txCount !== undefined"
+                v-if="utilization !== null"
+                class="text-muted-foreground mt-0.5 text-xs"
+            >
+                Terpakai {{ utilization }}% dari
+                {{ formatRupiah(creditLimit ?? 0) }}
+            </p>
+            <p
+                v-else-if="txCount !== undefined"
                 class="text-muted-foreground mt-0.5 text-xs"
             >
                 {{ txCount }} transaksi

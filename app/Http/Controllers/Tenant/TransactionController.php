@@ -12,6 +12,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Account;
 use App\Models\Category;
 use App\Models\Transaction;
+use App\Support\CreditCardBillingResolver;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -23,7 +24,7 @@ class TransactionController extends Controller
     public function index(Request $request): Response
     {
         $transactions = Transaction::query()
-            ->with(['account', 'category', 'creator', 'media'])
+            ->with(['account.creditCardDetail', 'category', 'creator', 'media', 'linkedAccount'])
             ->filterByQueryString()
             ->searchByQueryString()
             ->sortByQueryString()
@@ -54,7 +55,7 @@ class TransactionController extends Controller
     {
         Gate::authorize('view', $transaction);
 
-        $transaction->load(['account', 'category', 'creator', 'media']);
+        $transaction->load(['account.creditCardDetail', 'category', 'creator', 'media', 'linkedAccount']);
 
         return Inertia::render('transactions/Show', [
             'transaction' => $this->toData(request(), $transaction),
@@ -86,7 +87,7 @@ class TransactionController extends Controller
     {
         Gate::authorize('update', $transaction);
 
-        $transaction->load(['account', 'category', 'creator', 'media']);
+        $transaction->load(['account.creditCardDetail', 'category', 'creator', 'media', 'linkedAccount']);
 
         return Inertia::render('transactions/Edit', [
             'transaction' => $this->toData(request(), $transaction),
@@ -133,7 +134,7 @@ class TransactionController extends Controller
     private function options(): array
     {
         return [
-            'accounts' => Account::query()->active()->orderedForListing()->get(['id', 'name', 'balance']),
+            'accounts' => Account::query()->active()->orderedForListing()->get(['id', 'name', 'type', 'balance']),
             'categories' => Category::query()->orderedForListing()->get(['id', 'name', 'type']),
             'types' => TransactionType::values(),
         ];
@@ -141,6 +142,8 @@ class TransactionController extends Controller
 
     private function toData(Request $request, Transaction $transaction): TransactionData
     {
+        $billing = $this->billingPeriod($transaction);
+
         return new TransactionData(
             id: $transaction->getKey(),
             account_id: $transaction->account_id,
@@ -154,8 +157,39 @@ class TransactionController extends Controller
             transaction_date: $transaction->transaction_date->toDateString(),
             creator_name: $transaction->creator->name,
             receipt_url: $transaction->receipt_url,
+            linked_account_id: $transaction->linked_account_id,
+            linked_account_name: $transaction->linkedAccount?->name,
+            statement_period_end: $billing['period_end'] ?? null,
+            due_date: $billing['due_date'] ?? null,
             can_edit: $request->user()->can('update', $transaction),
             can_delete: $request->user()->can('delete', $transaction),
         );
+    }
+
+    /**
+     * Periode tagihan dan jatuh tempo untuk belanja kartu kredit/paylater.
+     * Selain itu null: aset tidak punya siklus, pelunasan tidak masuk
+     * statement.
+     *
+     * @return array{period_end: string, due_date: string}|null
+     */
+    private function billingPeriod(Transaction $transaction): ?array
+    {
+        $detail = $transaction->account->creditCardDetail;
+
+        if (
+            $transaction->type !== TransactionType::Expense
+            || $detail === null
+        ) {
+            return null;
+        }
+
+        $period = app(CreditCardBillingResolver::class)
+            ->resolvePeriod($detail, $transaction->transaction_date);
+
+        return [
+            'period_end' => $period['period_end']->toDateString(),
+            'due_date' => $period['due_date']->toDateString(),
+        ];
     }
 }
