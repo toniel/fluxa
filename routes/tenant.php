@@ -51,5 +51,6 @@ Route::middleware([
 
     Route::resource('invitations', InvitationController::class)->only(['store', 'destroy']);
     Route::get('billing', [BillingController::class, 'index'])->name('billing.index');
+    Route::post('billing/toggle', [BillingController::class, 'store'])->name('billing.toggle');
     Route::get('settings/tenant', [TenantSettingController::class, 'edit'])->name('tenant.settings');
 });

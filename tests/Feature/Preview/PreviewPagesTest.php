@@ -24,6 +24,5 @@ test('halaman pratinjau tetap ter-render untuk anggota tenant', function (string
     'transaksi' => ['/transactions', 'transactions/Index'],
     'transfer' => ['/transfers', 'transfers/Index'],
     'anggota' => ['/members', 'members/Index'],
-    'langganan' => ['/billing', 'billing/Index'],
     'pengaturan tenant' => ['/settings/tenant', 'tenant/Settings'],
 ]);

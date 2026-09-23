@@ -61,6 +61,20 @@ role: App.Enums.TenantRole,
 export type MemberRoleFormData = {
 role: App.Enums.TenantRole,
 };
+export type PlanData = {
+id: number,
+name: string,
+slug: string,
+price: string,
+billing_period: string,
+is_active: boolean,
+};
+export type SubscriptionData = {
+id: number,
+plan: App.Data.PlanData,
+status: App.Enums.SubscriptionStatus,
+current_period_end: string | null,
+};
 export type TenantInvitationData = {
 id: number,
 email: string,
@@ -134,9 +148,11 @@ transfer_date: string,
 }
 namespace Enums {
 export type AccountType = 'cash' | 'bank' | 'ewallet' | 'credit_card' | 'paylater' | 'other';
+export type BillingPeriod = 'monthly' | 'yearly';
 export type CategoryType = 'income' | 'expense';
 export type InvitationStatus = 'pending' | 'accepted' | 'expired' | 'revoked';
 export type PermissionEnum = 'tenant.view' | 'tenant.settings' | 'tenant.delete' | 'accounts.create' | 'accounts.manage' | 'categories.manage' | 'transactions.create' | 'transactions.manage' | 'transactions.manage-own' | 'transfers.create' | 'transfers.manage' | 'transfers.manage-own' | 'members.invite' | 'members.remove' | 'members.manage-role' | 'billing.view' | 'billing.manage';
+export type SubscriptionStatus = 'active' | 'past_due' | 'cancelled' | 'expired';
 export type TenantRole = 'owner' | 'admin' | 'member';
 export type TransactionType = 'income' | 'expense' | 'bill_payment';
 }
