@@ -1,5 +1,14 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+import { Bar } from 'vue-chartjs';
+import type { ChartData, ChartOptions } from 'chart.js';
+import { useAppearance } from '@/composables/useAppearance';
+import {
+    chartGridColor,
+    chartPalette,
+    chartTextColor,
+    rupiahTooltip,
+} from '@/lib/chart';
 import { formatRupiah } from '@/lib/currency';
 
 type Bucket = {
@@ -10,75 +19,95 @@ type Bucket = {
 
 const props = defineProps<{ buckets: Bucket[] }>();
 
-const rows = computed(() => {
-    const parsed = props.buckets.map((b) => ({
+// Dibaca di sini supaya ganti tema me-render ulang chart dengan warna baru.
+const { resolvedAppearance } = useAppearance();
+
+const parsed = computed(() =>
+    props.buckets.map((b) => ({
         label: b.label,
         income: Number.parseFloat(String(b.income)),
         expense: Number.parseFloat(String(b.expense)),
-    }));
+    })),
+);
 
-    const max = Math.max(...parsed.flatMap((r) => [r.income, r.expense]), 1);
+// Warna dibaca di dalam computed supaya ganti tema ikut me-render ulang:
+// kelas dark di <html> sudah diganti sebelum render berikutnya berjalan.
+const theme = computed(() => {
+    const dark = resolvedAppearance.value === 'dark';
 
-    return parsed.map((r) => ({
-        ...r,
-        incomePct: (r.income / max) * 100,
-        expensePct: (r.expense / max) * 100,
-    }));
+    return {
+        dark,
+        text: chartTextColor(),
+        grid: chartGridColor(),
+        palette: chartPalette(),
+    };
 });
+
+const data = computed<ChartData<'bar'>>(() => ({
+    labels: parsed.value.map((b) => b.label),
+    datasets: [
+        {
+            label: 'Masuk',
+            data: parsed.value.map((b) => b.income),
+            backgroundColor: theme.value.palette[0],
+            borderRadius: 6,
+        },
+        {
+            label: 'Keluar',
+            data: parsed.value.map((b) => b.expense),
+            backgroundColor: theme.value.palette[3],
+            borderRadius: 6,
+        },
+    ],
+}));
+
+const options = computed<ChartOptions<'bar'>>(() => {
+    const text = theme.value.text;
+    const grid = theme.value.grid;
+
+    return {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: { color: text, boxWidth: 12, usePointStyle: true },
+            },
+            tooltip: {
+                callbacks: { label: rupiahTooltip },
+            },
+        },
+        scales: {
+            x: { ticks: { color: text }, grid: { display: false } },
+            y: {
+                ticks: {
+                    color: text,
+                    callback: (value) =>
+                        formatRupiah(typeof value === 'number' ? value : 0),
+                },
+                grid: { color: grid },
+                border: { display: false },
+            },
+        },
+    };
+});
+
+const description = computed(() =>
+    parsed.value
+        .map(
+            (r) =>
+                `${r.label} masuk ${formatRupiah(r.income)}, keluar ${formatRupiah(r.expense)}`,
+        )
+        .join('; '),
+);
 </script>
 
 <template>
-    <!--
-        Dua seri berdampingan per minggu. Hijau/amber, bukan hijau/merah seperti
-        rujukannya: pasangan hijau-merah hanya terpisah ΔE 5.0 di mata deutan,
-        sehingga kedua batang melebur bagi sebagian pembaca.
-    -->
-    <div class="space-y-3">
-        <div
-            class="flex h-32 items-end gap-2"
-            role="img"
-            :aria-label="`Arus kas per minggu: ${rows.map((r) => `${r.label} masuk ${formatRupiah(r.income)}, keluar ${formatRupiah(r.expense)}`).join('; ')}`"
-        >
-            <div
-                v-for="row in rows"
-                :key="row.label"
-                class="flex h-full flex-1 flex-col justify-end gap-1"
-            >
-                <div class="flex h-full items-end justify-center gap-[2px]">
-                    <div
-                        class="bg-chart-in w-2.5 rounded-t-[4px]"
-                        :style="{
-                            height: `${Math.max(row.incomePct, row.income > 0 ? 2 : 0)}%`,
-                        }"
-                    />
-                    <div
-                        class="bg-chart-out w-2.5 rounded-t-[4px]"
-                        :style="{
-                            height: `${Math.max(row.expensePct, row.expense > 0 ? 2 : 0)}%`,
-                        }"
-                    />
-                </div>
-                <p class="text-muted-foreground text-center text-[10px]">
-                    {{ row.label }}
-                </p>
-            </div>
-        </div>
-
-        <ul class="text-muted-foreground flex items-center gap-4 text-xs">
-            <li class="flex items-center gap-1.5">
-                <span
-                    class="bg-chart-in size-2.5 rounded-full"
-                    aria-hidden="true"
-                />
-                Pemasukan
-            </li>
-            <li class="flex items-center gap-1.5">
-                <span
-                    class="bg-chart-out size-2.5 rounded-full"
-                    aria-hidden="true"
-                />
-                Pengeluaran
-            </li>
-        </ul>
+    <div
+        class="relative h-48"
+        role="img"
+        :aria-label="`Arus kas per minggu: ${description}`"
+    >
+        <Bar :data="data" :options="options" />
     </div>
 </template>
