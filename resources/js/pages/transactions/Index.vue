@@ -1,87 +1,56 @@
 <script setup lang="ts">
-import { Head } from '@inertiajs/vue3';
-import { Plus, ReceiptText, Search } from '@lucide/vue';
+import { Head, Link, useForm } from '@inertiajs/vue3';
+import { Pencil, Plus, ReceiptText, Search, Trash2 } from '@lucide/vue';
 import { computed, ref } from 'vue';
 import EmptyState from '@/components/fluxa/EmptyState.vue';
-import ErrorState from '@/components/fluxa/ErrorState.vue';
+import ConfirmDeleteDialog from '@/components/fluxa/ConfirmDeleteDialog.vue';
 import MoneyText from '@/components/fluxa/MoneyText.vue';
-import SampleNotice from '@/components/fluxa/SampleNotice.vue';
-import TransactionFormDialog from '@/components/fluxa/TransactionFormDialog.vue';
 import TransactionRow from '@/components/fluxa/TransactionRow.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { categoryIcon } from '@/lib/categoryIcons';
-import { index as transactionsRoute } from '@/routes/transactions';
-
-type Account = {
-    id: number;
-    name: string;
-    balance: string;
-    is_archived: boolean;
-};
-type Category = { id: number; name: string; type: 'income' | 'expense' };
-
-type Transaction = {
-    id: number;
-    type: 'income' | 'expense';
-    amount: string;
-    description: string;
-    date: string;
-    account: string;
-    category: string;
-    icon: string;
-    creator: string;
-    can_edit: boolean;
-};
+import {
+    create as createRoute,
+    destroy,
+    edit as editRoute,
+    index as indexRoute,
+    show as showRoute,
+} from '@/routes/transactions';
 
 const props = defineProps<{
-    state: string;
-    transactions: Transaction[];
-    accounts: Account[];
-    categories: Category[];
+    transactions: App.Data.TransactionData[];
+    accounts: { id: number; name: string; balance: string }[];
+    categories: { id: number; name: string; type: string }[];
+    can: { create: boolean };
 }>();
 
 defineOptions({
     layout: {
-        breadcrumbs: [{ title: 'Transaksi', href: transactionsRoute() }],
+        breadcrumbs: [{ title: 'Transaksi', href: indexRoute.url() }],
     },
 });
-
-// Tombol catat di navigasi bawah menautkan ke halaman ini dengan ?catat,
-// jadi ia membuka form yang sama tanpa perlu state global.
-const creating = ref(new URLSearchParams(window.location.search).has('catat'));
 
 const search = ref('');
 const type = ref<'all' | 'income' | 'expense'>('all');
 const account = ref('');
 const category = ref('');
-const from = ref('');
-const until = ref('');
-
-const unique = (key: 'account' | 'category') =>
-    [...new Set(props.transactions.map((t) => t[key]))].sort();
-
-// Diberi nama berbeda dari prop accounts/categories: yang ini daftar nama
-// untuk saringan, bukan objek pilihan form.
-const accountNames = computed(() => unique('account'));
-const categoryNames = computed(() => unique('category'));
 
 const filtered = computed(() =>
     props.transactions.filter((t) => {
         const q = search.value.trim().toLowerCase();
+        const hay =
+            `${t.description ?? ''} ${t.account_name} ${t.category_name ?? ''}`.toLowerCase();
 
         return (
-            (!q || t.description.toLowerCase().includes(q)) &&
+            (!q || hay.includes(q)) &&
             (type.value === 'all' || t.type === type.value) &&
-            (!account.value || t.account === account.value) &&
-            (!category.value || t.category === category.value) &&
-            (!from.value || t.date >= from.value) &&
-            (!until.value || t.date <= until.value)
+            (!account.value || t.account_name === account.value) &&
+            (!category.value || (t.category_name ?? '') === category.value)
         );
     }),
 );
 
-const sum = (rows: Transaction[], kind: 'income' | 'expense') =>
+const sum = (rows: App.Data.TransactionData[], kind: 'income' | 'expense') =>
     rows
         .filter((t) => t.type === kind)
         .reduce((acc, t) => acc + Number.parseFloat(t.amount), 0);
@@ -89,15 +58,21 @@ const sum = (rows: Transaction[], kind: 'income' | 'expense') =>
 const income = computed(() => sum(filtered.value, 'income'));
 const expense = computed(() => sum(filtered.value, 'expense'));
 
+const accountNames = computed(() =>
+    [...new Set(props.transactions.map((t) => t.account_name))].sort(),
+);
+const categoryNames = computed(() =>
+    [
+        ...new Set(
+            props.transactions.map((t) => t.category_name ?? 'Tanpa kategori'),
+        ),
+    ].sort(),
+);
+
 const hasFilter = computed(
     () =>
-        Boolean(
-            search.value ||
-            account.value ||
-            category.value ||
-            from.value ||
-            until.value,
-        ) || type.value !== 'all',
+        Boolean(search.value || account.value || category.value) ||
+        type.value !== 'all',
 );
 
 function resetFilters(): void {
@@ -105,8 +80,6 @@ function resetFilters(): void {
     type.value = 'all';
     account.value = '';
     category.value = '';
-    from.value = '';
-    until.value = '';
 }
 
 const dayLabel = new Intl.DateTimeFormat('id-ID', {
@@ -116,18 +89,18 @@ const dayLabel = new Intl.DateTimeFormat('id-ID', {
     year: 'numeric',
 });
 
-const rowDate = new Intl.DateTimeFormat('id-ID', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-});
+// Kolom bertipe date dibaca sebagai Y-m-d tanpa offset, jadi pin jam tengah
+// malam lokal supaya format tidak mundur sehari di zona WIB.
+const asLocalDate = (ymd: string): Date => new Date(`${ymd}T00:00:00`);
 
-/** Dikelompokkan per tanggal, dengan selisih harian sebagai ringkasan kelompok. */
 const groups = computed(() => {
-    const map = new Map<string, Transaction[]>();
+    const map = new Map<string, App.Data.TransactionData[]>();
 
     for (const item of filtered.value) {
-        map.set(item.date, [...(map.get(item.date) ?? []), item]);
+        map.set(item.transaction_date, [
+            ...(map.get(item.transaction_date) ?? []),
+            item,
+        ]);
     }
 
     return [...map.entries()]
@@ -139,6 +112,28 @@ const groups = computed(() => {
         }));
 });
 
+const deleteForm = useForm({});
+const deleteTarget = ref<App.Data.TransactionData | null>(null);
+
+const deleteOpen = computed({
+    get: () => deleteTarget.value !== null,
+    set: (open: boolean) => {
+        if (!open) {
+            deleteTarget.value = null;
+        }
+    },
+});
+
+function confirmDelete(): void {
+    const transaction = deleteTarget.value;
+
+    if (transaction === null) {
+        return;
+    }
+
+    deleteForm.delete(destroy.url(transaction.id), { preserveScroll: true });
+}
+
 const selectClass =
     'border-input bg-card focus-visible:ring-ring min-h-11 w-full rounded-lg border px-3 text-sm focus-visible:ring-2 focus-visible:outline-none';
 </script>
@@ -147,12 +142,12 @@ const selectClass =
     <Head title="Transaksi" />
 
     <div class="space-y-4 p-4">
-        <SampleNotice />
-
-        <TransactionFormDialog
-            v-model:open="creating"
-            :accounts="accounts"
-            :categories="categories"
+        <ConfirmDeleteDialog
+            v-model:open="deleteOpen"
+            title="Hapus transaksi"
+            :description="`Transaksi \u201C${deleteTarget?.description || deleteTarget?.account_name || ''}\u201D akan dihapus dan saldo kantong dikembalikan.`"
+            confirm-label="Hapus transaksi"
+            @confirm="confirmDelete"
         />
 
         <header class="flex items-start justify-between gap-3">
@@ -163,27 +158,25 @@ const selectClass =
                     {{ transactions.length }} transaksi
                 </p>
             </div>
-            <Button class="min-h-11 shrink-0" @click="creating = true">
-                <Plus class="size-4" aria-hidden="true" />
-                Tambah
+            <Button v-if="can.create" as-child class="min-h-11 shrink-0">
+                <Link :href="createRoute.url()">
+                    <Plus class="size-4" aria-hidden="true" />
+                    Tambah
+                </Link>
             </Button>
         </header>
 
-        <ErrorState
-            v-if="state === 'failed'"
-            title="Daftar transaksi gagal dimuat"
-            description="Data tidak bisa diambil saat ini. Coba muat ulang halaman."
-        />
-
         <EmptyState
-            v-else-if="!transactions.length"
+            v-if="!transactions.length"
             :icon="ReceiptText"
             title="Belum ada transaksi"
             description="Catat pemasukan atau pengeluaran pertama untuk mulai melihat ringkasannya."
         >
-            <Button class="min-h-11" @click="creating = true">
-                <Plus class="size-4" aria-hidden="true" />
-                Catat transaksi
+            <Button v-if="can.create" as-child class="min-h-11">
+                <Link :href="createRoute.url()">
+                    <Plus class="size-4" aria-hidden="true" />
+                    Catat transaksi
+                </Link>
             </Button>
         </EmptyState>
 
@@ -258,19 +251,6 @@ const selectClass =
                             {{ name }}
                         </option>
                     </select>
-
-                    <Input
-                        v-model="from"
-                        type="date"
-                        class="min-h-11 rounded-lg"
-                        aria-label="Tanggal mulai"
-                    />
-                    <Input
-                        v-model="until"
-                        type="date"
-                        class="min-h-11 rounded-lg"
-                        aria-label="Tanggal akhir"
-                    />
                 </div>
 
                 <Button
@@ -302,7 +282,7 @@ const selectClass =
                 v-if="!filtered.length"
                 :icon="Search"
                 title="Tidak ada yang cocok"
-                description="Coba longgarkan saringan atau ubah rentang tanggalnya."
+                description="Coba longgarkan saringan yang dipakai."
             >
                 <Button
                     variant="outline"
@@ -323,7 +303,7 @@ const selectClass =
                     <h2
                         class="text-muted-foreground text-xs font-semibold tracking-wide uppercase"
                     >
-                        {{ dayLabel.format(new Date(group.date)) }}
+                        {{ dayLabel.format(asLocalDate(group.date)) }}
                     </h2>
                     <MoneyText
                         :value="Math.abs(group.net)"
@@ -334,14 +314,72 @@ const selectClass =
                 </div>
 
                 <ul class="bg-card divide-y rounded-2xl border px-3">
-                    <li v-for="item in group.items" :key="item.id">
-                        <TransactionRow
-                            :icon="categoryIcon(item.icon)"
-                            :title="item.description"
-                            :meta="`${item.category} · ${item.account} · ${rowDate.format(new Date(item.date))}`"
-                            :amount="item.amount"
-                            :direction="item.type === 'income' ? 'in' : 'out'"
-                        />
+                    <li
+                        v-for="item in group.items"
+                        :key="item.id"
+                        class="flex items-center gap-1"
+                    >
+                        <Link
+                            :href="showRoute.url(item.id)"
+                            class="min-w-0 flex-1 rounded-xl"
+                        >
+                            <TransactionRow
+                                :icon="categoryIcon(item.category_icon)"
+                                :title="
+                                    item.description ||
+                                    item.category_name ||
+                                    'Tanpa deskripsi'
+                                "
+                                :meta="`${item.category_name ?? 'Tanpa kategori'} · ${item.account_name}`"
+                                :amount="item.amount"
+                                :direction="
+                                    item.type === 'income' ? 'in' : 'out'
+                                "
+                            />
+                        </Link>
+                        <div class="flex shrink-0 items-center">
+                            <Button
+                                v-if="item.receipt_url"
+                                as-child
+                                variant="ghost"
+                                size="icon"
+                                class="size-11"
+                                :aria-label="`Lihat struk ${item.description || item.id}`"
+                            >
+                                <a
+                                    :href="item.receipt_url"
+                                    target="_blank"
+                                    rel="noopener"
+                                >
+                                    <ReceiptText
+                                        class="size-4"
+                                        aria-hidden="true"
+                                    />
+                                </a>
+                            </Button>
+                            <Button
+                                v-if="item.can_edit"
+                                as-child
+                                variant="ghost"
+                                size="icon"
+                                class="size-11"
+                                :aria-label="`Ubah transaksi ${item.description || item.id}`"
+                            >
+                                <Link :href="editRoute.url(item.id)">
+                                    <Pencil class="size-4" aria-hidden="true" />
+                                </Link>
+                            </Button>
+                            <Button
+                                v-if="item.can_delete"
+                                variant="ghost"
+                                size="icon"
+                                class="text-money-out hover:text-money-out size-11"
+                                :aria-label="`Hapus transaksi ${item.description || item.id}`"
+                                @click="deleteTarget = item"
+                            >
+                                <Trash2 class="size-4" aria-hidden="true" />
+                            </Button>
+                        </div>
                     </li>
                 </ul>
             </section>
