@@ -1,73 +1,68 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+import { Doughnut } from 'vue-chartjs';
+import type { ChartData, ChartOptions } from 'chart.js';
+import { useAppearance } from '@/composables/useAppearance';
 import MoneyText from '@/components/fluxa/MoneyText.vue';
+import { chartPalette, chartTextColor, rupiahTooltip } from '@/lib/chart';
 
 type Slice = { category: string; total: number | string };
 
 const props = defineProps<{ slices: Slice[] }>();
 
-// Slot warna tidak pernah diputar ulang: kategori ke-3 tetap memakai warna
-// ke-3 walau kategori lain hilang dari daftar.
-const PALETTE = [
-    'var(--cat-1)',
-    'var(--cat-2)',
-    'var(--cat-3)',
-    'var(--cat-4)',
-    'var(--cat-5)',
-];
+// Dibaca di sini supaya ganti tema me-render ulang chart dengan warna baru.
+const { resolvedAppearance } = useAppearance();
 
-const RADIUS = 52;
-const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
-const GAP = 3;
-
-const rows = computed(() => {
-    const parsed = props.slices.map((s, i) => ({
+const parsed = computed(() =>
+    props.slices.map((s) => ({
         category: s.category,
         total: Number.parseFloat(String(s.total)),
-        color: PALETTE[i % PALETTE.length],
-    }));
+    })),
+);
 
-    const sum = parsed.reduce((acc, r) => acc + r.total, 0) || 1;
-    let offset = 0;
+// Warna dibaca di dalam computed: kelas dark di <html> sudah diganti
+// sebelum render berikutnya berjalan.
+const theme = computed(() => {
+    const dark = resolvedAppearance.value === 'dark';
 
-    return parsed.map((r) => {
-        const fraction = r.total / sum;
-        const length = Math.max(fraction * CIRCUMFERENCE - GAP, 0);
-        const row = {
-            ...r,
-            percent: Math.round(fraction * 100),
-            dash: `${length} ${CIRCUMFERENCE - length}`,
-            offset: -offset,
-        };
-        offset += fraction * CIRCUMFERENCE;
-
-        return row;
-    });
+    return { dark, text: chartTextColor(), palette: chartPalette() };
 });
+
+const total = computed(() => parsed.value.reduce((acc, r) => acc + r.total, 0));
+
+const data = computed<ChartData<'doughnut'>>(() => ({
+    labels: parsed.value.map((r) => r.category),
+    datasets: [
+        {
+            data: parsed.value.map((r) => r.total),
+            backgroundColor: parsed.value.map(
+                (_, i) => theme.value.palette[i % theme.value.palette.length],
+            ),
+            borderWidth: 2,
+        },
+    ],
+}));
+
+const options = computed<ChartOptions<'doughnut'>>(() => ({
+    responsive: true,
+    maintainAspectRatio: false,
+    cutout: '68%',
+    plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: rupiahTooltip } },
+    },
+}));
 </script>
 
 <template>
     <div class="space-y-4">
-        <svg
-            viewBox="0 0 140 140"
-            class="mx-auto block size-36"
-            role="presentation"
+        <div
+            class="relative mx-auto h-36 w-full max-w-55"
+            role="img"
+            :aria-label="`Pengeluaran per kategori, total ${total}`"
         >
-            <g transform="rotate(-90 70 70)">
-                <circle
-                    v-for="row in rows"
-                    :key="row.category"
-                    cx="70"
-                    cy="70"
-                    :r="RADIUS"
-                    fill="none"
-                    :stroke="row.color"
-                    stroke-width="18"
-                    :stroke-dasharray="row.dash"
-                    :stroke-dashoffset="row.offset"
-                />
-            </g>
-        </svg>
+            <Doughnut :data="data" :options="options" />
+        </div>
 
         <!--
             Legenda membawa nama, persentase, dan nominal sekaligus, jadi isi
@@ -75,19 +70,24 @@ const rows = computed(() => {
         -->
         <ul class="space-y-2">
             <li
-                v-for="row in rows"
+                v-for="(row, i) in parsed"
                 :key="row.category"
                 class="flex items-center gap-2 text-sm"
             >
                 <span
                     class="size-2.5 shrink-0 rounded-full"
-                    :style="{ backgroundColor: row.color }"
+                    :style="{
+                        backgroundColor:
+                            theme.palette[i % theme.palette.length],
+                    }"
                     aria-hidden="true"
                 />
                 <span class="min-w-0 flex-1 truncate">{{ row.category }}</span>
                 <span
                     class="text-muted-foreground font-numeric shrink-0 tabular-nums"
-                    >{{ row.percent }}%</span
+                    >{{
+                        total ? Math.round((row.total / total) * 100) : 0
+                    }}%</span
                 >
                 <MoneyText
                     :value="row.total"
