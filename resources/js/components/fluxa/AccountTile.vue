@@ -1,5 +1,11 @@
 <script setup lang="ts">
-import { Landmark, Smartphone, Wallet } from '@lucide/vue';
+import {
+    CreditCard,
+    HandCoins,
+    Landmark,
+    Smartphone,
+    Wallet,
+} from '@lucide/vue';
 import { computed } from 'vue';
 import IconBadge from '@/components/fluxa/IconBadge.vue';
 import MoneyText from '@/components/fluxa/MoneyText.vue';
@@ -10,7 +16,13 @@ const props = defineProps<{
     balance: number | string;
 }>();
 
-const icons = { cash: Wallet, bank: Landmark, ewallet: Smartphone } as const;
+const icons = {
+    cash: Wallet,
+    bank: Landmark,
+    ewallet: Smartphone,
+    credit_card: CreditCard,
+    paylater: HandCoins,
+} as const;
 
 const icon = computed(() => icons[props.type as keyof typeof icons] ?? Wallet);
 
