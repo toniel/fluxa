@@ -2,6 +2,9 @@
 
 namespace App\Providers;
 
+use App\Billing\LogGateway;
+use App\Billing\PaymentGateway;
+use App\Billing\XenditGateway;
 use App\Support\TenantContext;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
@@ -20,6 +23,16 @@ class AppServiceProvider extends ServiceProvider
         // Scoped (bukan singleton) supaya aman di Octane: setiap request
         // mendapat instance TenantContext yang bersih.
         $this->app->scoped(TenantContext::class);
+
+        // Provider billing dipilih dari config; nama tak dikenal gagal keras
+        // supaya salah ketik ketahuan saat deploy, bukan saat webhook masuk.
+        $this->app->bind(PaymentGateway::class, function (): PaymentGateway {
+            return match ((string) config('billing.gateway')) {
+                'xendit' => app(XenditGateway::class),
+                'log' => app(LogGateway::class),
+                default => throw new \InvalidArgumentException('BILLING_GATEWAY tidak dikenal.'),
+            };
+        });
     }
 
     /**

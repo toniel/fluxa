@@ -70,6 +70,14 @@ class Tenant extends BaseTenant
     }
 
     /**
+     * @return HasMany<Account, $this>
+     */
+    public function accounts(): HasMany
+    {
+        return $this->hasMany(Account::class, 'tenant_id');
+    }
+
+    /**
      * @return HasMany<Domain, $this>
      */
     public function domains(): HasMany

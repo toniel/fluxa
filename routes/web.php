@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\BillingWebhookController;
 use App\Http\Controllers\InvitationAcceptanceController;
 use App\Http\Controllers\TenantPickerController;
 use Illuminate\Support\Facades\Route;
@@ -25,5 +26,8 @@ Route::middleware(['auth'])->group(function (): void {
 Route::get('invitations/{token}', [InvitationAcceptanceController::class, 'show'])->name('invitations.show');
 Route::post('invitations/{token}/accept', [InvitationAcceptanceController::class, 'store'])
     ->middleware('auth')->name('invitations.accept');
+
+// Webhook billing dari provider (tanpa auth/CSRF; verifikasi di controller).
+Route::post('billing/webhook', BillingWebhookController::class)->name('billing.webhook');
 
 require __DIR__.'/settings.php';

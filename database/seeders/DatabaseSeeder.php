@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
         // definisinya dibuat di sana.
         $this->call([
             PermissionSeeder::class,
+            PlanSeeder::class,
             UserSeeder::class,
         ]);
     }
