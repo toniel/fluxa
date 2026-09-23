@@ -21,6 +21,18 @@ payment_due_offset_days: number | null,
 default_interest_rate_monthly: string | null,
 default_admin_fee_percentage: string | null,
 };
+export type AccountHistoryData = {
+key: string,
+kind: string,
+ref_id: number,
+date: string,
+title: string,
+subtitle: string,
+amount: string,
+direction: string,
+creator_name: string,
+can_edit: boolean,
+};
 export type CategoryData = {
 id: number,
 name: string,

@@ -7,11 +7,15 @@ namespace App\Http\Controllers\Tenant;
 use App\Actions\UpsertAccountAction;
 use App\Data\AccountData;
 use App\Data\AccountFormData;
+use App\Data\AccountHistoryData;
 use App\Data\CreditCardDetailData;
 use App\Enums\AccountType;
 use App\Enums\PermissionEnum;
+use App\Enums\TransactionType;
 use App\Http\Controllers\Controller;
 use App\Models\Account;
+use App\Models\Transaction;
+use App\Models\Transfer;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -41,6 +45,21 @@ class AccountController extends Controller
 
         return Inertia::render('accounts/Create', [
             'types' => AccountType::values(),
+        ]);
+    }
+
+    public function show(Account $account, Request $request): Response
+    {
+        Gate::authorize('view', $account);
+
+        $account->load(['media', 'creditCardDetail']);
+
+        return Inertia::render('accounts/Show', [
+            'account' => $this->toData($account),
+            'history' => $this->history($request, $account),
+            'can' => [
+                'manage' => $request->user()->can('update', $account),
+            ],
         ]);
     }
 
@@ -112,6 +131,90 @@ class AccountController extends Controller
     private function canManage(Request $request): bool
     {
         return $request->user()->can(PermissionEnum::AccountsManage->value);
+    }
+
+    /**
+     * Garis waktu mutasi kantong: transaksi (termasuk kaki pelunasan) dan
+     * transfer masuk/keluar, terbaru dulu.
+     *
+     * @return list<AccountHistoryData>
+     */
+    private function history(Request $request, Account $account): array
+    {
+        $id = $account->getKey();
+
+        $transactions = Transaction::query()
+            ->with(['category', 'creator', 'linkedAccount'])
+            ->involvingAccount($id)
+            ->latestFirst()
+            ->get()
+            ->map(fn (Transaction $transaction) => $this->transactionEntry($request, $account, $transaction));
+
+        $transfers = Transfer::query()
+            ->with(['fromAccount', 'toAccount', 'creator'])
+            ->involvingAccount($id)
+            ->latestFirst()
+            ->get()
+            ->map(fn (Transfer $transfer) => $this->transferEntry($request, $account, $transfer));
+
+        return array_values($transactions->concat($transfers)
+            ->sortByDesc(fn (AccountHistoryData $entry) => [$entry->date, $entry->ref_id])
+            ->values()
+            ->all());
+    }
+
+    private function transactionEntry(Request $request, Account $account, Transaction $transaction): AccountHistoryData
+    {
+        // Arah dari aritmetika int, bukan dari string nominal: kaki
+        // pelunasan dari kantong sumber selalu keluar.
+        if ($transaction->account_id === $account->getKey()) {
+            $factor = $transaction->type === TransactionType::BillPayment
+                ? -1
+                : $transaction->type->signum() * $account->type->balanceDirection();
+            $direction = $factor >= 0 ? 'in' : 'out';
+        } else {
+            $direction = 'out';
+        }
+
+        $categoryName = $transaction->category_id === null ? null : $transaction->category->name;
+
+        $subtitle = $transaction->type === TransactionType::BillPayment
+            ? 'Bayar tagihan · dari '.($transaction->linked_account_id === null ? '-' : $transaction->linkedAccount->name)
+            : ($categoryName ?? 'Tanpa kategori');
+
+        return new AccountHistoryData(
+            key: "transaction-{$transaction->getKey()}",
+            kind: 'transaction',
+            ref_id: $transaction->getKey(),
+            date: $transaction->transaction_date->toDateString(),
+            title: $transaction->description
+                ?? $categoryName
+                ?? 'Bayar tagihan',
+            subtitle: $subtitle,
+            amount: $transaction->amount,
+            direction: $direction,
+            creator_name: $transaction->creator->name,
+            can_edit: $request->user()->can('update', $transaction),
+        );
+    }
+
+    private function transferEntry(Request $request, Account $account, Transfer $transfer): AccountHistoryData
+    {
+        $outgoing = $transfer->from_account_id === $account->getKey();
+        $other = $outgoing ? $transfer->toAccount->name : $transfer->fromAccount->name;
+
+        return new AccountHistoryData(
+            key: "transfer-{$transfer->getKey()}",
+            kind: 'transfer',
+            ref_id: $transfer->getKey(),
+            date: $transfer->transfer_date->toDateString(),
+            title: $transfer->description ?? 'Transfer',
+            subtitle: ($outgoing ? 'Ke ' : 'Dari ').$other,
+            amount: $transfer->amount,
+            direction: $outgoing ? 'out' : 'in',
+            creator_name: $transfer->creator->name,
+            can_edit: $request->user()->can('update', $transfer),
+        );
     }
 
     private function toData(Account $account): AccountData
