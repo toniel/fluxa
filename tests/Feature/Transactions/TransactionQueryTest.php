@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\AccountType;
 use App\Enums\CategoryType;
 use App\Enums\TenantRole;
 use App\Enums\TransactionType;
@@ -17,16 +18,18 @@ beforeEach(function () {
 test('tipe transaksi tahu arah uang dan labelnya', function () {
     expect(TransactionType::Income->signum())->toBe(1)
         ->and(TransactionType::Expense->signum())->toBe(-1)
+        ->and(TransactionType::BillPayment->signum())->toBe(-1)
         ->and(TransactionType::Income->label())->toBe('Pemasukan')
         ->and(TransactionType::Expense->label())->toBe('Pengeluaran')
-        ->and(TransactionType::values())->toBe(['income', 'expense']);
+        ->and(TransactionType::BillPayment->label())->toBe('Bayar tagihan')
+        ->and(TransactionType::values())->toBe(['income', 'expense', 'bill_payment']);
 });
 
 test('builder menyaring jenis, kantong, dan rentang tanggal', function () {
     ['user' => $owner, 'tenant' => $tenant] = categoryTenant('keluarga-uji');
 
-    $account = Account::factory()->for($tenant)->create(['created_by' => $owner->getKey()]);
-    $other = Account::factory()->for($tenant)->create(['created_by' => $owner->getKey()]);
+    $account = Account::factory()->for($tenant)->ofType(AccountType::Cash)->create(['created_by' => $owner->getKey()]);
+    $other = Account::factory()->for($tenant)->ofType(AccountType::Cash)->create(['created_by' => $owner->getKey()]);
     $category = Category::factory()->for($tenant)->ofType(CategoryType::Expense)->create();
 
     Transaction::factory()->for($tenant)->ofType(TransactionType::Expense)->create([
@@ -56,7 +59,7 @@ test('builder menyaring jenis, kantong, dan rentang tanggal', function () {
 test('jumlah per kategori dan nominal bertanda benar', function () {
     ['user' => $owner, 'tenant' => $tenant] = categoryTenant('keluarga-uji');
 
-    $account = Account::factory()->for($tenant)->create(['created_by' => $owner->getKey()]);
+    $account = Account::factory()->for($tenant)->ofType(AccountType::Cash)->create(['created_by' => $owner->getKey()]);
     $category = Category::factory()->for($tenant)->ofType(CategoryType::Expense)->create();
 
     $expense = Transaction::factory()->for($tenant)->ofType(TransactionType::Expense)->create([
@@ -66,7 +69,7 @@ test('jumlah per kategori dan nominal bertanda benar', function () {
         'created_by' => $owner->getKey(),
     ]);
 
-    expect($expense->signedAmount())->toBe('-12000.00')
+    expect($expense->signedAmount($account))->toBe('-12000.00')
         ->and((float) Transaction::query()->sumPerCategory()->firstOrFail()->total)->toBe(12000.0)
         ->and($expense->account->is($account))->toBeTrue()
         ->and($expense->category->is($category))->toBeTrue()
@@ -77,7 +80,7 @@ test('policy transaksi mengikuti matriks role', function (TenantRole $role, bool
     ['tenant' => $tenant, 'user' => $owner] = categoryTenant('keluarga-uji');
     $user = $role === TenantRole::Owner ? $owner : categoryUser($tenant, $role);
 
-    $account = Account::factory()->for($tenant)->create(['created_by' => $owner->getKey()]);
+    $account = Account::factory()->for($tenant)->ofType(AccountType::Cash)->create(['created_by' => $owner->getKey()]);
     $own = Transaction::factory()->for($tenant)->create([
         'account_id' => $account->getKey(),
         'created_by' => $user->getKey(),

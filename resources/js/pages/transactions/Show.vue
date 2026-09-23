@@ -43,16 +43,33 @@ const formattedDate = dayLabel.format(
     new Date(`${props.transaction.transaction_date}T00:00:00`),
 );
 
+const typeText = computed(() =>
+    props.transaction.type === 'income'
+        ? 'Pemasukan'
+        : props.transaction.type === 'bill_payment'
+          ? 'Bayar tagihan'
+          : 'Pengeluaran',
+);
+
+const shortDate = (ymd: string): string =>
+    dayLabel.format(new Date(`${ymd}T00:00:00`));
+
 const rows = computed(() => [
-    {
-        label: 'Jenis',
-        value: direction.value === 'in' ? 'Pemasukan' : 'Pengeluaran',
-    },
+    { label: 'Jenis', value: typeText.value },
     { label: 'Kantong', value: props.transaction.account_name },
-    {
-        label: 'Kategori',
-        value: props.transaction.category_name ?? 'Tanpa kategori',
-    },
+    ...(props.transaction.type === 'bill_payment'
+        ? [
+              {
+                  label: 'Bayar dari',
+                  value: props.transaction.linked_account_name ?? '-',
+              },
+          ]
+        : [
+              {
+                  label: 'Kategori',
+                  value: props.transaction.category_name ?? 'Tanpa kategori',
+              },
+          ]),
     { label: 'Tanggal', value: formattedDate },
     { label: 'Dicatat oleh', value: props.transaction.creator_name },
 ]);
@@ -126,6 +143,18 @@ function confirmDelete(): void {
                     </dd>
                 </div>
             </dl>
+        </section>
+
+        <section
+            v-if="transaction.statement_period_end && transaction.due_date"
+            class="bg-card rounded-2xl border p-4"
+        >
+            <h2 class="text-sm font-semibold">Tagihan periode ini</h2>
+            <p class="text-muted-foreground mt-1 text-sm">
+                Masuk statement sampai
+                {{ shortDate(transaction.statement_period_end) }}, jatuh tempo
+                {{ shortDate(transaction.due_date) }}.
+            </p>
         </section>
 
         <section v-if="transaction.receipt_url" class="space-y-2">

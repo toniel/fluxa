@@ -43,16 +43,24 @@ const filtered = computed(() =>
 
         return (
             (!q || hay.includes(q)) &&
-            (type.value === 'all' || t.type === type.value) &&
+            (type.value === 'all' ||
+                t.type === type.value ||
+                (type.value === 'expense' && t.type === 'bill_payment')) &&
             (!account.value || t.account_name === account.value) &&
             (!category.value || (t.category_name ?? '') === category.value)
         );
     }),
 );
 
+// Pelunasan dihitung sebagai pengeluaran: uang sungguhan keluar dari bank,
+// walau utang keseluruhan tidak berubah.
 const sum = (rows: App.Data.TransactionData[], kind: 'income' | 'expense') =>
     rows
-        .filter((t) => t.type === kind)
+        .filter(
+            (t) =>
+                t.type === kind ||
+                (kind === 'expense' && t.type === 'bill_payment'),
+        )
         .reduce((acc, t) => acc + Number.parseFloat(t.amount), 0);
 
 const income = computed(() => sum(filtered.value, 'income'));
@@ -328,9 +336,15 @@ const selectClass =
                                 :title="
                                     item.description ||
                                     item.category_name ||
-                                    'Tanpa deskripsi'
+                                    (item.type === 'bill_payment'
+                                        ? 'Bayar tagihan'
+                                        : 'Tanpa deskripsi')
                                 "
-                                :meta="`${item.category_name ?? 'Tanpa kategori'} · ${item.account_name}`"
+                                :meta="
+                                    item.type === 'bill_payment'
+                                        ? `Bayar tagihan · dari ${item.linked_account_name ?? '-'}`
+                                        : `${item.category_name ?? 'Tanpa kategori'} · ${item.account_name}`
+                                "
                                 :amount="item.amount"
                                 :direction="
                                     item.type === 'income' ? 'in' : 'out'

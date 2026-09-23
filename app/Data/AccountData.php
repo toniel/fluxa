@@ -24,5 +24,6 @@ class AccountData extends Data
         public string $initial_balance,
         public bool $is_archived,
         public string $logo_url,
+        public ?CreditCardDetailData $credit_detail = null,
     ) {}
 }

@@ -1,9 +1,18 @@
 <script setup lang="ts">
 import { Head, useForm } from '@inertiajs/vue3';
-import { Camera, Landmark, PiggyBank, Smartphone, Wallet } from '@lucide/vue';
-import { computed, ref } from 'vue';
+import {
+    CreditCard,
+    HandCoins,
+    Landmark,
+    PiggyBank,
+    Smartphone,
+    Wallet,
+} from '@lucide/vue';
+import { computed } from 'vue';
 import InputError from '@/components/InputError.vue';
+import CreditDetailFields from '@/components/fluxa/CreditDetailFields.vue';
 import CurrencyInput from '@/components/fluxa/CurrencyInput.vue';
+import ImageUpload from '@/components/fluxa/ImageUpload.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -23,8 +32,14 @@ const typeOptions: Record<string, { label: string; icon: typeof Wallet }> = {
     cash: { label: 'Tunai', icon: Wallet },
     bank: { label: 'Rekening bank', icon: Landmark },
     ewallet: { label: 'E-wallet', icon: Smartphone },
+    credit_card: { label: 'Kartu kredit', icon: CreditCard },
+    paylater: { label: 'Paylater', icon: HandCoins },
     other: { label: 'Lainnya', icon: PiggyBank },
 };
+
+const isLiabilityType = computed(
+    () => form.type === 'credit_card' || form.type === 'paylater',
+);
 
 const form = useForm({
     name: props.account?.name ?? '',
@@ -32,6 +47,19 @@ const form = useForm({
     initial_balance: (props.account?.initial_balance
         ? Number(props.account.initial_balance)
         : null) as number | null,
+    credit_limit: (props.account?.credit_detail?.credit_limit
+        ? Number(props.account.credit_detail.credit_limit)
+        : null) as number | null,
+    billing_cycle_start_day:
+        props.account?.credit_detail?.billing_cycle_start_day ?? undefined,
+    billing_cycle_end_day:
+        props.account?.credit_detail?.billing_cycle_end_day ?? undefined,
+    payment_due_offset_days:
+        props.account?.credit_detail?.payment_due_offset_days ?? undefined,
+    default_interest_rate_monthly:
+        props.account?.credit_detail?.default_interest_rate_monthly ?? '',
+    default_admin_fee_percentage:
+        props.account?.credit_detail?.default_admin_fee_percentage ?? '',
     logo: null as File | null,
     remove_logo: false,
 });
@@ -42,44 +70,17 @@ const errorFor = computed<Record<string, string | undefined>>(
 );
 
 const isEdit = props.method === 'put';
-const logoPreview = ref<string>(props.account?.logo_url ?? '');
-
-function onLogoChange(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    const file = input.files?.[0] ?? null;
-
-    if (file === null) {
-        return;
-    }
-
-    if (logoPreview.value.startsWith('blob:')) {
-        URL.revokeObjectURL(logoPreview.value);
-    }
-
-    form.logo = file;
-    form.remove_logo = false;
-    logoPreview.value = URL.createObjectURL(file);
-}
-
-function clearLogo(): void {
-    if (logoPreview.value.startsWith('blob:')) {
-        URL.revokeObjectURL(logoPreview.value);
-    }
-
-    form.logo = null;
-    form.remove_logo = true;
-    logoPreview.value = '';
-}
 
 function submit(): void {
     // Library mengirim angka, backend menerima string numerik. Ubah di
     // transform (tidak mengubah nilai lokal) supaya kontrak payload tetap.
+    const numeric = (value: number | null | undefined): string =>
+        value === null || value === undefined ? '' : String(value);
+
     form.transform((data) => ({
         ...data,
-        initial_balance:
-            data.initial_balance === null || data.initial_balance === undefined
-                ? ''
-                : String(data.initial_balance),
+        initial_balance: numeric(data.initial_balance),
+        credit_limit: numeric(data.credit_limit),
     }));
 
     if (isEdit) {
@@ -141,7 +142,9 @@ function submit(): void {
             </fieldset>
 
             <div class="grid gap-2">
-                <Label for="account-initial">Saldo awal</Label>
+                <Label for="account-initial">
+                    {{ isLiabilityType ? 'Utang awal' : 'Saldo awal' }}
+                </Label>
                 <div class="relative">
                     <span
                         class="pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 text-sm font-medium"
@@ -162,48 +165,45 @@ function submit(): void {
                     />
                 </div>
                 <p v-if="isEdit" class="text-muted-foreground text-sm">
-                    Saldo awal tidak bisa diubah setelah kantong dibuat.
+                    {{
+                        isLiabilityType
+                            ? 'Utang awal tidak bisa diubah setelah kantong dibuat.'
+                            : 'Saldo awal tidak bisa diubah setelah kantong dibuat.'
+                    }}
                 </p>
                 <p v-else class="text-muted-foreground text-sm">
-                    Diketik biasa, titik ribuan muncul otomatis.
+                    {{
+                        isLiabilityType
+                            ? 'Utang berjalan yang sudah ada saat kartu dicatat.'
+                            : 'Diketik biasa, titik ribuan muncul otomatis.'
+                    }}
                 </p>
                 <InputError :message="errorFor.initial_balance" />
             </div>
 
-            <div class="grid gap-2">
-                <Label for="account-logo">Logo kantong</Label>
-                <div class="flex items-center gap-3">
-                    <span
-                        class="bg-muted text-muted-foreground flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-xl border"
-                    >
-                        <img
-                            v-if="logoPreview"
-                            :src="logoPreview"
-                            :alt="`Logo ${form.name || 'kantong'}`"
-                            class="size-full bg-white object-contain"
-                        />
-                        <Camera v-else class="size-6" aria-hidden="true" />
-                    </span>
-                    <Input
-                        id="account-logo"
-                        name="logo"
-                        type="file"
-                        accept="image/*"
-                        class="file:text-foreground min-h-11 file:border-0 file:bg-transparent file:text-sm file:font-medium"
-                        @change="onLogoChange"
-                    />
-                    <Button
-                        v-if="logoPreview"
-                        type="button"
-                        variant="ghost"
-                        class="min-h-11 shrink-0"
-                        @click="clearLogo"
-                    >
-                        Hapus
-                    </Button>
-                </div>
-                <InputError :message="errorFor.logo" />
-            </div>
+            <CreditDetailFields
+                v-if="isLiabilityType"
+                v-model="form"
+                :errors="errorFor"
+            />
+
+            <ImageUpload
+                input-id="account-logo"
+                input-name="logo"
+                label="Logo kantong"
+                :preview-alt="`Logo ${form.name || 'kantong'}`"
+                :initial-preview="account?.logo_url ?? ''"
+                :cover="false"
+                :error="errorFor.logo"
+                @select="
+                    form.logo = $event;
+                    form.remove_logo = false;
+                "
+                @clear="
+                    form.logo = null;
+                    form.remove_logo = true;
+                "
+            />
 
             <Button
                 type="submit"

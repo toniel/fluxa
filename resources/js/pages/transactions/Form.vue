@@ -1,14 +1,21 @@
 <script setup lang="ts">
 import { Head, useForm } from '@inertiajs/vue3';
-import { ReceiptText } from '@lucide/vue';
 import { computed, ref, watch } from 'vue';
 import InputError from '@/components/InputError.vue';
+import BillPaymentFields from '@/components/fluxa/BillPaymentFields.vue';
+import CategoryPicker from '@/components/fluxa/CategoryPicker.vue';
 import CurrencyInput from '@/components/fluxa/CurrencyInput.vue';
+import ImageUpload from '@/components/fluxa/ImageUpload.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
-type OptionAccount = { id: number; name: string; balance: string };
+type OptionAccount = {
+    id: number;
+    name: string;
+    type: string;
+    balance: string;
+};
 type OptionCategory = { id: number; name: string; type: string };
 
 const props = withDefaults(
@@ -33,6 +40,8 @@ const form = useForm({
     type: props.transaction?.type ?? 'expense',
     account_id: props.transaction?.account_id ?? (null as number | null),
     category_id: props.transaction?.category_id ?? (null as number | null),
+    linked_account_id:
+        props.transaction?.linked_account_id ?? (null as number | null),
     amount: (props.transaction ? Number(props.transaction.amount) : null) as
         | number
         | null,
@@ -46,6 +55,33 @@ const form = useForm({
 
 const touchedCategory = ref(false);
 
+const selectedAccount = computed(() =>
+    props.accounts.find((a) => a.id === form.account_id),
+);
+
+const isLiabilityAccount = computed(
+    () =>
+        selectedAccount.value?.type === 'credit_card' ||
+        selectedAccount.value?.type === 'paylater',
+);
+
+const isBillPayment = computed(() => form.type === 'bill_payment');
+
+const visibleTypes = computed(() =>
+    props.types.filter(
+        (type) => type !== 'bill_payment' || isLiabilityAccount.value,
+    ),
+);
+
+const sourceAccounts = computed(() =>
+    props.accounts.filter(
+        (a) =>
+            a.id !== form.account_id &&
+            a.type !== 'credit_card' &&
+            a.type !== 'paylater',
+    ),
+);
+
 const visibleCategories = computed(() =>
     props.categories.filter((c) => c.type === form.type),
 );
@@ -53,44 +89,23 @@ const visibleCategories = computed(() =>
 watch(
     () => form.type,
     () => {
-        if (!touchedCategory) {
+        if (isBillPayment.value || !touchedCategory.value) {
             form.category_id = null;
         }
     },
 );
 
+// Kantong aset tidak bisa melunasi: ganti jenis kembali saat kantong yang
+// dipilih bukan kartu kredit atau paylater.
+watch(isLiabilityAccount, (liability) => {
+    if (!liability && isBillPayment.value) {
+        form.type = 'expense';
+    }
+});
+
 function pickCategory(id: number): void {
     touchedCategory.value = true;
     form.category_id = id;
-}
-
-const receiptPreview = ref<string>(props.transaction?.receipt_url ?? '');
-
-function onReceiptChange(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    const file = input.files?.[0] ?? null;
-
-    if (file === null) {
-        return;
-    }
-
-    if (receiptPreview.value.startsWith('blob:')) {
-        URL.revokeObjectURL(receiptPreview.value);
-    }
-
-    form.receipt = file;
-    form.remove_receipt = false;
-    receiptPreview.value = URL.createObjectURL(file);
-}
-
-function clearReceipt(): void {
-    if (receiptPreview.value.startsWith('blob:')) {
-        URL.revokeObjectURL(receiptPreview.value);
-    }
-
-    form.receipt = null;
-    form.remove_receipt = true;
-    receiptPreview.value = '';
 }
 
 // transform() merusak tipe form.errors, baca lewat cast (lihat CRUD_FLOW §6).
@@ -117,7 +132,11 @@ function submit(): void {
 }
 
 const typeLabel = (type: string): string =>
-    type === 'income' ? 'Pemasukan' : 'Pengeluaran';
+    type === 'income'
+        ? 'Pemasukan'
+        : type === 'bill_payment'
+          ? 'Bayar tagihan'
+          : 'Pengeluaran';
 </script>
 
 <template>
@@ -127,12 +146,17 @@ const typeLabel = (type: string): string =>
         <form class="space-y-6" novalidate @submit.prevent="submit">
             <fieldset class="grid gap-2">
                 <legend class="text-sm leading-none font-medium">Jenis</legend>
-                <div class="bg-muted grid grid-cols-2 gap-1 rounded-xl p-1">
+                <div
+                    class="bg-muted grid gap-1 rounded-xl p-1"
+                    :class="
+                        visibleTypes.length > 2 ? 'grid-cols-3' : 'grid-cols-2'
+                    "
+                >
                     <button
-                        v-for="type in types"
+                        v-for="type in visibleTypes"
                         :key="type"
                         type="button"
-                        class="focus-visible:ring-ring min-h-11 rounded-lg text-sm font-semibold focus-visible:ring-2 focus-visible:outline-none"
+                        class="focus-visible:ring-ring min-h-11 rounded-lg px-1 text-sm font-semibold focus-visible:ring-2 focus-visible:outline-none"
                         :class="
                             form.type === type
                                 ? 'bg-primary text-primary-foreground shadow-sm'
@@ -188,35 +212,21 @@ const typeLabel = (type: string): string =>
                 <InputError :message="errorFor.account_id" />
             </div>
 
-            <fieldset class="grid gap-2">
-                <legend class="text-sm leading-none font-medium">
-                    Kategori
-                </legend>
-                <p
-                    v-if="!visibleCategories.length"
-                    class="text-muted-foreground text-sm"
-                >
-                    Belum ada kategori {{ typeLabel(form.type).toLowerCase() }}.
-                </p>
-                <div v-else class="flex flex-wrap gap-1.5">
-                    <button
-                        v-for="category in visibleCategories"
-                        :key="category.id"
-                        type="button"
-                        class="focus-visible:ring-ring min-h-11 rounded-full border px-4 text-sm font-medium focus-visible:ring-2 focus-visible:outline-none"
-                        :class="
-                            form.category_id === category.id
-                                ? 'border-primary bg-primary/10 text-primary'
-                                : 'border-input text-muted-foreground hover:bg-accent'
-                        "
-                        :aria-pressed="form.category_id === category.id"
-                        @click="pickCategory(category.id)"
-                    >
-                        {{ category.name }}
-                    </button>
-                </div>
-                <InputError :message="errorFor.category_id" />
-            </fieldset>
+            <BillPaymentFields
+                v-if="isBillPayment"
+                v-model="form.linked_account_id"
+                :accounts="sourceAccounts"
+                :error="errorFor.linked_account_id"
+            />
+
+            <CategoryPicker
+                v-else
+                :categories="visibleCategories"
+                :selected-id="form.category_id"
+                :empty-hint="`Belum ada kategori ${typeLabel(form.type).toLowerCase()}.`"
+                :error="errorFor.category_id"
+                @select="pickCategory"
+            />
 
             <div class="grid gap-2">
                 <Label for="transaction-date">Tanggal</Label>
@@ -244,40 +254,22 @@ const typeLabel = (type: string): string =>
                 <InputError :message="errorFor.description" />
             </div>
 
-            <div class="grid gap-2">
-                <Label for="transaction-receipt">Foto struk (opsional)</Label>
-                <div class="flex items-center gap-3">
-                    <span
-                        class="bg-muted text-muted-foreground flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-xl border"
-                    >
-                        <img
-                            v-if="receiptPreview"
-                            :src="receiptPreview"
-                            alt="Foto struk transaksi"
-                            class="size-full object-cover"
-                        />
-                        <ReceiptText v-else class="size-6" aria-hidden="true" />
-                    </span>
-                    <Input
-                        id="transaction-receipt"
-                        name="receipt"
-                        type="file"
-                        accept="image/*"
-                        class="file:text-foreground min-h-11 file:border-0 file:bg-transparent file:text-sm file:font-medium"
-                        @change="onReceiptChange"
-                    />
-                    <Button
-                        v-if="receiptPreview"
-                        type="button"
-                        variant="ghost"
-                        class="min-h-11 shrink-0"
-                        @click="clearReceipt"
-                    >
-                        Hapus
-                    </Button>
-                </div>
-                <InputError :message="errorFor.receipt" />
-            </div>
+            <ImageUpload
+                input-id="transaction-receipt"
+                input-name="receipt"
+                label="Foto struk (opsional)"
+                preview-alt="Foto struk transaksi"
+                :initial-preview="transaction?.receipt_url ?? ''"
+                :error="errorFor.receipt"
+                @select="
+                    form.receipt = $event;
+                    form.remove_receipt = false;
+                "
+                @clear="
+                    form.receipt = null;
+                    form.remove_receipt = true;
+                "
+            />
 
             <Button
                 type="submit"

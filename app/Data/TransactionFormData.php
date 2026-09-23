@@ -26,6 +26,8 @@ class TransactionFormData extends Data
         public int $account_id,
         #[Nullable, IntegerType, Min(1), Exists('categories', 'id')]
         public ?int $category_id,
+        #[Nullable, IntegerType, Min(1), Exists('accounts', 'id')]
+        public ?int $linked_account_id,
         #[Enum(TransactionType::class)]
         public TransactionType $type,
         #[Required, Numeric, Min(0.01), Max(999999999999.99)]

@@ -264,7 +264,7 @@ test('halaman buat dan ubah memuat daftar jenis', function () {
         ->assertOk()
         ->assertInertia(
             fn (Assert $page) => $page->component('accounts/Create')
-                ->has('types', 4),
+                ->has('types', 6),
         );
 
     $this->actingAs($owner)
@@ -280,7 +280,7 @@ test('halaman buat dan ubah memuat daftar jenis', function () {
             fn (Assert $page) => $page->component('accounts/Edit')
                 ->where('account.id', $account->getKey())
                 ->where('account.initial_balance', '50000.00')
-                ->has('types', 4),
+                ->has('types', 6),
         );
 });
 

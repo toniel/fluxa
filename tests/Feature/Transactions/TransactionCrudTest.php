@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\AccountType;
 use App\Enums\CategoryType;
 use App\Enums\TenantRole;
 use App\Models\Account;
@@ -21,7 +22,7 @@ beforeEach(function () {
  */
 function transactionFixtures(Tenant $tenant, User $owner): array
 {
-    $account = Account::factory()->for($tenant)->create([
+    $account = Account::factory()->for($tenant)->ofType(AccountType::Cash)->create([
         'name' => 'Kas Harian',
         'initial_balance' => '50000',
         'balance' => '50000.00',
@@ -129,7 +130,7 @@ test('pindah kantong mengoreksi kedua saldo', function () {
     ['user' => $owner, 'tenant' => $tenant] = categoryTenant('keluarga-uji');
     ['account' => $first, 'expense' => $expense] = transactionFixtures($tenant, $owner);
 
-    $second = Account::factory()->for($tenant)->create([
+    $second = Account::factory()->for($tenant)->ofType(AccountType::Cash)->create([
         'name' => 'Bank',
         'initial_balance' => '100000',
         'balance' => '100000.00',
@@ -244,7 +245,7 @@ test('kantong arsip atau milik tenant lain ditolak', function () {
         ->assertSessionHasErrors(['account_id']);
 
     ['user' => $otherOwner, 'tenant' => $otherTenant] = categoryTenant('komunitas-uji');
-    $foreign = Account::factory()->for($otherTenant)->create(['created_by' => $otherOwner->getKey()]);
+    $foreign = Account::factory()->for($otherTenant)->ofType(AccountType::Cash)->create(['created_by' => $otherOwner->getKey()]);
 
     $this->actingAs($owner)
         ->post($url.'/transactions', transactionPayload($foreign, $expense))
@@ -311,7 +312,7 @@ test('halaman buat dan ubah memuat pilihan kantong serta kategori', function () 
             fn (Assert $page) => $page->component('transactions/Create')
                 ->has('accounts', 1)
                 ->has('categories', 2)
-                ->has('types', 2),
+                ->has('types', 3),
         );
 
     $this->actingAs($owner)
