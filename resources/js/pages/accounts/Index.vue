@@ -4,6 +4,7 @@ import {
     Archive,
     ArchiveRestore,
     ChevronRight,
+    History,
     Pencil,
     Plus,
     Trash2,
@@ -21,6 +22,7 @@ import {
     destroy,
     edit as editRoute,
     index as indexRoute,
+    show as showRoute,
 } from '@/routes/accounts';
 
 const props = defineProps<{
@@ -129,36 +131,49 @@ function confirmDelete(): void {
                     :logo-url="account.logo_url"
                     :credit-limit="account.credit_detail?.credit_limit ?? null"
                 >
-                    <template v-if="can.manage" #actions>
+                    <template #actions>
                         <Button
                             as-child
                             variant="ghost"
                             size="icon"
                             class="size-11"
-                            :aria-label="`Ubah kantong ${account.name}`"
+                            :aria-label="`Riwayat kantong ${account.name}`"
                         >
-                            <Link :href="editRoute.url(account.id)">
-                                <Pencil class="size-4" aria-hidden="true" />
+                            <Link :href="showRoute.url(account.id)">
+                                <History class="size-4" aria-hidden="true" />
                             </Link>
                         </Button>
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            class="size-11"
-                            :aria-label="`Arsipkan kantong ${account.name}`"
-                            @click="toggleArchive(account)"
-                        >
-                            <Archive class="size-4" aria-hidden="true" />
-                        </Button>
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            class="text-money-out hover:text-money-out size-11"
-                            :aria-label="`Hapus kantong ${account.name}`"
-                            @click="deleteTarget = account"
-                        >
-                            <Trash2 class="size-4" aria-hidden="true" />
-                        </Button>
+                        <template v-if="can.manage">
+                            <Button
+                                as-child
+                                variant="ghost"
+                                size="icon"
+                                class="size-11"
+                                :aria-label="`Ubah kantong ${account.name}`"
+                            >
+                                <Link :href="editRoute.url(account.id)">
+                                    <Pencil class="size-4" aria-hidden="true" />
+                                </Link>
+                            </Button>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                class="size-11"
+                                :aria-label="`Arsipkan kantong ${account.name}`"
+                                @click="toggleArchive(account)"
+                            >
+                                <Archive class="size-4" aria-hidden="true" />
+                            </Button>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                class="text-money-out hover:text-money-out size-11"
+                                :aria-label="`Hapus kantong ${account.name}`"
+                                @click="deleteTarget = account"
+                            >
+                                <Trash2 class="size-4" aria-hidden="true" />
+                            </Button>
+                        </template>
                     </template>
                 </AccountCard>
             </div>
@@ -191,39 +206,58 @@ function confirmDelete(): void {
                         "
                         archived
                     >
-                        <template v-if="can.manage" #actions>
+                        <template #actions>
                             <Button
                                 as-child
                                 variant="ghost"
                                 size="icon"
                                 class="size-11"
-                                :aria-label="`Ubah kantong ${account.name}`"
+                                :aria-label="`Riwayat kantong ${account.name}`"
                             >
-                                <Link :href="editRoute.url(account.id)">
-                                    <Pencil class="size-4" aria-hidden="true" />
+                                <Link :href="showRoute.url(account.id)">
+                                    <History
+                                        class="size-4"
+                                        aria-hidden="true"
+                                    />
                                 </Link>
                             </Button>
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                class="size-11"
-                                :aria-label="`Kembalikan kantong ${account.name}`"
-                                @click="toggleArchive(account)"
-                            >
-                                <ArchiveRestore
-                                    class="size-4"
-                                    aria-hidden="true"
-                                />
-                            </Button>
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                class="text-money-out hover:text-money-out size-11"
-                                :aria-label="`Hapus kantong ${account.name}`"
-                                @click="deleteTarget = account"
-                            >
-                                <Trash2 class="size-4" aria-hidden="true" />
-                            </Button>
+                            <template v-if="can.manage">
+                                <Button
+                                    as-child
+                                    variant="ghost"
+                                    size="icon"
+                                    class="size-11"
+                                    :aria-label="`Ubah kantong ${account.name}`"
+                                >
+                                    <Link :href="editRoute.url(account.id)">
+                                        <Pencil
+                                            class="size-4"
+                                            aria-hidden="true"
+                                        />
+                                    </Link>
+                                </Button>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    class="size-11"
+                                    :aria-label="`Kembalikan kantong ${account.name}`"
+                                    @click="toggleArchive(account)"
+                                >
+                                    <ArchiveRestore
+                                        class="size-4"
+                                        aria-hidden="true"
+                                    />
+                                </Button>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    class="text-money-out hover:text-money-out size-11"
+                                    :aria-label="`Hapus kantong ${account.name}`"
+                                    @click="deleteTarget = account"
+                                >
+                                    <Trash2 class="size-4" aria-hidden="true" />
+                                </Button>
+                            </template>
                         </template>
                     </AccountCard>
                 </div>

@@ -39,7 +39,7 @@ Route::middleware([
 ])->group(function (): void {
     Route::get('dashboard', DashboardController::class)->name('dashboard');
 
-    Route::resource('accounts', AccountController::class)->except('show');
+    Route::resource('accounts', AccountController::class);
     Route::patch('accounts/{account}/archive', ArchiveAccountController::class)->name('accounts.archive');
     Route::resource('transactions', TransactionController::class);
     Route::resource('transfers', TransferController::class);

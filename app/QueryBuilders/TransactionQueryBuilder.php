@@ -25,6 +25,17 @@ class TransactionQueryBuilder extends Builder
         return $this->where('account_id', $accountId);
     }
 
+    /**
+     * Semua baris yang menyentuh kantong: milik langsung maupun kaki
+     * pelunasan dari kantong sumber.
+     */
+    public function involvingAccount(int $accountId): static
+    {
+        return $this->where(function (Builder $query) use ($accountId): void {
+            $query->where('account_id', $accountId)->orWhere('linked_account_id', $accountId);
+        });
+    }
+
     public function forCategory(?int $categoryId): static
     {
         return $categoryId === null
