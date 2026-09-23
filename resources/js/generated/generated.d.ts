@@ -71,6 +71,26 @@ amount: string,
 description: string | null,
 transaction_date: string,
 };
+export type TransferData = {
+id: number,
+from_account_id: number,
+from_account_name: string,
+to_account_id: number,
+to_account_name: string,
+amount: string,
+description: string | null,
+transfer_date: string,
+creator_name: string,
+can_edit: boolean,
+can_delete: boolean,
+};
+export type TransferFormData = {
+from_account_id: number,
+to_account_id: number,
+amount: string,
+description: string | null,
+transfer_date: string,
+};
 }
 namespace Enums {
 export type AccountType = 'cash' | 'bank' | 'ewallet' | 'credit_card' | 'paylater' | 'other';
