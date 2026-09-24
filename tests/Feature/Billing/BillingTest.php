@@ -117,3 +117,29 @@ test('helper fitur paket dan status aktif', function () {
         ->and($free->feature('tidak-ada', 'bawaan'))->toBe('bawaan')
         ->and($free->billing_period->label())->toBe('bulan');
 });
+
+test('turun ke free mengembalikan subdomain acak semula', function () {
+    ['user' => $owner, 'tenant' => $tenant] = memberTenant('keluarga-uji');
+    billingSubscription($tenant, 'pro-monthly');
+    $random = $tenant->subdomain();
+    $url = categoryBaseUrl($random);
+
+    $this->actingAs($owner)
+        ->patch($url.'/settings/tenant', ['name' => 'Tim Uji', 'subdomain' => 'keluarga-pro'])
+        ->assertRedirect()
+        ->assertSessionHasNoErrors();
+
+    expect($tenant->refresh()->subdomain())->toBe('keluarga-pro');
+
+    $this->actingAs($owner)
+        ->post($url.'/billing/toggle')
+        ->assertRedirect()
+        ->assertSessionHasNoErrors();
+
+    expect($tenant->refresh()->subdomain())->toBe($random);
+
+    $custom = $tenant->domains()->where('domain', 'keluarga-pro')->firstOrFail();
+
+    expect($custom->is_primary)->toBeFalse()
+        ->and($custom->redirects_to)->toBe($random);
+});
