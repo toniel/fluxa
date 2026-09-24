@@ -20,6 +20,7 @@ void createInertiaApp({
             // Halaman masuk membawa panel pengantarnya sendiri, jadi ia tidak
             // memakai kartu terpusat milik AuthLayout.
             case name === 'auth/Login':
+            case name === 'auth/Register':
                 return null;
             case name.startsWith('auth/'):
                 return AuthLayout;

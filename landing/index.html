@@ -68,7 +68,6 @@
                 --color-brand-deep: #0e3a26;
                 --color-cream: #f5f4f1;
                 --color-accent: #d98026;
-                --color-accent-ink: #92400e;
                 --font-sans:
                     'Instrument Sans', ui-sans-serif, system-ui, sans-serif;
                 --font-numeric: 'Archivo', ui-sans-serif, system-ui, sans-serif;
@@ -107,338 +106,706 @@
         class="bg-cream font-sans text-neutral-900 antialiased dark:bg-[#0F1512] dark:text-neutral-100"
     >
         <header
-            class="mx-auto flex w-full max-w-3xl items-center justify-between gap-3 p-4"
+            class="sticky top-0 z-40 border-b border-neutral-200 bg-[#F5F4F1]/90 backdrop-blur dark:border-neutral-800 dark:bg-[#0F1512]/90"
         >
-            <a
-                href="#atas"
-                class="flex items-center gap-2 text-lg font-bold"
-                aria-label="Fluxa, ke atas"
+            <div
+                class="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-4 md:px-8"
             >
-                <svg
-                    class="size-7"
-                    viewBox="0 0 32 32"
-                    fill="none"
-                    aria-hidden="true"
+                <a
+                    href="#atas"
+                    class="flex items-center gap-2 text-lg font-bold tracking-tight"
+                    aria-label="Fluxa, ke atas"
                 >
-                    <rect width="32" height="32" rx="9" fill="#15653F" />
-                    <path
-                        d="M10 22v-9.5A2.5 2.5 0 0 1 12.5 10H22M10 22h11a2.5 2.5 0 0 0 0-5H13a2.5 2.5 0 0 1 0-5h9"
-                        stroke="#fff"
-                        stroke-width="2.4"
-                        stroke-linecap="round"
-                    />
-                </svg>
-                Fluxa
-            </a>
-            <nav class="flex items-center gap-2" aria-label="Akun">
+                    <svg
+                        class="size-9"
+                        viewBox="0 0 32 32"
+                        fill="none"
+                        aria-hidden="true"
+                    >
+                        <rect width="32" height="32" rx="9" fill="#15653F" />
+                        <path
+                            d="M10 22v-9.5A2.5 2.5 0 0 1 12.5 10H22M10 22h11a2.5 2.5 0 0 0 0-5H13a2.5 2.5 0 0 1 0-5h9"
+                            stroke="#fff"
+                            stroke-width="2.4"
+                            stroke-linecap="round"
+                        />
+                    </svg>
+                    Fluxa
+                </a>
+                <nav
+                    class="hidden items-center gap-7 text-sm font-semibold text-neutral-500 md:flex dark:text-neutral-300"
+                    aria-label="Bagian halaman"
+                >
+                    <a
+                        href="#fitur"
+                        class="transition hover:text-neutral-900 focus-visible:ring-2 focus-visible:ring-[#15653F] focus-visible:outline-none dark:hover:text-white"
+                        >Fitur</a
+                    >
+                    <a
+                        href="#cara-kerja"
+                        class="transition hover:text-neutral-900 focus-visible:ring-2 focus-visible:ring-[#15653F] focus-visible:outline-none dark:hover:text-white"
+                        >Cara kerja</a
+                    >
+                    <a
+                        href="#harga"
+                        class="transition hover:text-neutral-900 focus-visible:ring-2 focus-visible:ring-[#15653F] focus-visible:outline-none dark:hover:text-white"
+                        >Harga</a
+                    >
+                    <a
+                        href="#faq"
+                        class="transition hover:text-neutral-900 focus-visible:ring-2 focus-visible:ring-[#15653F] focus-visible:outline-none dark:hover:text-white"
+                        >FAQ</a
+                    >
+                </nav>
                 <a
                     href="/login"
-                    class="inline-flex min-h-11 items-center rounded-xl px-4 text-sm font-semibold hover:bg-black/5 focus-visible:ring-2 focus-visible:ring-[#15653F] focus-visible:outline-none dark:hover:bg-white/10"
-                    >Masuk</a
+                    class="inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#15653F] px-4 text-sm font-bold text-white transition hover:bg-[#0E3A26] focus-visible:ring-2 focus-visible:ring-[#15653F] focus-visible:ring-offset-2 focus-visible:outline-none"
                 >
-                <a
-                    href="/register"
-                    class="inline-flex min-h-11 items-center rounded-xl bg-[#15653F] px-4 text-sm font-semibold text-white hover:bg-[#0E3A26] focus-visible:ring-2 focus-visible:ring-[#15653F] focus-visible:ring-offset-2 focus-visible:outline-none"
-                    >Daftar</a
-                >
-            </nav>
+                    Masuk
+                </a>
+            </div>
         </header>
 
-        <main id="atas" class="mx-auto w-full max-w-3xl space-y-12 p-4 pb-14">
-            <section class="space-y-5 pt-2">
-                <div class="reveal space-y-3">
-                    <h1 class="text-4xl font-bold tracking-tight">
+        <main id="atas">
+            <section
+                class="mx-auto grid w-full max-w-6xl items-center gap-12 px-4 pt-16 pb-16 md:grid-cols-2 md:px-8 md:pt-24"
+            >
+                <div>
+                    <h1
+                        class="reveal text-4xl font-extrabold tracking-tight md:text-6xl md:leading-[1.05]"
+                    >
                         Uang patungan, nol tebak-tebakan.
                     </h1>
-                    <p class="max-w-xl text-neutral-600 dark:text-neutral-300">
+                    <p
+                        class="reveal mt-5 max-w-md text-lg text-neutral-500 dark:text-neutral-300"
+                    >
                         Fluxa adalah buku kas bersama untuk keluarga, RT, dan
                         komunitas. Buat kantong, catat keluar masuk, undang
                         anggota, semua transparan dari HP.
                     </p>
-                </div>
-
-                <div
-                    class="reveal rounded-2xl bg-[#15653F] p-5 text-white"
-                    role="img"
-                    aria-label="Ilustrasi kartu saldo bersama Fluxa"
-                >
-                    <p class="text-xs opacity-80">Contoh kartu saldo bersama</p>
-                    <p
-                        class="font-numeric mt-1 text-3xl font-bold tabular-nums"
-                    >
-                        Rp 0
-                    </p>
-                    <p class="mt-1 text-sm opacity-80">
-                        Setiap tenant mulai dari nol. Catatan pertamamu yang
-                        mengisinya.
-                    </p>
-                    <div class="mt-4 flex flex-wrap gap-2" aria-hidden="true">
-                        <span
-                            class="rounded-full bg-white/15 px-3 py-1.5 text-xs font-semibold"
-                            >Kas Harian</span
+                    <div class="reveal mt-8 flex flex-wrap items-center gap-3">
+                        <a
+                            href="/register"
+                            class="inline-flex min-h-11 items-center gap-2 rounded-2xl bg-[#15653F] px-6 py-3.5 text-base font-bold text-white transition hover:bg-[#0E3A26] focus-visible:ring-2 focus-visible:ring-[#15653F] focus-visible:ring-offset-2 focus-visible:outline-none"
                         >
-                        <span
-                            class="rounded-full bg-white/15 px-3 py-1.5 text-xs font-semibold"
-                            >BCA Bersama</span
+                            Mulai Gratis
+                        </a>
+                        <a
+                            href="#cara-kerja"
+                            class="inline-flex min-h-11 items-center rounded-2xl border border-neutral-300 px-6 py-3.5 text-base font-bold transition hover:bg-black/5 focus-visible:ring-2 focus-visible:ring-[#15653F] focus-visible:outline-none dark:border-neutral-700 dark:hover:bg-white/10"
                         >
-                        <span
-                            class="rounded-full bg-white/15 px-3 py-1.5 text-xs font-semibold"
-                            >Tabungan Kurban</span
-                        >
+                            Lihat cara kerja
+                        </a>
                     </div>
                 </div>
 
-                <div class="reveal flex flex-col gap-2 sm:flex-row">
+                <div class="reveal relative">
+                    <div
+                        class="rounded-3xl border border-neutral-200 bg-white p-4 shadow-[0_1px_2px_rgba(23,23,18,.05),0_12px_32px_-16px_rgba(23,23,18,.18)] dark:border-neutral-800 dark:bg-neutral-900"
+                        role="img"
+                        aria-label="Ilustrasi tampilan aplikasi Fluxa: kartu saldo, kantong, dan transaksi contoh"
+                    >
+                        <div class="rounded-2xl bg-[#15653F] p-5 text-white">
+                            <p class="text-xs font-semibold text-white/60">
+                                Total saldo semua kantong
+                            </p>
+                            <p
+                                class="font-numeric mt-1 text-3xl font-extrabold tabular-nums"
+                            >
+                                Rp 1.250.000
+                            </p>
+                            <div
+                                class="mt-4 flex flex-wrap gap-2"
+                                aria-hidden="true"
+                            >
+                                <span
+                                    class="rounded-full bg-white/15 px-3 py-1 text-[11px] font-bold"
+                                    >Kas Harian</span
+                                >
+                                <span
+                                    class="rounded-full bg-white/10 px-3 py-1 text-[11px] font-bold"
+                                    >BCA Bersama</span
+                                >
+                                <span
+                                    class="rounded-full bg-white/10 px-3 py-1 text-[11px] font-bold"
+                                    >Tabungan Kurban</span
+                                >
+                            </div>
+                        </div>
+                        <div class="mt-3 grid grid-cols-2 gap-3">
+                            <div
+                                class="rounded-2xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900"
+                            >
+                                <p
+                                    class="text-[11px] font-semibold text-neutral-500 dark:text-neutral-300"
+                                >
+                                    Masuk bulan ini
+                                </p>
+                                <p
+                                    class="font-numeric text-lg font-extrabold text-[#1B6B4A] tabular-nums dark:text-[#4FB07C]"
+                                >
+                                    + Rp 8.000.000
+                                </p>
+                            </div>
+                            <div
+                                class="rounded-2xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900"
+                            >
+                                <p
+                                    class="text-[11px] font-semibold text-neutral-500 dark:text-neutral-300"
+                                >
+                                    Keluar bulan ini
+                                </p>
+                                <p
+                                    class="font-numeric text-lg font-extrabold text-[#92400E] tabular-nums dark:text-[#D99A4A]"
+                                >
+                                    − Rp 650.000
+                                </p>
+                            </div>
+                        </div>
+                        <div
+                            class="mt-3 space-y-3 rounded-2xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900"
+                        >
+                            <div
+                                class="flex items-center justify-between gap-2 text-sm"
+                            >
+                                <div class="flex min-w-0 items-center gap-2.5">
+                                    <span
+                                        class="flex size-8 shrink-0 items-center justify-center rounded-lg bg-[#15653F]/10"
+                                        aria-hidden="true"
+                                    >
+                                        <svg
+                                            class="size-4 text-[#15653F] dark:text-[#4FB07C]"
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            stroke-width="2"
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                        >
+                                            <rect
+                                                width="20"
+                                                height="12"
+                                                x="2"
+                                                y="6"
+                                                rx="2"
+                                            />
+                                            <circle cx="12" cy="12" r="2" />
+                                            <path d="M6 12h.01M18 12h.01" />
+                                        </svg>
+                                    </span>
+                                    <div class="min-w-0">
+                                        <p class="truncate font-bold">
+                                            Iuran warga blok C
+                                        </p>
+                                        <p
+                                            class="truncate text-[11px] text-neutral-500 dark:text-neutral-300"
+                                        >
+                                            BCA Bersama · 15 Sep
+                                        </p>
+                                    </div>
+                                </div>
+                                <span
+                                    class="font-numeric shrink-0 font-bold text-[#1B6B4A] tabular-nums dark:text-[#4FB07C]"
+                                    >+450rb</span
+                                >
+                            </div>
+                            <div
+                                class="flex items-center justify-between gap-2 text-sm"
+                            >
+                                <div class="flex min-w-0 items-center gap-2.5">
+                                    <span
+                                        class="flex size-8 shrink-0 items-center justify-center rounded-lg bg-[#D98026]/10"
+                                        aria-hidden="true"
+                                    >
+                                        <svg
+                                            class="size-4 text-[#92400E] dark:text-[#D99A4A]"
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            stroke-width="2"
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                        >
+                                            <circle cx="8" cy="21" r="1" />
+                                            <circle cx="19" cy="21" r="1" />
+                                            <path
+                                                d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"
+                                            />
+                                        </svg>
+                                    </span>
+                                    <div class="min-w-0">
+                                        <p class="truncate font-bold">
+                                            Belanja mingguan
+                                        </p>
+                                        <p
+                                            class="truncate text-[11px] text-neutral-500 dark:text-neutral-300"
+                                        >
+                                            Kas Harian · 19 Sep
+                                        </p>
+                                    </div>
+                                </div>
+                                <span
+                                    class="font-numeric shrink-0 font-bold text-[#92400E] tabular-nums dark:text-[#D99A4A]"
+                                    >−85rb</span
+                                >
+                            </div>
+                        </div>
+                    </div>
+                    <p
+                        class="mt-3 text-center text-xs text-neutral-500 dark:text-neutral-400"
+                    >
+                        Ilustrasi tampilan aplikasi, bukan data sungguhan.
+                    </p>
                     <a
                         href="/register"
-                        class="inline-flex min-h-11 items-center justify-center rounded-xl bg-[#15653F] px-5 text-sm font-semibold text-white hover:bg-[#0E3A26] focus-visible:ring-2 focus-visible:ring-[#15653F] focus-visible:ring-offset-2 focus-visible:outline-none"
-                        >Mulai Gratis</a
+                        class="absolute -bottom-5 left-1/2 inline-flex min-h-11 -translate-x-1/2 items-center gap-2 rounded-full bg-[#15653F] px-6 py-3 text-sm font-bold whitespace-nowrap text-white shadow-[0_1px_2px_rgba(23,23,18,.05),0_12px_32px_-16px_rgba(23,23,18,.18)] transition hover:bg-[#0E3A26] focus-visible:ring-2 focus-visible:ring-[#15653F] focus-visible:ring-offset-2 focus-visible:outline-none"
                     >
-                    <a
-                        href="#cara-kerja"
-                        class="inline-flex min-h-11 items-center justify-center rounded-xl border border-neutral-300 px-5 text-sm font-semibold hover:bg-black/5 focus-visible:ring-2 focus-visible:ring-[#15653F] focus-visible:outline-none dark:border-neutral-700 dark:hover:bg-white/10"
-                        >Lihat cara kerja</a
-                    >
+                        Buat akun gratis
+                    </a>
                 </div>
             </section>
 
             <section
-                class="reveal space-y-3"
-                aria-label="Masalah yang diselesaikan"
+                class="border-y border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900"
             >
-                <h2 class="text-xl font-bold">Kedengarannya familiar?</h2>
-                <ul class="space-y-2">
-                    <li
-                        class="rounded-2xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900"
+                <div class="mx-auto w-full max-w-6xl px-4 py-12 md:px-8">
+                    <p
+                        class="reveal text-center text-xs font-extrabold tracking-widest text-neutral-500 uppercase dark:text-neutral-300"
                     >
-                        <p class="text-sm font-semibold">Kas RT menguap</p>
-                        <p
-                            class="mt-0.5 text-sm text-neutral-600 dark:text-neutral-300"
-                        >
-                            Uang iuran terkumpul, tapi tidak jelas dipakai apa
-                            dan sisanya berapa.
-                        </p>
-                    </li>
-                    <li
-                        class="rounded-2xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900"
+                        Dibuat untuk kas yang dilihat banyak orang
+                    </p>
+                    <div
+                        class="reveal mt-6 grid grid-cols-2 gap-6 text-sm font-semibold md:grid-cols-4"
                     >
-                        <p class="text-sm font-semibold">
-                            Urunan keluarga ribet ditagih
-                        </p>
-                        <p
-                            class="mt-0.5 text-sm text-neutral-600 dark:text-neutral-300"
-                        >
-                            Siapa sudah bayar, siapa belum, catatannya tercecer
-                            di chat.
-                        </p>
-                    </li>
-                    <li
-                        class="rounded-2xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900"
-                    >
-                        <p class="text-sm font-semibold">
-                            Pengeluaran bersama minim transparansi
-                        </p>
-                        <p
-                            class="mt-0.5 text-sm text-neutral-600 dark:text-neutral-300"
-                        >
-                            Satu orang pegang uang, sisanya cuma bisa percaya.
-                        </p>
-                    </li>
-                </ul>
-                <p class="text-sm text-neutral-600 dark:text-neutral-300">
-                    Fluxa dibuat untuk tiga masalah ini: setiap rupiah tercatat,
-                    setiap anggota bisa melihat.
-                </p>
+                        <div class="flex items-center gap-2.5">
+                            <svg
+                                class="size-5 shrink-0"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                aria-hidden="true"
+                            >
+                                <path
+                                    d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1 1 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"
+                                />
+                                <path d="m9 12 2 2 4-4" />
+                            </svg>
+                            Tiap tenant punya ruang data sendiri
+                        </div>
+                        <div class="flex items-center gap-2.5">
+                            <svg
+                                class="size-5 shrink-0"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                aria-hidden="true"
+                            >
+                                <path
+                                    d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"
+                                />
+                            </svg>
+                            Login Google sekali klik
+                        </div>
+                        <div class="flex items-center gap-2.5">
+                            <svg
+                                class="size-5 shrink-0"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                aria-hidden="true"
+                            >
+                                <rect
+                                    width="14"
+                                    height="20"
+                                    x="5"
+                                    y="2"
+                                    rx="2"
+                                    ry="2"
+                                />
+                                <path d="M12 18h.01" />
+                            </svg>
+                            Enak dibuka dari HP
+                        </div>
+                        <div class="flex items-center gap-2.5">
+                            <svg
+                                class="size-5 shrink-0"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                aria-hidden="true"
+                            >
+                                <path
+                                    d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"
+                                />
+                                <line x1="4" x2="4" y1="22" y2="15" />
+                            </svg>
+                            Dibuat di Indonesia
+                        </div>
+                    </div>
+                </div>
             </section>
 
-            <section class="reveal space-y-3" aria-label="Fitur utama">
-                <h2 class="text-xl font-bold">
-                    Semua yang dibutuhkan kas bersama
+            <section class="mx-auto w-full max-w-6xl px-4 py-20 md:px-8">
+                <h2
+                    class="reveal text-center text-3xl font-extrabold tracking-tight md:text-4xl"
+                >
+                    Kedengarannya familiar?
                 </h2>
-                <ul class="grid gap-2 sm:grid-cols-2">
-                    <li
-                        class="rounded-2xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900"
+                <div class="mt-10 grid gap-5 md:grid-cols-3">
+                    <div
+                        class="reveal rounded-3xl border border-neutral-200 bg-white p-7 shadow-[0_1px_2px_rgba(23,23,18,.05),0_12px_32px_-16px_rgba(23,23,18,.18)] dark:border-neutral-800 dark:bg-neutral-900"
                     >
-                        <p class="text-sm font-semibold">Kantong</p>
-                        <p
-                            class="mt-0.5 text-sm text-neutral-600 dark:text-neutral-300"
-                        >
-                            Pisahkan uang ke beberapa kantong: kas harian,
-                            tabungan, dana acara.
-                        </p>
-                    </li>
-                    <li
-                        class="rounded-2xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900"
-                    >
-                        <p class="text-sm font-semibold">Kelola Bersama</p>
-                        <p
-                            class="mt-0.5 text-sm text-neutral-600 dark:text-neutral-300"
-                        >
-                            Undang lewat email, atur peran pemilik, admin, atau
-                            anggota.
-                        </p>
-                    </li>
-                    <li
-                        class="rounded-2xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900"
-                    >
-                        <p class="text-sm font-semibold">
-                            Transfer Antar Kantong
+                        <p class="text-lg leading-snug font-extrabold">
+                            "Uang kas sudah terkumpul, tapi tidak ada yang tahu
+                            pasti sisanya berapa."
                         </p>
                         <p
-                            class="mt-0.5 text-sm text-neutral-600 dark:text-neutral-300"
+                            class="mt-3 text-sm leading-relaxed text-neutral-500 dark:text-neutral-300"
                         >
-                            Pindah saldo tanpa mengotori laporan pemasukan.
+                            Catatan tercecer di chat grup dan ingatan bendahara.
+                            Pas ditanya, jawabannya selalu minta waktu cek dulu.
                         </p>
-                    </li>
-                    <li
-                        class="rounded-2xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900"
+                    </div>
+                    <div
+                        class="reveal rounded-3xl border border-neutral-200 bg-white p-7 shadow-[0_1px_2px_rgba(23,23,18,.05),0_12px_32px_-16px_rgba(23,23,18,.18)] dark:border-neutral-800 dark:bg-neutral-900"
                     >
-                        <p class="text-sm font-semibold">Kategori</p>
-                        <p
-                            class="mt-0.5 text-sm text-neutral-600 dark:text-neutral-300"
-                        >
-                            Kelompokkan pemasukan dan pengeluaran biar rapi.
+                        <p class="text-lg leading-snug font-extrabold">
+                            "Sudah coba catat di spreadsheet, tapi cuma
+                            bendahara yang bisa buka."
                         </p>
-                    </li>
-                    <li
-                        class="rounded-2xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900"
+                        <p
+                            class="mt-3 text-sm leading-relaxed text-neutral-500 dark:text-neutral-300"
+                        >
+                            Anggota lain cuma bisa percaya. Kalau ada selisih,
+                            susah dilacak ujungnya.
+                        </p>
+                    </div>
+                    <div
+                        class="reveal rounded-3xl border border-neutral-200 bg-white p-7 shadow-[0_1px_2px_rgba(23,23,18,.05),0_12px_32px_-16px_rgba(23,23,18,.18)] dark:border-neutral-800 dark:bg-neutral-900"
                     >
-                        <p class="text-sm font-semibold">Login Google</p>
-                        <p
-                            class="mt-0.5 text-sm text-neutral-600 dark:text-neutral-300"
-                        >
-                            Masuk sekali klik, tanpa password baru.
+                        <p class="text-lg leading-snug font-extrabold">
+                            "Iuran nunggak berbulan-bulan, sungkan nagihnya."
                         </p>
-                    </li>
-                    <li
-                        class="rounded-2xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900"
-                    >
-                        <p class="text-sm font-semibold">Enak di HP</p>
                         <p
-                            class="mt-0.5 text-sm text-neutral-600 dark:text-neutral-300"
+                            class="mt-3 text-sm leading-relaxed text-neutral-500 dark:text-neutral-300"
                         >
-                            Dibuat mobile-first karena dibuka dari saku, bukan
-                            meja.
+                            Tidak ada catatan resmi siapa sudah bayar dan siapa
+                            belum. Dibiarkan jadi boncos.
                         </p>
-                    </li>
-                </ul>
+                    </div>
+                </div>
+                <p
+                    class="reveal mx-auto mt-10 max-w-xl text-center text-neutral-500 dark:text-neutral-300"
+                >
+                    Bukan karena anggotamu tidak amanah, tapi karena belum ada
+                    sistem yang transparan. Fluxa dibuat untuk itu.
+                </p>
             </section>
 
             <section
                 id="cara-kerja"
-                class="reveal scroll-mt-4 space-y-3"
-                aria-label="Cara kerja"
+                class="scroll-mt-20 border-y border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900"
             >
-                <h2 class="text-xl font-bold">Jalan dalam empat langkah</h2>
-                <ol class="space-y-2">
-                    <li
-                        class="flex gap-3 rounded-2xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900"
+                <div class="mx-auto w-full max-w-6xl px-4 py-20 md:px-8">
+                    <h2
+                        class="reveal text-center text-3xl font-extrabold tracking-tight md:text-4xl"
                     >
-                        <span
-                            class="flex size-8 shrink-0 items-center justify-center rounded-full bg-[#15653F] text-sm font-bold text-white"
-                            aria-hidden="true"
-                            >1</span
+                        Jalan dalam empat langkah
+                    </h2>
+                    <div class="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+                        <div
+                            class="reveal rounded-3xl border border-neutral-200 bg-[#F5F4F1] p-7 dark:border-neutral-800 dark:bg-neutral-950"
                         >
-                        <span>
-                            <span class="block text-sm font-semibold"
-                                >Daftar dan buat ruang</span
-                            >
                             <span
-                                class="block text-sm text-neutral-600 dark:text-neutral-300"
-                                >Satu ruang keuangan untuk keluarga atau
-                                komunitasmu.</span
+                                class="flex size-10 items-center justify-center rounded-xl bg-[#15653F] font-extrabold text-white"
+                                aria-hidden="true"
+                                >1</span
                             >
-                        </span>
-                    </li>
-                    <li
-                        class="flex gap-3 rounded-2xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900"
-                    >
-                        <span
-                            class="flex size-8 shrink-0 items-center justify-center rounded-full bg-[#15653F] text-sm font-bold text-white"
-                            aria-hidden="true"
-                            >2</span
+                            <h3 class="mt-4 text-lg font-extrabold">
+                                Daftar dan buat ruang
+                            </h3>
+                            <p
+                                class="mt-2 text-sm leading-relaxed text-neutral-500 dark:text-neutral-300"
+                            >
+                                Satu ruang keuangan untuk keluarga atau
+                                komunitasmu, lengkap dengan kantong pertama.
+                            </p>
+                        </div>
+                        <div
+                            class="reveal rounded-3xl border border-neutral-200 bg-[#F5F4F1] p-7 dark:border-neutral-800 dark:bg-neutral-950"
                         >
-                        <span>
-                            <span class="block text-sm font-semibold"
-                                >Undang anggota</span
-                            >
                             <span
-                                class="block text-sm text-neutral-600 dark:text-neutral-300"
-                                >Kirim email, mereka gabung dan langsung bisa
-                                melihat.</span
+                                class="flex size-10 items-center justify-center rounded-xl bg-[#15653F] font-extrabold text-white"
+                                aria-hidden="true"
+                                >2</span
                             >
-                        </span>
-                    </li>
-                    <li
-                        class="flex gap-3 rounded-2xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900"
-                    >
-                        <span
-                            class="flex size-8 shrink-0 items-center justify-center rounded-full bg-[#15653F] text-sm font-bold text-white"
-                            aria-hidden="true"
-                            >3</span
+                            <h3 class="mt-4 text-lg font-extrabold">
+                                Undang anggota
+                            </h3>
+                            <p
+                                class="mt-2 text-sm leading-relaxed text-neutral-500 dark:text-neutral-300"
+                            >
+                                Kirim email, tentukan peran admin atau anggota.
+                                Mereka gabung dan langsung bisa melihat.
+                            </p>
+                        </div>
+                        <div
+                            class="reveal rounded-3xl border border-neutral-200 bg-[#F5F4F1] p-7 dark:border-neutral-800 dark:bg-neutral-950"
                         >
-                        <span>
-                            <span class="block text-sm font-semibold"
-                                >Catat dan pindahkan</span
-                            >
                             <span
-                                class="block text-sm text-neutral-600 dark:text-neutral-300"
-                                >Pemasukan, pengeluaran, transfer antar kantong,
-                                plus foto struk.</span
+                                class="flex size-10 items-center justify-center rounded-xl bg-[#15653F] font-extrabold text-white"
+                                aria-hidden="true"
+                                >3</span
                             >
-                        </span>
-                    </li>
-                    <li
-                        class="flex gap-3 rounded-2xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900"
-                    >
-                        <span
-                            class="flex size-8 shrink-0 items-center justify-center rounded-full bg-[#15653F] text-sm font-bold text-white"
-                            aria-hidden="true"
-                            >4</span
+                            <h3 class="mt-4 text-lg font-extrabold">
+                                Catat dan pindahkan
+                            </h3>
+                            <p
+                                class="mt-2 text-sm leading-relaxed text-neutral-500 dark:text-neutral-300"
+                            >
+                                Pemasukan, pengeluaran, transfer antar kantong,
+                                plus foto struk sebagai bukti.
+                            </p>
+                        </div>
+                        <div
+                            class="reveal rounded-3xl border border-neutral-200 bg-[#F5F4F1] p-7 dark:border-neutral-800 dark:bg-neutral-950"
                         >
-                        <span>
-                            <span class="block text-sm font-semibold"
-                                >Pantau bareng</span
-                            >
                             <span
-                                class="block text-sm text-neutral-600 dark:text-neutral-300"
-                                >Satu dashboard yang sama untuk semua
-                                anggota.</span
+                                class="flex size-10 items-center justify-center rounded-xl bg-[#15653F] font-extrabold text-white"
+                                aria-hidden="true"
+                                >4</span
                             >
-                        </span>
-                    </li>
-                </ol>
+                            <h3 class="mt-4 text-lg font-extrabold">
+                                Pantau bareng
+                            </h3>
+                            <p
+                                class="mt-2 text-sm leading-relaxed text-neutral-500 dark:text-neutral-300"
+                            >
+                                Satu dashboard yang sama untuk semua anggota.
+                                Tidak ada yang ditutupi.
+                            </p>
+                        </div>
+                    </div>
+                </div>
             </section>
 
-            <section class="reveal space-y-3" aria-label="Untuk siapa saja">
-                <h2 class="text-xl font-bold">Cocok untuk kamu yang mana?</h2>
-                <div class="grid gap-2 sm:grid-cols-3">
-                    <div class="rounded-2xl bg-[#15653F] p-4 text-white">
-                        <p class="text-sm font-semibold">Keluarga</p>
-                        <p class="mt-1 text-sm opacity-80">
-                            Atur uang rumah tangga bareng pasangan, tanpa
-                            rebutan nota.
+            <section
+                id="fitur"
+                class="mx-auto w-full max-w-6xl scroll-mt-20 px-4 py-20 md:px-8"
+            >
+                <h2
+                    class="reveal mx-auto max-w-2xl text-center text-3xl font-extrabold tracking-tight md:text-4xl"
+                >
+                    Semua yang dibutuhkan kas bersama yang transparan.
+                </h2>
+                <div class="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                    <div
+                        class="reveal rounded-3xl border border-neutral-200 bg-white p-7 shadow-[0_1px_2px_rgba(23,23,18,.05),0_12px_32px_-16px_rgba(23,23,18,.18)] dark:border-neutral-800 dark:bg-neutral-900"
+                    >
+                        <span
+                            class="flex size-11 items-center justify-center rounded-2xl bg-[#15653F]/10"
+                            aria-hidden="true"
+                        >
+                            <svg
+                                class="size-5 text-[#15653F] dark:text-[#4FB07C]"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                            >
+                                <path
+                                    d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-3a1 1 0 0 0-1-1"
+                                />
+                                <path
+                                    d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"
+                                />
+                            </svg>
+                        </span>
+                        <h3 class="mt-4 font-extrabold">Kantong terpisah</h3>
+                        <p
+                            class="mt-2 text-sm leading-relaxed text-neutral-500 dark:text-neutral-300"
+                        >
+                            Tiap pos uang punya saldo dan riwayat sendiri: kas
+                            harian, tabungan, dana acara.
                         </p>
                     </div>
                     <div
-                        class="rounded-2xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900"
+                        class="reveal rounded-3xl border border-neutral-200 bg-white p-7 shadow-[0_1px_2px_rgba(23,23,18,.05),0_12px_32px_-16px_rgba(23,23,18,.18)] dark:border-neutral-800 dark:bg-neutral-900"
                     >
-                        <p class="text-sm font-semibold">RT dan komunitas</p>
-                        <p
-                            class="mt-1 text-sm text-neutral-600 dark:text-neutral-300"
+                        <span
+                            class="flex size-11 items-center justify-center rounded-2xl bg-[#15653F]/10"
+                            aria-hidden="true"
                         >
-                            Kas warga transparan, laporan bisa dibuka siapa
-                            saja.
+                            <svg
+                                class="size-5 text-[#15653F] dark:text-[#4FB07C]"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                            >
+                                <path
+                                    d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"
+                                />
+                                <circle cx="9" cy="7" r="4" />
+                                <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                            </svg>
+                        </span>
+                        <h3 class="mt-4 font-extrabold">Anggota dan peran</h3>
+                        <p
+                            class="mt-2 text-sm leading-relaxed text-neutral-500 dark:text-neutral-300"
+                        >
+                            Pemilik, admin, anggota. Yang sensitif seperti ubah
+                            role dan billing tetap terkunci.
                         </p>
                     </div>
                     <div
-                        class="rounded-2xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900"
+                        class="reveal rounded-3xl border border-neutral-200 bg-white p-7 shadow-[0_1px_2px_rgba(23,23,18,.05),0_12px_32px_-16px_rgba(23,23,18,.18)] dark:border-neutral-800 dark:bg-neutral-900"
                     >
-                        <p class="text-sm font-semibold">Kelompok kecil</p>
-                        <p
-                            class="mt-1 text-sm text-neutral-600 dark:text-neutral-300"
+                        <span
+                            class="flex size-11 items-center justify-center rounded-2xl bg-[#15653F]/10"
+                            aria-hidden="true"
                         >
-                            Arisan, kos bersama, usaha kecil yang urunan modal.
+                            <svg
+                                class="size-5 text-[#15653F] dark:text-[#4FB07C]"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                            >
+                                <path d="M8 3 4 7l4 4" />
+                                <path d="M4 7h16" />
+                                <path d="m16 21 4-4-4-4" />
+                                <path d="M20 17H4" />
+                            </svg>
+                        </span>
+                        <h3 class="mt-4 font-extrabold">
+                            Transfer antar kantong
+                        </h3>
+                        <p
+                            class="mt-2 text-sm leading-relaxed text-neutral-500 dark:text-neutral-300"
+                        >
+                            Pindah saldo tanpa mengotori laporan pemasukan dan
+                            pengeluaran.
+                        </p>
+                    </div>
+                    <div
+                        class="reveal rounded-3xl border border-neutral-200 bg-white p-7 shadow-[0_1px_2px_rgba(23,23,18,.05),0_12px_32px_-16px_rgba(23,23,18,.18)] dark:border-neutral-800 dark:bg-neutral-900"
+                    >
+                        <span
+                            class="flex size-11 items-center justify-center rounded-2xl bg-[#15653F]/10"
+                            aria-hidden="true"
+                        >
+                            <svg
+                                class="size-5 text-[#15653F] dark:text-[#4FB07C]"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                            >
+                                <rect
+                                    width="20"
+                                    height="14"
+                                    x="2"
+                                    y="5"
+                                    rx="2"
+                                />
+                                <line x1="2" x2="22" y1="10" y2="10" />
+                            </svg>
+                        </span>
+                        <h3 class="mt-4 font-extrabold">
+                            Kartu kredit dan paylater
+                        </h3>
+                        <p
+                            class="mt-2 text-sm leading-relaxed text-neutral-500 dark:text-neutral-300"
+                        >
+                            Utang tercatat sebagai utang. Pelunasan mengurangi
+                            dua sisi sekaligus.
+                        </p>
+                    </div>
+                    <div
+                        class="reveal rounded-3xl border border-neutral-200 bg-white p-7 shadow-[0_1px_2px_rgba(23,23,18,.05),0_12px_32px_-16px_rgba(23,23,18,.18)] dark:border-neutral-800 dark:bg-neutral-900"
+                    >
+                        <span
+                            class="flex size-11 items-center justify-center rounded-2xl bg-[#15653F]/10"
+                            aria-hidden="true"
+                        >
+                            <svg
+                                class="size-5 text-[#15653F] dark:text-[#4FB07C]"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                            >
+                                <path
+                                    d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"
+                                />
+                                <circle cx="12" cy="13" r="4" />
+                            </svg>
+                        </span>
+                        <h3 class="mt-4 font-extrabold">Foto struk</h3>
+                        <p
+                            class="mt-2 text-sm leading-relaxed text-neutral-500 dark:text-neutral-300"
+                        >
+                            Lampirkan bukti belanja di tiap transaksi. Tidak ada
+                            lagi nota hilang.
+                        </p>
+                    </div>
+                    <div
+                        class="reveal rounded-3xl border border-neutral-200 bg-white p-7 shadow-[0_1px_2px_rgba(23,23,18,.05),0_12px_32px_-16px_rgba(23,23,18,.18)] dark:border-neutral-800 dark:bg-neutral-900"
+                    >
+                        <span
+                            class="flex size-11 items-center justify-center rounded-2xl bg-[#15653F]/10"
+                            aria-hidden="true"
+                        >
+                            <svg
+                                class="size-5 text-[#15653F] dark:text-[#4FB07C]"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                            >
+                                <rect
+                                    width="14"
+                                    height="20"
+                                    x="5"
+                                    y="2"
+                                    rx="2"
+                                    ry="2"
+                                />
+                                <path d="M12 18h.01" />
+                            </svg>
+                        </span>
+                        <h3 class="mt-4 font-extrabold">Enak di HP</h3>
+                        <p
+                            class="mt-2 text-sm leading-relaxed text-neutral-500 dark:text-neutral-300"
+                        >
+                            Dibuat mobile-first karena dibuka dari saku, bukan
+                            meja. Tanpa install.
                         </p>
                     </div>
                 </div>
@@ -446,122 +813,272 @@
 
             <section
                 id="harga"
-                class="reveal scroll-mt-4 space-y-3"
-                aria-label="Paket harga"
+                class="scroll-mt-20 border-y border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900"
             >
-                <h2 class="text-xl font-bold">Harga</h2>
-                <div class="grid gap-2 sm:grid-cols-2">
-                    <div
-                        class="rounded-2xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900"
+                <div class="mx-auto w-full max-w-6xl px-4 py-20 md:px-8">
+                    <h2
+                        class="reveal text-center text-3xl font-extrabold tracking-tight md:text-4xl"
                     >
-                        <p class="text-sm font-semibold">Free</p>
-                        <p
-                            class="font-numeric mt-1 text-2xl font-bold tabular-nums"
-                        >
-                            Rp 0
-                        </p>
-                        <ul
-                            class="mt-3 space-y-1 text-sm text-neutral-600 dark:text-neutral-300"
-                        >
-                            <li>3 kantong, 3 anggota</li>
-                            <li>Subdomain acak</li>
-                            <li>Fitur dasar lengkap</li>
-                        </ul>
-                    </div>
-                    <div
-                        class="rounded-2xl border-2 border-[#D98026] bg-white p-4 dark:bg-neutral-900"
+                        Mulai gratis, naik saat butuh.
+                    </h2>
+                    <p
+                        class="reveal mt-3 text-center text-neutral-500 dark:text-neutral-300"
                     >
-                        <p class="text-sm font-semibold">Pro</p>
-                        <p
-                            class="font-numeric mt-1 text-2xl font-bold tabular-nums"
+                        Paket Free tidak dibatasi waktu.
+                    </p>
+                    <div
+                        class="mx-auto mt-12 grid max-w-3xl gap-5 md:grid-cols-2"
+                    >
+                        <div
+                            class="reveal rounded-3xl border border-neutral-200 bg-[#F5F4F1] p-8 dark:border-neutral-800 dark:bg-neutral-950"
                         >
-                            Rp 35.000<span
-                                class="text-sm font-normal text-neutral-600 dark:text-neutral-300"
-                                >/bulan</span
+                            <p
+                                class="text-xs font-extrabold tracking-widest text-neutral-500 dark:text-neutral-300"
                             >
-                        </p>
-                        <ul
-                            class="mt-3 space-y-1 text-sm text-neutral-600 dark:text-neutral-300"
+                                FREE
+                            </p>
+                            <p
+                                class="font-numeric mt-3 text-3xl font-extrabold tabular-nums"
+                            >
+                                Rp 0
+                            </p>
+                            <ul class="mt-6 space-y-2.5 text-sm">
+                                <li>3 kantong, 3 anggota</li>
+                                <li>Subdomain acak</li>
+                                <li>Transaksi, transfer, kategori</li>
+                                <li>Foto struk</li>
+                            </ul>
+                            <a
+                                href="/register"
+                                class="mt-8 block rounded-2xl border-2 border-[#15653F] px-6 py-3 text-center font-bold text-[#15653F] transition hover:bg-[#15653F]/5 focus-visible:ring-2 focus-visible:ring-[#15653F] focus-visible:outline-none dark:text-[#4FB07C] dark:hover:bg-white/5"
+                                >Mulai dengan Free</a
+                            >
+                        </div>
+                        <div
+                            class="reveal relative rounded-3xl border-2 border-[#15653F] bg-[#F5F4F1] p-8 dark:bg-neutral-950"
                         >
-                            <li>Tanpa batas kantong dan anggota</li>
-                            <li>Subdomain pilihan sendiri</li>
-                            <li>Export laporan</li>
-                        </ul>
+                            <span
+                                class="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-[#D98026] px-4 py-1 text-xs font-extrabold whitespace-nowrap text-white"
+                                >Paling dipilih</span
+                            >
+                            <p
+                                class="text-xs font-extrabold tracking-widest text-neutral-500 dark:text-neutral-300"
+                            >
+                                PRO
+                            </p>
+                            <p
+                                class="font-numeric mt-3 text-3xl font-extrabold tabular-nums"
+                            >
+                                Rp 35.000<span
+                                    class="text-base font-semibold text-neutral-500 dark:text-neutral-300"
+                                    >/bulan</span
+                                >
+                            </p>
+                            <ul class="mt-6 space-y-2.5 text-sm">
+                                <li>Semua fitur Free</li>
+                                <li>Tanpa batas kantong dan anggota</li>
+                                <li>Subdomain pilihan sendiri</li>
+                                <li>Export laporan</li>
+                            </ul>
+                            <a
+                                href="/register"
+                                class="mt-8 block rounded-2xl bg-[#15653F] px-6 py-3 text-center font-bold text-white transition hover:bg-[#0E3A26] focus-visible:ring-2 focus-visible:ring-[#15653F] focus-visible:ring-offset-2 focus-visible:outline-none"
+                                >Naik ke Pro</a
+                            >
+                        </div>
                     </div>
                 </div>
-                <a
-                    href="/register"
-                    class="inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-[#15653F] px-5 text-sm font-semibold text-white hover:bg-[#0E3A26] focus-visible:ring-2 focus-visible:ring-[#15653F] focus-visible:ring-offset-2 focus-visible:outline-none sm:w-auto"
-                    >Daftar gratis</a
-                >
             </section>
 
-            <section class="reveal space-y-3" aria-label="Pertanyaan umum">
-                <h2 class="text-xl font-bold">Sering ditanyakan</h2>
-                <div
-                    class="divide-y divide-neutral-200 rounded-2xl border border-neutral-200 bg-white px-4 dark:divide-neutral-800 dark:border-neutral-800 dark:bg-neutral-900"
+            <section class="mx-auto w-full max-w-6xl px-4 py-20 md:px-8">
+                <h2
+                    class="reveal text-center text-3xl font-extrabold tracking-tight md:text-4xl"
                 >
-                    <details class="py-3">
-                        <summary
-                            class="min-h-11 cursor-pointer text-sm font-semibold focus-visible:ring-2 focus-visible:ring-[#15653F] focus-visible:outline-none"
+                    Bandingin sendiri.
+                </h2>
+                <p
+                    class="reveal mt-3 text-center text-neutral-500 dark:text-neutral-300"
+                >
+                    Cara lama versus cara Fluxa.
+                </p>
+                <div class="mt-12 space-y-8">
+                    <div
+                        class="grid items-stretch gap-4 md:grid-cols-[1fr_auto_1fr]"
+                    >
+                        <div
+                            class="reveal rounded-3xl border border-neutral-200 bg-white p-7 dark:border-neutral-800 dark:bg-neutral-900"
                         >
-                            Apakah data keuangan saya aman?
+                            <h3 class="text-lg font-extrabold">
+                                Chat grup + buku tulis
+                            </h3>
+                            <ul
+                                class="mt-4 space-y-2 text-sm text-neutral-500 dark:text-neutral-300"
+                            >
+                                <li>Catatan keburu ketimbun chat</li>
+                                <li>Rawan hilang dan salah hitung</li>
+                                <li>Cuma bendahara yang pegang</li>
+                            </ul>
+                        </div>
+                        <div
+                            class="flex items-center justify-center"
+                            aria-hidden="true"
+                        >
+                            <span
+                                class="flex size-10 items-center justify-center rounded-full bg-[#15653F] text-xs font-extrabold text-white"
+                                >VS</span
+                            >
+                        </div>
+                        <div
+                            class="reveal rounded-3xl border-2 border-[#15653F] bg-white p-7 dark:bg-neutral-900"
+                        >
+                            <h3 class="text-lg font-extrabold">Fluxa.</h3>
+                            <ul class="mt-4 space-y-2 text-sm">
+                                <li>Riwayat rapi dan tersimpan</li>
+                                <li>Hitungan otomatis, anti selisih</li>
+                                <li>Semua anggota bisa pantau</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div
+                        class="grid items-stretch gap-4 md:grid-cols-[1fr_auto_1fr]"
+                    >
+                        <div
+                            class="reveal rounded-3xl border border-neutral-200 bg-white p-7 dark:border-neutral-800 dark:bg-neutral-900"
+                        >
+                            <h3 class="text-lg font-extrabold">Spreadsheet</h3>
+                            <ul
+                                class="mt-4 space-y-2 text-sm text-neutral-500 dark:text-neutral-300"
+                            >
+                                <li>Ribet dibuka di HP</li>
+                                <li>Rumus gampang error</li>
+                                <li>Tanpa kontrol akses per anggota</li>
+                            </ul>
+                        </div>
+                        <div
+                            class="flex items-center justify-center"
+                            aria-hidden="true"
+                        >
+                            <span
+                                class="flex size-10 items-center justify-center rounded-full bg-[#15653F] text-xs font-extrabold text-white"
+                                >VS</span
+                            >
+                        </div>
+                        <div
+                            class="reveal rounded-3xl border-2 border-[#15653F] bg-white p-7 dark:bg-neutral-900"
+                        >
+                            <h3 class="text-lg font-extrabold">Fluxa.</h3>
+                            <ul class="mt-4 space-y-2 text-sm">
+                                <li>Tampilan mobile yang rapi</li>
+                                <li>Siap pakai, tanpa rumus</li>
+                                <li>Peran dan hak akses jelas</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section
+                id="faq"
+                class="mx-auto w-full max-w-3xl scroll-mt-20 px-4 pb-20 md:px-8"
+            >
+                <h2
+                    class="reveal text-center text-3xl font-extrabold tracking-tight md:text-4xl"
+                >
+                    Sering ditanyakan
+                </h2>
+                <div class="mt-10 space-y-3">
+                    <details
+                        class="reveal group rounded-2xl border border-neutral-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900"
+                    >
+                        <summary
+                            class="flex cursor-pointer items-center justify-between font-bold focus-visible:ring-2 focus-visible:ring-[#15653F] focus-visible:outline-none"
+                        >
+                            Apakah data keuangan saya aman?<span
+                                class="ml-3 shrink-0 text-neutral-400 transition group-open:rotate-180"
+                                aria-hidden="true"
+                                >▾</span
+                            >
                         </summary>
                         <p
-                            class="mt-1 text-sm text-neutral-600 dark:text-neutral-300"
+                            class="mt-3 text-sm leading-relaxed text-neutral-500 dark:text-neutral-300"
                         >
                             Setiap tenant punya ruang data sendiri yang
                             terisolasi. Anggota hanya melihat tenant yang ia
                             ikuti.
                         </p>
                     </details>
-                    <details class="py-3">
+                    <details
+                        class="reveal group rounded-2xl border border-neutral-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900"
+                    >
                         <summary
-                            class="min-h-11 cursor-pointer text-sm font-semibold focus-visible:ring-2 focus-visible:ring-[#15653F] focus-visible:outline-none"
+                            class="flex cursor-pointer items-center justify-between font-bold focus-visible:ring-2 focus-visible:ring-[#15653F] focus-visible:outline-none"
                         >
-                            Bisa untuk RT atau organisasi, bukan cuma keluarga?
+                            Bisa untuk RT atau organisasi, bukan cuma
+                            keluarga?<span
+                                class="ml-3 shrink-0 text-neutral-400 transition group-open:rotate-180"
+                                aria-hidden="true"
+                                >▾</span
+                            >
                         </summary>
                         <p
-                            class="mt-1 text-sm text-neutral-600 dark:text-neutral-300"
+                            class="mt-3 text-sm leading-relaxed text-neutral-500 dark:text-neutral-300"
                         >
                             Bisa. Justru itu target utamanya: kas yang butuh
                             dilihat banyak orang.
                         </p>
                     </details>
-                    <details class="py-3">
+                    <details
+                        class="reveal group rounded-2xl border border-neutral-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900"
+                    >
                         <summary
-                            class="min-h-11 cursor-pointer text-sm font-semibold focus-visible:ring-2 focus-visible:ring-[#15653F] focus-visible:outline-none"
+                            class="flex cursor-pointer items-center justify-between font-bold focus-visible:ring-2 focus-visible:ring-[#15653F] focus-visible:outline-none"
                         >
-                            Apakah paket gratis selamanya?
+                            Apakah paket gratis selamanya?<span
+                                class="ml-3 shrink-0 text-neutral-400 transition group-open:rotate-180"
+                                aria-hidden="true"
+                                >▾</span
+                            >
                         </summary>
                         <p
-                            class="mt-1 text-sm text-neutral-600 dark:text-neutral-300"
+                            class="mt-3 text-sm leading-relaxed text-neutral-500 dark:text-neutral-300"
                         >
                             Ya. Paket Free tidak dibatasi waktu, cocok untuk
                             kebutuhan kecil.
                         </p>
                     </details>
-                    <details class="py-3">
+                    <details
+                        class="reveal group rounded-2xl border border-neutral-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900"
+                    >
                         <summary
-                            class="min-h-11 cursor-pointer text-sm font-semibold focus-visible:ring-2 focus-visible:ring-[#15653F] focus-visible:outline-none"
+                            class="flex cursor-pointer items-center justify-between font-bold focus-visible:ring-2 focus-visible:ring-[#15653F] focus-visible:outline-none"
                         >
-                            Bagaimana kalau mau berhenti pakai?
+                            Bagaimana kalau mau berhenti pakai?<span
+                                class="ml-3 shrink-0 text-neutral-400 transition group-open:rotate-180"
+                                aria-hidden="true"
+                                >▾</span
+                            >
                         </summary>
                         <p
-                            class="mt-1 text-sm text-neutral-600 dark:text-neutral-300"
+                            class="mt-3 text-sm leading-relaxed text-neutral-500 dark:text-neutral-300"
                         >
                             Akun dan datamu bisa dihapus kapan saja dari
                             pengaturan. Tidak ada denda, tidak ada drama.
                         </p>
                     </details>
-                    <details class="py-3">
+                    <details
+                        class="reveal group rounded-2xl border border-neutral-200 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-900"
+                    >
                         <summary
-                            class="min-h-11 cursor-pointer text-sm font-semibold focus-visible:ring-2 focus-visible:ring-[#15653F] focus-visible:outline-none"
+                            class="flex cursor-pointer items-center justify-between font-bold focus-visible:ring-2 focus-visible:ring-[#15653F] focus-visible:outline-none"
                         >
-                            Apakah perlu kartu kredit untuk daftar?
+                            Apakah perlu kartu kredit untuk daftar?<span
+                                class="ml-3 shrink-0 text-neutral-400 transition group-open:rotate-180"
+                                aria-hidden="true"
+                                >▾</span
+                            >
                         </summary>
                         <p
-                            class="mt-1 text-sm text-neutral-600 dark:text-neutral-300"
+                            class="mt-3 text-sm leading-relaxed text-neutral-500 dark:text-neutral-300"
                         >
                             Tidak. Cukup email atau akun Google.
                         </p>
@@ -569,83 +1086,97 @@
                 </div>
             </section>
 
-            <section
-                class="reveal space-y-3 rounded-2xl bg-[#0E3A26] p-5 text-white"
-                aria-label="Ajakan mendaftar"
-            >
-                <h2 class="text-xl font-bold">
-                    Bikin ruang keuangan pertamamu hari ini.
-                </h2>
-                <p class="text-sm opacity-80">
-                    Gratis, tanpa kartu kredit. Undang anggota kapan pun siap.
-                </p>
-                <a
-                    href="/register"
-                    class="inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-white px-5 text-sm font-semibold text-[#0E3A26] hover:bg-neutral-100 focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none sm:w-auto"
-                    >Mulai Gratis</a
+            <section class="mx-auto w-full max-w-6xl px-4 pb-20 md:px-8">
+                <div
+                    class="reveal rounded-3xl bg-[#0E3A26] p-10 text-center text-white md:p-16"
                 >
+                    <h2
+                        class="text-3xl font-extrabold tracking-tight md:text-5xl"
+                    >
+                        Uang bersama, dikelola bareng.
+                    </h2>
+                    <p class="mx-auto mt-4 max-w-md text-white/60">
+                        Bikin ruang keuangan pertamamu hari ini. Gratis, tanpa
+                        kartu kredit.
+                    </p>
+                    <a
+                        href="/register"
+                        class="mt-8 inline-flex min-h-11 items-center gap-2 rounded-2xl bg-white px-8 py-4 text-base font-bold text-[#0E3A26] transition hover:bg-neutral-100 focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none"
+                    >
+                        Mulai Gratis
+                    </a>
+                </div>
             </section>
         </main>
 
         <footer class="border-t border-neutral-200 dark:border-neutral-800">
             <div
-                class="mx-auto flex w-full max-w-3xl flex-wrap items-center justify-between gap-3 p-4"
+                class="mx-auto flex w-full max-w-6xl flex-col items-center justify-between gap-4 px-4 py-10 text-sm text-neutral-500 md:flex-row md:px-8 dark:text-neutral-400"
             >
-                <span class="text-sm font-semibold">Fluxa</span>
-                <nav
-                    class="flex flex-wrap items-center gap-1 text-sm"
-                    aria-label="Bawah"
-                >
+                <div class="flex items-center gap-2">
+                    <svg
+                        class="size-7"
+                        viewBox="0 0 32 32"
+                        fill="none"
+                        aria-hidden="true"
+                    >
+                        <rect width="32" height="32" rx="9" fill="#15653F" />
+                        <path
+                            d="M10 22v-9.5A2.5 2.5 0 0 1 12.5 10H22M10 22h11a2.5 2.5 0 0 0 0-5H13a2.5 2.5 0 0 1 0-5h9"
+                            stroke="#fff"
+                            stroke-width="2.4"
+                            stroke-linecap="round"
+                        />
+                    </svg>
+                    <span
+                        class="font-bold text-neutral-900 dark:text-neutral-100"
+                        >Fluxa</span
+                    >
+                </div>
+                <p>© 2026 Fluxa.</p>
+                <div class="flex flex-wrap justify-center gap-1 font-semibold">
                     <a
-                        href="/login"
-                        class="inline-flex min-h-11 items-center rounded-lg px-3 hover:bg-black/5 focus-visible:ring-2 focus-visible:ring-[#15653F] focus-visible:outline-none dark:hover:bg-white/10"
-                        >Masuk</a
+                        href="#fitur"
+                        class="inline-flex min-h-11 items-center rounded-lg px-3 transition hover:text-neutral-900 focus-visible:ring-2 focus-visible:ring-[#15653F] focus-visible:outline-none dark:hover:text-white"
+                        >Fitur</a
                     >
                     <a
-                        href="/register"
-                        class="inline-flex min-h-11 items-center rounded-lg px-3 hover:bg-black/5 focus-visible:ring-2 focus-visible:ring-[#15653F] focus-visible:outline-none dark:hover:bg-white/10"
-                        >Daftar</a
+                        href="#harga"
+                        class="inline-flex min-h-11 items-center rounded-lg px-3 transition hover:text-neutral-900 focus-visible:ring-2 focus-visible:ring-[#15653F] focus-visible:outline-none dark:hover:text-white"
+                        >Harga</a
+                    >
+                    <a
+                        href="#faq"
+                        class="inline-flex min-h-11 items-center rounded-lg px-3 transition hover:text-neutral-900 focus-visible:ring-2 focus-visible:ring-[#15653F] focus-visible:outline-none dark:hover:text-white"
+                        >FAQ</a
                     >
                     <!-- TODO: ganti href dengan halaman asli saat tersedia. Label
              "Segera" wajib tampil selama masih placeholder (R-26). -->
                     <a
                         href="#atas"
-                        class="inline-flex min-h-11 items-center gap-1 rounded-lg px-3 hover:bg-black/5 focus-visible:ring-2 focus-visible:ring-[#15653F] focus-visible:outline-none dark:hover:bg-white/10"
+                        class="inline-flex min-h-11 items-center gap-1 rounded-lg px-3 transition hover:text-neutral-900 focus-visible:ring-2 focus-visible:ring-[#15653F] focus-visible:outline-none dark:hover:text-white"
                         >Tentang
-                        <span class="text-xs text-neutral-500"
-                            >(segera)</span
-                        ></a
+                        <span class="text-xs font-normal">(segera)</span></a
                     >
                     <a
                         href="#atas"
-                        class="inline-flex min-h-11 items-center gap-1 rounded-lg px-3 hover:bg-black/5 focus-visible:ring-2 focus-visible:ring-[#15653F] focus-visible:outline-none dark:hover:bg-white/10"
+                        class="inline-flex min-h-11 items-center gap-1 rounded-lg px-3 transition hover:text-neutral-900 focus-visible:ring-2 focus-visible:ring-[#15653F] focus-visible:outline-none dark:hover:text-white"
                         >Kontak
-                        <span class="text-xs text-neutral-500"
-                            >(segera)</span
-                        ></a
+                        <span class="text-xs font-normal">(segera)</span></a
                     >
                     <a
                         href="#atas"
-                        class="inline-flex min-h-11 items-center gap-1 rounded-lg px-3 hover:bg-black/5 focus-visible:ring-2 focus-visible:ring-[#15653F] focus-visible:outline-none dark:hover:bg-white/10"
+                        class="inline-flex min-h-11 items-center gap-1 rounded-lg px-3 transition hover:text-neutral-900 focus-visible:ring-2 focus-visible:ring-[#15653F] focus-visible:outline-none dark:hover:text-white"
                         >Kebijakan Privasi
-                        <span class="text-xs text-neutral-500"
-                            >(segera)</span
-                        ></a
+                        <span class="text-xs font-normal">(segera)</span></a
                     >
                     <a
                         href="#atas"
-                        class="inline-flex min-h-11 items-center gap-1 rounded-lg px-3 hover:bg-black/5 focus-visible:ring-2 focus-visible:ring-[#15653F] focus-visible:outline-none dark:hover:bg-white/10"
+                        class="inline-flex min-h-11 items-center gap-1 rounded-lg px-3 transition hover:text-neutral-900 focus-visible:ring-2 focus-visible:ring-[#15653F] focus-visible:outline-none dark:hover:text-white"
                         >Syarat Layanan
-                        <span class="text-xs text-neutral-500"
-                            >(segera)</span
-                        ></a
+                        <span class="text-xs font-normal">(segera)</span></a
                     >
-                </nav>
-                <p
-                    class="w-full text-xs text-neutral-500 dark:text-neutral-400"
-                >
-                    © 2026 Fluxa.
-                </p>
+                </div>
             </div>
         </footer>
 
