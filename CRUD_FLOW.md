@@ -520,6 +520,19 @@ driver is not optional. Install it once, matching your PHP version:
 sudo apt install php8.5-pcov
 ```
 
+Tanpa sudo (atau bila package belum ada untuk versi PHP ini), kompilasi
+sekali ke `~/.local/lib/php/pcov.so`, lalu muat eksplisit setiap menjalankan
+suite — `php artisan test` tidak meneruskan `-d`, jadi panggil pest langsung:
+
+```bash
+# sekali saja: build dari source (butuh gcc, make, autoconf, phpize)
+# lalu pakai setiap kali:
+php -d extension=$HOME/.local/lib/php/pcov.so -d pcov.enabled=1 \
+    vendor/bin/pest --colors=never --coverage --min=90 \
+    --coverage-clover=storage/coverage/clover.xml
+php bin/no-zero-coverage.php storage/coverage/clover.xml
+```
+
 Without it the suite stops at `Code coverage driver not available`. CI installs
 it through `coverage: pcov` on `setup-php`, so the gate is the same in both
 places.

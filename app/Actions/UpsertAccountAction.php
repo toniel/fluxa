@@ -7,6 +7,8 @@ namespace App\Actions;
 use App\Data\AccountFormData;
 use App\Models\Account;
 use App\Models\User;
+use App\Support\PlanFeatureChecker;
+use App\Support\TenantContext;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Arr;
 use Illuminate\Validation\ValidationException;
@@ -56,6 +58,8 @@ class UpsertAccountAction
 
         // new Account() + forceFill: balance bukan fillable, dan satu-satunya
         // jalan mengisinya adalah di sini.
+        $this->assertWithinAccountLimit();
+
         $account = new Account(Arr::except($data->toArray(), [
             'credit_limit',
             'billing_cycle_start_day',
@@ -71,6 +75,26 @@ class UpsertAccountAction
         $this->applyLogo($account, $logo, $removeLogo);
 
         return $account;
+    }
+
+    /**
+     * Batas kantong hanya untuk pembuatan, bukan ubah: mengunci jumlah saat
+     * tenant sudah penuh. Tanpa tenant aktif (seeder, console) pemeriksaan
+     * dibuka supaya pekerjaan operasional tidak terkunci.
+     */
+    private function assertWithinAccountLimit(): void
+    {
+        $tenant = app(TenantContext::class)->tenant();
+
+        if ($tenant === null) {
+            return;
+        }
+
+        if (app(PlanFeatureChecker::class)->atAccountLimit($tenant)) {
+            throw ValidationException::withMessages([
+                'name' => 'Paket ini mencapai batas kantong. Upgrade untuk menambah.',
+            ]);
+        }
     }
 
     private function applyCreditDetail(Account $account, AccountFormData $data): void
