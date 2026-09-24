@@ -1,5 +1,7 @@
 <?php
 
+use Database\Seeders\PermissionSeeder;
+use Database\Seeders\PlanSeeder;
 use Laravel\Fortify\Features;
 
 beforeEach(function () {
@@ -13,6 +15,13 @@ test('registration screen can be rendered', function () {
 });
 
 test('new users can register', function () {
+    // Registrasi membuatkan tenant + role + langganan free, jadi definisi
+    // role dan paket harus ada.
+    $this->seed([
+        PermissionSeeder::class,
+        PlanSeeder::class,
+    ]);
+
     $response = $this->post(route('register.store'), [
         'name' => 'Test User',
         'email' => 'test@example.com',

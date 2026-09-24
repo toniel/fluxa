@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Form, Head } from '@inertiajs/vue3';
+import { Form, Head, Link } from '@inertiajs/vue3';
 import { Layers, ScrollText, UsersRound } from '@lucide/vue';
 import AppLogoIcon from '@/components/AppLogoIcon.vue';
 import InputError from '@/components/InputError.vue';
@@ -11,8 +11,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
-import { notYet } from '@/lib/notYet';
 import { register } from '@/routes';
+import { redirect as googleRedirect } from '@/routes/auth/google';
 import { store } from '@/routes/login';
 import { request } from '@/routes/password';
 
@@ -98,13 +98,10 @@ const highlights = [
                     <PasskeyVerify />
 
                     <!-- type eksplisit: <button> tanpa type default-nya submit. -->
-                    <Button
-                        type="button"
-                        variant="outline"
-                        class="min-h-11 w-full"
-                        @click="notYet('Masuk dengan Google')"
-                    >
-                        Lanjutkan dengan Google
+                    <Button as-child variant="outline" class="min-h-11 w-full">
+                        <Link :href="googleRedirect.url()">
+                            Lanjutkan dengan Google
+                        </Link>
                     </Button>
 
                     <div class="flex items-center gap-3">

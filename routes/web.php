@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Auth\GoogleCallbackController;
+use App\Http\Controllers\Auth\GoogleRedirectController;
 use App\Http\Controllers\BillingWebhookController;
 use App\Http\Controllers\InvitationAcceptanceController;
 use App\Http\Controllers\TenantPickerController;
@@ -16,6 +18,9 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::inertia('/', 'Welcome')->name('home');
+
+Route::get('auth/google/redirect', GoogleRedirectController::class)->name('auth.google.redirect');
+Route::get('auth/google/callback', GoogleCallbackController::class)->name('auth.google.callback');
 
 Route::middleware(['auth'])->group(function (): void {
     Route::get('tenants', [TenantPickerController::class, 'index'])->name('tenants.index');
