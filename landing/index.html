@@ -1,0 +1,678 @@
+<!doctype html>
+<html lang="id">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Fluxa: Uang patungan, nol tebak-tebakan</title>
+        <meta
+            name="description"
+            content="Fluxa adalah buku kas bersama untuk keluarga, RT, dan komunitas. Buat kantong, catat keluar masuk, undang anggota, semua transparan dari HP."
+        />
+        <link rel="canonical" href="https://fluxa.test/" />
+        <meta property="og:type" content="website" />
+        <meta property="og:locale" content="id_ID" />
+        <meta property="og:site_name" content="Fluxa" />
+        <meta
+            property="og:title"
+            content="Fluxa: Uang patungan, nol tebak-tebakan"
+        />
+        <meta
+            property="og:description"
+            content="Buku kas bersama untuk keluarga, RT, dan komunitas. Setiap rupiah tercatat, setiap anggota bisa melihat."
+        />
+        <meta property="og:url" content="https://fluxa.test/" />
+        <meta name="twitter:card" content="summary" />
+        <meta
+            name="twitter:title"
+            content="Fluxa: Uang patungan, nol tebak-tebakan"
+        />
+        <meta
+            name="twitter:description"
+            content="Buku kas bersama untuk keluarga, RT, dan komunitas."
+        />
+        <script type="application/ld+json">
+            {
+                "@context": "https://schema.org",
+                "@type": "WebApplication",
+                "name": "Fluxa",
+                "applicationCategory": "FinanceApplication",
+                "operatingSystem": "Web",
+                "inLanguage": "id",
+                "description": "Buku kas bersama untuk keluarga, RT, dan komunitas.",
+                "offers": [
+                    {
+                        "@type": "Offer",
+                        "name": "Free",
+                        "price": "0",
+                        "priceCurrency": "IDR"
+                    },
+                    {
+                        "@type": "Offer",
+                        "name": "Pro",
+                        "price": "35000",
+                        "priceCurrency": "IDR"
+                    }
+                ]
+            }
+        </script>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=Instrument+Sans:wght@400;500;600;700&display=swap"
+            rel="stylesheet"
+        />
+        <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+        <style type="text/tailwindcss">
+            @theme {
+                --color-brand: #15653f;
+                --color-brand-deep: #0e3a26;
+                --color-cream: #f5f4f1;
+                --color-accent: #d98026;
+                --color-accent-ink: #92400e;
+                --font-sans:
+                    'Instrument Sans', ui-sans-serif, system-ui, sans-serif;
+                --font-numeric: 'Archivo', ui-sans-serif, system-ui, sans-serif;
+            }
+
+            html {
+                scroll-behavior: smooth;
+            }
+
+            .reveal {
+                opacity: 0;
+                transform: translateY(14px);
+                transition:
+                    opacity 0.5s ease,
+                    transform 0.5s ease;
+            }
+
+            .reveal.is-visible {
+                opacity: 1;
+                transform: none;
+            }
+
+            @media (prefers-reduced-motion: reduce) {
+                html {
+                    scroll-behavior: auto;
+                }
+                .reveal {
+                    opacity: 1;
+                    transform: none;
+                    transition: none;
+                }
+            }
+        </style>
+    </head>
+    <body
+        class="bg-cream font-sans text-neutral-900 antialiased dark:bg-[#0F1512] dark:text-neutral-100"
+    >
+        <header
+            class="mx-auto flex w-full max-w-3xl items-center justify-between gap-3 p-4"
+        >
+            <a
+                href="#atas"
+                class="flex items-center gap-2 text-lg font-bold"
+                aria-label="Fluxa, ke atas"
+            >
+                <svg
+                    class="size-7"
+                    viewBox="0 0 32 32"
+                    fill="none"
+                    aria-hidden="true"
+                >
+                    <rect width="32" height="32" rx="9" fill="#15653F" />
+                    <path
+                        d="M10 22v-9.5A2.5 2.5 0 0 1 12.5 10H22M10 22h11a2.5 2.5 0 0 0 0-5H13a2.5 2.5 0 0 1 0-5h9"
+                        stroke="#fff"
+                        stroke-width="2.4"
+                        stroke-linecap="round"
+                    />
+                </svg>
+                Fluxa
+            </a>
+            <nav class="flex items-center gap-2" aria-label="Akun">
+                <a
+                    href="/login"
+                    class="inline-flex min-h-11 items-center rounded-xl px-4 text-sm font-semibold hover:bg-black/5 focus-visible:ring-2 focus-visible:ring-[#15653F] focus-visible:outline-none dark:hover:bg-white/10"
+                    >Masuk</a
+                >
+                <a
+                    href="/register"
+                    class="inline-flex min-h-11 items-center rounded-xl bg-[#15653F] px-4 text-sm font-semibold text-white hover:bg-[#0E3A26] focus-visible:ring-2 focus-visible:ring-[#15653F] focus-visible:ring-offset-2 focus-visible:outline-none"
+                    >Daftar</a
+                >
+            </nav>
+        </header>
+
+        <main id="atas" class="mx-auto w-full max-w-3xl space-y-12 p-4 pb-14">
+            <section class="space-y-5 pt-2">
+                <div class="reveal space-y-3">
+                    <h1 class="text-4xl font-bold tracking-tight">
+                        Uang patungan, nol tebak-tebakan.
+                    </h1>
+                    <p class="max-w-xl text-neutral-600 dark:text-neutral-300">
+                        Fluxa adalah buku kas bersama untuk keluarga, RT, dan
+                        komunitas. Buat kantong, catat keluar masuk, undang
+                        anggota, semua transparan dari HP.
+                    </p>
+                </div>
+
+                <div
+                    class="reveal rounded-2xl bg-[#15653F] p-5 text-white"
+                    role="img"
+                    aria-label="Ilustrasi kartu saldo bersama Fluxa"
+                >
+                    <p class="text-xs opacity-80">Contoh kartu saldo bersama</p>
+                    <p
+                        class="font-numeric mt-1 text-3xl font-bold tabular-nums"
+                    >
+                        Rp 0
+                    </p>
+                    <p class="mt-1 text-sm opacity-80">
+                        Setiap tenant mulai dari nol. Catatan pertamamu yang
+                        mengisinya.
+                    </p>
+                    <div class="mt-4 flex flex-wrap gap-2" aria-hidden="true">
+                        <span
+                            class="rounded-full bg-white/15 px-3 py-1.5 text-xs font-semibold"
+                            >Kas Harian</span
+                        >
+                        <span
+                            class="rounded-full bg-white/15 px-3 py-1.5 text-xs font-semibold"
+                            >BCA Bersama</span
+                        >
+                        <span
+                            class="rounded-full bg-white/15 px-3 py-1.5 text-xs font-semibold"
+                            >Tabungan Kurban</span
+                        >
+                    </div>
+                </div>
+
+                <div class="reveal flex flex-col gap-2 sm:flex-row">
+                    <a
+                        href="/register"
+                        class="inline-flex min-h-11 items-center justify-center rounded-xl bg-[#15653F] px-5 text-sm font-semibold text-white hover:bg-[#0E3A26] focus-visible:ring-2 focus-visible:ring-[#15653F] focus-visible:ring-offset-2 focus-visible:outline-none"
+                        >Mulai Gratis</a
+                    >
+                    <a
+                        href="#cara-kerja"
+                        class="inline-flex min-h-11 items-center justify-center rounded-xl border border-neutral-300 px-5 text-sm font-semibold hover:bg-black/5 focus-visible:ring-2 focus-visible:ring-[#15653F] focus-visible:outline-none dark:border-neutral-700 dark:hover:bg-white/10"
+                        >Lihat cara kerja</a
+                    >
+                </div>
+            </section>
+
+            <section
+                class="reveal space-y-3"
+                aria-label="Masalah yang diselesaikan"
+            >
+                <h2 class="text-xl font-bold">Kedengarannya familiar?</h2>
+                <ul class="space-y-2">
+                    <li
+                        class="rounded-2xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900"
+                    >
+                        <p class="text-sm font-semibold">Kas RT menguap</p>
+                        <p
+                            class="mt-0.5 text-sm text-neutral-600 dark:text-neutral-300"
+                        >
+                            Uang iuran terkumpul, tapi tidak jelas dipakai apa
+                            dan sisanya berapa.
+                        </p>
+                    </li>
+                    <li
+                        class="rounded-2xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900"
+                    >
+                        <p class="text-sm font-semibold">
+                            Urunan keluarga ribet ditagih
+                        </p>
+                        <p
+                            class="mt-0.5 text-sm text-neutral-600 dark:text-neutral-300"
+                        >
+                            Siapa sudah bayar, siapa belum, catatannya tercecer
+                            di chat.
+                        </p>
+                    </li>
+                    <li
+                        class="rounded-2xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900"
+                    >
+                        <p class="text-sm font-semibold">
+                            Pengeluaran bersama minim transparansi
+                        </p>
+                        <p
+                            class="mt-0.5 text-sm text-neutral-600 dark:text-neutral-300"
+                        >
+                            Satu orang pegang uang, sisanya cuma bisa percaya.
+                        </p>
+                    </li>
+                </ul>
+                <p class="text-sm text-neutral-600 dark:text-neutral-300">
+                    Fluxa dibuat untuk tiga masalah ini: setiap rupiah tercatat,
+                    setiap anggota bisa melihat.
+                </p>
+            </section>
+
+            <section class="reveal space-y-3" aria-label="Fitur utama">
+                <h2 class="text-xl font-bold">
+                    Semua yang dibutuhkan kas bersama
+                </h2>
+                <ul class="grid gap-2 sm:grid-cols-2">
+                    <li
+                        class="rounded-2xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900"
+                    >
+                        <p class="text-sm font-semibold">Kantong</p>
+                        <p
+                            class="mt-0.5 text-sm text-neutral-600 dark:text-neutral-300"
+                        >
+                            Pisahkan uang ke beberapa kantong: kas harian,
+                            tabungan, dana acara.
+                        </p>
+                    </li>
+                    <li
+                        class="rounded-2xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900"
+                    >
+                        <p class="text-sm font-semibold">Kelola Bersama</p>
+                        <p
+                            class="mt-0.5 text-sm text-neutral-600 dark:text-neutral-300"
+                        >
+                            Undang lewat email, atur peran pemilik, admin, atau
+                            anggota.
+                        </p>
+                    </li>
+                    <li
+                        class="rounded-2xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900"
+                    >
+                        <p class="text-sm font-semibold">
+                            Transfer Antar Kantong
+                        </p>
+                        <p
+                            class="mt-0.5 text-sm text-neutral-600 dark:text-neutral-300"
+                        >
+                            Pindah saldo tanpa mengotori laporan pemasukan.
+                        </p>
+                    </li>
+                    <li
+                        class="rounded-2xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900"
+                    >
+                        <p class="text-sm font-semibold">Kategori</p>
+                        <p
+                            class="mt-0.5 text-sm text-neutral-600 dark:text-neutral-300"
+                        >
+                            Kelompokkan pemasukan dan pengeluaran biar rapi.
+                        </p>
+                    </li>
+                    <li
+                        class="rounded-2xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900"
+                    >
+                        <p class="text-sm font-semibold">Login Google</p>
+                        <p
+                            class="mt-0.5 text-sm text-neutral-600 dark:text-neutral-300"
+                        >
+                            Masuk sekali klik, tanpa password baru.
+                        </p>
+                    </li>
+                    <li
+                        class="rounded-2xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900"
+                    >
+                        <p class="text-sm font-semibold">Enak di HP</p>
+                        <p
+                            class="mt-0.5 text-sm text-neutral-600 dark:text-neutral-300"
+                        >
+                            Dibuat mobile-first karena dibuka dari saku, bukan
+                            meja.
+                        </p>
+                    </li>
+                </ul>
+            </section>
+
+            <section
+                id="cara-kerja"
+                class="reveal scroll-mt-4 space-y-3"
+                aria-label="Cara kerja"
+            >
+                <h2 class="text-xl font-bold">Jalan dalam empat langkah</h2>
+                <ol class="space-y-2">
+                    <li
+                        class="flex gap-3 rounded-2xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900"
+                    >
+                        <span
+                            class="flex size-8 shrink-0 items-center justify-center rounded-full bg-[#15653F] text-sm font-bold text-white"
+                            aria-hidden="true"
+                            >1</span
+                        >
+                        <span>
+                            <span class="block text-sm font-semibold"
+                                >Daftar dan buat ruang</span
+                            >
+                            <span
+                                class="block text-sm text-neutral-600 dark:text-neutral-300"
+                                >Satu ruang keuangan untuk keluarga atau
+                                komunitasmu.</span
+                            >
+                        </span>
+                    </li>
+                    <li
+                        class="flex gap-3 rounded-2xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900"
+                    >
+                        <span
+                            class="flex size-8 shrink-0 items-center justify-center rounded-full bg-[#15653F] text-sm font-bold text-white"
+                            aria-hidden="true"
+                            >2</span
+                        >
+                        <span>
+                            <span class="block text-sm font-semibold"
+                                >Undang anggota</span
+                            >
+                            <span
+                                class="block text-sm text-neutral-600 dark:text-neutral-300"
+                                >Kirim email, mereka gabung dan langsung bisa
+                                melihat.</span
+                            >
+                        </span>
+                    </li>
+                    <li
+                        class="flex gap-3 rounded-2xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900"
+                    >
+                        <span
+                            class="flex size-8 shrink-0 items-center justify-center rounded-full bg-[#15653F] text-sm font-bold text-white"
+                            aria-hidden="true"
+                            >3</span
+                        >
+                        <span>
+                            <span class="block text-sm font-semibold"
+                                >Catat dan pindahkan</span
+                            >
+                            <span
+                                class="block text-sm text-neutral-600 dark:text-neutral-300"
+                                >Pemasukan, pengeluaran, transfer antar kantong,
+                                plus foto struk.</span
+                            >
+                        </span>
+                    </li>
+                    <li
+                        class="flex gap-3 rounded-2xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900"
+                    >
+                        <span
+                            class="flex size-8 shrink-0 items-center justify-center rounded-full bg-[#15653F] text-sm font-bold text-white"
+                            aria-hidden="true"
+                            >4</span
+                        >
+                        <span>
+                            <span class="block text-sm font-semibold"
+                                >Pantau bareng</span
+                            >
+                            <span
+                                class="block text-sm text-neutral-600 dark:text-neutral-300"
+                                >Satu dashboard yang sama untuk semua
+                                anggota.</span
+                            >
+                        </span>
+                    </li>
+                </ol>
+            </section>
+
+            <section class="reveal space-y-3" aria-label="Untuk siapa saja">
+                <h2 class="text-xl font-bold">Cocok untuk kamu yang mana?</h2>
+                <div class="grid gap-2 sm:grid-cols-3">
+                    <div class="rounded-2xl bg-[#15653F] p-4 text-white">
+                        <p class="text-sm font-semibold">Keluarga</p>
+                        <p class="mt-1 text-sm opacity-80">
+                            Atur uang rumah tangga bareng pasangan, tanpa
+                            rebutan nota.
+                        </p>
+                    </div>
+                    <div
+                        class="rounded-2xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900"
+                    >
+                        <p class="text-sm font-semibold">RT dan komunitas</p>
+                        <p
+                            class="mt-1 text-sm text-neutral-600 dark:text-neutral-300"
+                        >
+                            Kas warga transparan, laporan bisa dibuka siapa
+                            saja.
+                        </p>
+                    </div>
+                    <div
+                        class="rounded-2xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900"
+                    >
+                        <p class="text-sm font-semibold">Kelompok kecil</p>
+                        <p
+                            class="mt-1 text-sm text-neutral-600 dark:text-neutral-300"
+                        >
+                            Arisan, kos bersama, usaha kecil yang urunan modal.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <section
+                id="harga"
+                class="reveal scroll-mt-4 space-y-3"
+                aria-label="Paket harga"
+            >
+                <h2 class="text-xl font-bold">Harga</h2>
+                <div class="grid gap-2 sm:grid-cols-2">
+                    <div
+                        class="rounded-2xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900"
+                    >
+                        <p class="text-sm font-semibold">Free</p>
+                        <p
+                            class="font-numeric mt-1 text-2xl font-bold tabular-nums"
+                        >
+                            Rp 0
+                        </p>
+                        <ul
+                            class="mt-3 space-y-1 text-sm text-neutral-600 dark:text-neutral-300"
+                        >
+                            <li>3 kantong, 3 anggota</li>
+                            <li>Subdomain acak</li>
+                            <li>Fitur dasar lengkap</li>
+                        </ul>
+                    </div>
+                    <div
+                        class="rounded-2xl border-2 border-[#D98026] bg-white p-4 dark:bg-neutral-900"
+                    >
+                        <p class="text-sm font-semibold">Pro</p>
+                        <p
+                            class="font-numeric mt-1 text-2xl font-bold tabular-nums"
+                        >
+                            Rp 35.000<span
+                                class="text-sm font-normal text-neutral-600 dark:text-neutral-300"
+                                >/bulan</span
+                            >
+                        </p>
+                        <ul
+                            class="mt-3 space-y-1 text-sm text-neutral-600 dark:text-neutral-300"
+                        >
+                            <li>Tanpa batas kantong dan anggota</li>
+                            <li>Subdomain pilihan sendiri</li>
+                            <li>Export laporan</li>
+                        </ul>
+                    </div>
+                </div>
+                <a
+                    href="/register"
+                    class="inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-[#15653F] px-5 text-sm font-semibold text-white hover:bg-[#0E3A26] focus-visible:ring-2 focus-visible:ring-[#15653F] focus-visible:ring-offset-2 focus-visible:outline-none sm:w-auto"
+                    >Daftar gratis</a
+                >
+            </section>
+
+            <section class="reveal space-y-3" aria-label="Pertanyaan umum">
+                <h2 class="text-xl font-bold">Sering ditanyakan</h2>
+                <div
+                    class="divide-y divide-neutral-200 rounded-2xl border border-neutral-200 bg-white px-4 dark:divide-neutral-800 dark:border-neutral-800 dark:bg-neutral-900"
+                >
+                    <details class="py-3">
+                        <summary
+                            class="min-h-11 cursor-pointer text-sm font-semibold focus-visible:ring-2 focus-visible:ring-[#15653F] focus-visible:outline-none"
+                        >
+                            Apakah data keuangan saya aman?
+                        </summary>
+                        <p
+                            class="mt-1 text-sm text-neutral-600 dark:text-neutral-300"
+                        >
+                            Setiap tenant punya ruang data sendiri yang
+                            terisolasi. Anggota hanya melihat tenant yang ia
+                            ikuti.
+                        </p>
+                    </details>
+                    <details class="py-3">
+                        <summary
+                            class="min-h-11 cursor-pointer text-sm font-semibold focus-visible:ring-2 focus-visible:ring-[#15653F] focus-visible:outline-none"
+                        >
+                            Bisa untuk RT atau organisasi, bukan cuma keluarga?
+                        </summary>
+                        <p
+                            class="mt-1 text-sm text-neutral-600 dark:text-neutral-300"
+                        >
+                            Bisa. Justru itu target utamanya: kas yang butuh
+                            dilihat banyak orang.
+                        </p>
+                    </details>
+                    <details class="py-3">
+                        <summary
+                            class="min-h-11 cursor-pointer text-sm font-semibold focus-visible:ring-2 focus-visible:ring-[#15653F] focus-visible:outline-none"
+                        >
+                            Apakah paket gratis selamanya?
+                        </summary>
+                        <p
+                            class="mt-1 text-sm text-neutral-600 dark:text-neutral-300"
+                        >
+                            Ya. Paket Free tidak dibatasi waktu, cocok untuk
+                            kebutuhan kecil.
+                        </p>
+                    </details>
+                    <details class="py-3">
+                        <summary
+                            class="min-h-11 cursor-pointer text-sm font-semibold focus-visible:ring-2 focus-visible:ring-[#15653F] focus-visible:outline-none"
+                        >
+                            Bagaimana kalau mau berhenti pakai?
+                        </summary>
+                        <p
+                            class="mt-1 text-sm text-neutral-600 dark:text-neutral-300"
+                        >
+                            Akun dan datamu bisa dihapus kapan saja dari
+                            pengaturan. Tidak ada denda, tidak ada drama.
+                        </p>
+                    </details>
+                    <details class="py-3">
+                        <summary
+                            class="min-h-11 cursor-pointer text-sm font-semibold focus-visible:ring-2 focus-visible:ring-[#15653F] focus-visible:outline-none"
+                        >
+                            Apakah perlu kartu kredit untuk daftar?
+                        </summary>
+                        <p
+                            class="mt-1 text-sm text-neutral-600 dark:text-neutral-300"
+                        >
+                            Tidak. Cukup email atau akun Google.
+                        </p>
+                    </details>
+                </div>
+            </section>
+
+            <section
+                class="reveal space-y-3 rounded-2xl bg-[#0E3A26] p-5 text-white"
+                aria-label="Ajakan mendaftar"
+            >
+                <h2 class="text-xl font-bold">
+                    Bikin ruang keuangan pertamamu hari ini.
+                </h2>
+                <p class="text-sm opacity-80">
+                    Gratis, tanpa kartu kredit. Undang anggota kapan pun siap.
+                </p>
+                <a
+                    href="/register"
+                    class="inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-white px-5 text-sm font-semibold text-[#0E3A26] hover:bg-neutral-100 focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none sm:w-auto"
+                    >Mulai Gratis</a
+                >
+            </section>
+        </main>
+
+        <footer class="border-t border-neutral-200 dark:border-neutral-800">
+            <div
+                class="mx-auto flex w-full max-w-3xl flex-wrap items-center justify-between gap-3 p-4"
+            >
+                <span class="text-sm font-semibold">Fluxa</span>
+                <nav
+                    class="flex flex-wrap items-center gap-1 text-sm"
+                    aria-label="Bawah"
+                >
+                    <a
+                        href="/login"
+                        class="inline-flex min-h-11 items-center rounded-lg px-3 hover:bg-black/5 focus-visible:ring-2 focus-visible:ring-[#15653F] focus-visible:outline-none dark:hover:bg-white/10"
+                        >Masuk</a
+                    >
+                    <a
+                        href="/register"
+                        class="inline-flex min-h-11 items-center rounded-lg px-3 hover:bg-black/5 focus-visible:ring-2 focus-visible:ring-[#15653F] focus-visible:outline-none dark:hover:bg-white/10"
+                        >Daftar</a
+                    >
+                    <!-- TODO: ganti href dengan halaman asli saat tersedia. Label
+             "Segera" wajib tampil selama masih placeholder (R-26). -->
+                    <a
+                        href="#atas"
+                        class="inline-flex min-h-11 items-center gap-1 rounded-lg px-3 hover:bg-black/5 focus-visible:ring-2 focus-visible:ring-[#15653F] focus-visible:outline-none dark:hover:bg-white/10"
+                        >Tentang
+                        <span class="text-xs text-neutral-500"
+                            >(segera)</span
+                        ></a
+                    >
+                    <a
+                        href="#atas"
+                        class="inline-flex min-h-11 items-center gap-1 rounded-lg px-3 hover:bg-black/5 focus-visible:ring-2 focus-visible:ring-[#15653F] focus-visible:outline-none dark:hover:bg-white/10"
+                        >Kontak
+                        <span class="text-xs text-neutral-500"
+                            >(segera)</span
+                        ></a
+                    >
+                    <a
+                        href="#atas"
+                        class="inline-flex min-h-11 items-center gap-1 rounded-lg px-3 hover:bg-black/5 focus-visible:ring-2 focus-visible:ring-[#15653F] focus-visible:outline-none dark:hover:bg-white/10"
+                        >Kebijakan Privasi
+                        <span class="text-xs text-neutral-500"
+                            >(segera)</span
+                        ></a
+                    >
+                    <a
+                        href="#atas"
+                        class="inline-flex min-h-11 items-center gap-1 rounded-lg px-3 hover:bg-black/5 focus-visible:ring-2 focus-visible:ring-[#15653F] focus-visible:outline-none dark:hover:bg-white/10"
+                        >Syarat Layanan
+                        <span class="text-xs text-neutral-500"
+                            >(segera)</span
+                        ></a
+                    >
+                </nav>
+                <p
+                    class="w-full text-xs text-neutral-500 dark:text-neutral-400"
+                >
+                    © 2026 Fluxa.
+                </p>
+            </div>
+        </footer>
+
+        <script>
+            (function () {
+                var items = document.querySelectorAll('.reveal');
+                if (!('IntersectionObserver' in window)) {
+                    items.forEach(function (el) {
+                        el.classList.add('is-visible');
+                    });
+                    return;
+                }
+                var observer = new IntersectionObserver(
+                    function (entries) {
+                        entries.forEach(function (entry) {
+                            if (entry.isIntersecting) {
+                                entry.target.classList.add('is-visible');
+                                observer.unobserve(entry.target);
+                            }
+                        });
+                    },
+                    { threshold: 0.12 },
+                );
+                items.forEach(function (el) {
+                    observer.observe(el);
+                });
+            })();
+        </script>
+    </body>
+</html>
