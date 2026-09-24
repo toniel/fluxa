@@ -2,6 +2,7 @@
 import { Form, Head, Link } from '@inertiajs/vue3';
 import { Layers, ScrollText, UsersRound } from '@lucide/vue';
 import AppLogoIcon from '@/components/AppLogoIcon.vue';
+import GoogleIcon from '@/components/GoogleIcon.vue';
 import InputError from '@/components/InputError.vue';
 import PasskeyVerify from '@/components/PasskeyVerify.vue';
 import PasswordInput from '@/components/PasswordInput.vue';
@@ -100,6 +101,7 @@ const highlights = [
                     <!-- type eksplisit: <button> tanpa type default-nya submit. -->
                     <Button as-child variant="outline" class="min-h-11 w-full">
                         <Link :href="googleRedirect.url()">
+                            <GoogleIcon class="size-4" />
                             Lanjutkan dengan Google
                         </Link>
                     </Button>

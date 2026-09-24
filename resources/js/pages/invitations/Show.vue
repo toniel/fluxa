@@ -3,6 +3,7 @@ import { Head, Link, useForm } from '@inertiajs/vue3';
 import { CircleAlert, CircleCheck, MailOpen, UserPlus } from '@lucide/vue';
 import { computed } from 'vue';
 import AppLogoIcon from '@/components/AppLogoIcon.vue';
+import GoogleIcon from '@/components/GoogleIcon.vue';
 import { Button } from '@/components/ui/button';
 import { accept as acceptRoute } from '@/routes/invitations';
 import { login } from '@/routes';
@@ -98,7 +99,8 @@ const statusMeta = computed(() => {
                                     query: { invitation: token },
                                 })
                             "
-                            >Lanjutkan dengan Google</Link
+                            ><GoogleIcon class="size-4" />Lanjutkan dengan
+                            Google</Link
                         >
                     </Button>
                     <Button
