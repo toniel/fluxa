@@ -53,4 +53,6 @@ Route::middleware([
     Route::get('billing', [BillingController::class, 'index'])->name('billing.index');
     Route::post('billing/toggle', [BillingController::class, 'store'])->name('billing.toggle');
     Route::get('settings/tenant', [TenantSettingController::class, 'edit'])->name('tenant.settings');
+    Route::patch('settings/tenant', [TenantSettingController::class, 'update'])->name('tenant.settings.update');
+    Route::delete('settings/tenant', [TenantSettingController::class, 'destroy'])->name('tenant.settings.destroy');
 });

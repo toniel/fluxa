@@ -75,6 +75,21 @@ plan: App.Data.PlanData,
 status: App.Enums.SubscriptionStatus,
 current_period_end: string | null,
 };
+export type TenantData = {
+id: number,
+name: string,
+subdomain: string | null,
+created_at: string,
+member_count: number,
+memberships: {
+id: number,
+name: string,
+subdomain: string | null,
+url: string,
+role: string | null,
+is_current: boolean,
+}[],
+};
 export type TenantInvitationData = {
 id: number,
 email: string,
@@ -95,6 +110,10 @@ is_owner: boolean,
 is_current_user: boolean,
 can_change_role: boolean,
 can_remove: boolean,
+};
+export type TenantSettingsFormData = {
+name: string,
+subdomain: string | null,
 };
 export type TransactionData = {
 id: number,

@@ -28,7 +28,7 @@ const tenant = computed(
 );
 
 const current = computed(() =>
-    tenant.value?.memberships.find((m) => m.is_current),
+    tenant.value?.memberships?.find((m) => m.is_current),
 );
 
 const roleLabel: Record<string, string> = {
@@ -62,7 +62,7 @@ function tenantUrl(subdomain: string): string {
                     Pindah tenant
                 </DropdownMenuLabel>
                 <DropdownMenuItem
-                    v-for="membership in tenant.memberships"
+                    v-for="membership in tenant.memberships ?? []"
                     :key="membership.id"
                     as-child
                 >

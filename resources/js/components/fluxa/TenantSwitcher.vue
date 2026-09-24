@@ -76,7 +76,7 @@ function tenantUrl(subdomain: string): string {
                         Pindah tenant
                     </DropdownMenuLabel>
                     <DropdownMenuItem
-                        v-for="membership in tenant.memberships"
+                        v-for="membership in tenant.memberships ?? []"
                         :key="membership.id"
                         as-child
                     >

@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, Link, usePage } from '@inertiajs/vue3';
 import { Plus, Wallet } from '@lucide/vue';
+import { computed } from 'vue';
 import CashFlowChart from '@/components/fluxa/CashFlowChart.vue';
 import CategoryDonut from '@/components/fluxa/CategoryDonut.vue';
 import AccountTile from '@/components/fluxa/AccountTile.vue';
@@ -46,12 +47,18 @@ defineProps<{
     breakdown: Slice[];
     accounts: Account[];
     recent: Recent[];
-    tenant: { name: string };
 }>();
 
 defineOptions({
     layout: { breadcrumbs: [{ title: 'Beranda', href: dashboard() }] },
 });
+
+// Nama tenant dibaca dari shared prop (sama sumbernya dengan switcher).
+const page = usePage();
+
+const tenantName = computed(
+    () => (page.props.tenant as { name?: string } | undefined)?.name ?? '',
+);
 
 const dateLabel = new Intl.DateTimeFormat('id-ID', {
     day: 'numeric',
@@ -72,7 +79,7 @@ const asLocalDate = (ymd: string): Date => new Date(`${ymd}T00:00:00`);
                 Halo, {{ summary.greeting_name }}
             </p>
             <h1 class="text-xl font-bold tracking-tight">
-                {{ tenant.name }}
+                {{ tenantName }}
             </h1>
         </header>
 
