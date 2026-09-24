@@ -6,6 +6,7 @@ import AppLogoIcon from '@/components/AppLogoIcon.vue';
 import { Button } from '@/components/ui/button';
 import { accept as acceptRoute } from '@/routes/invitations';
 import { login } from '@/routes';
+import { redirect as googleRedirect } from '@/routes/auth/google';
 
 const props = defineProps<{
     invitation: {
@@ -91,7 +92,21 @@ const statusMeta = computed(() => {
                         akun yang sesuai, lalu buka tautan ini lagi.
                     </p>
                     <Button as-child class="mt-4 min-h-11 w-full">
-                        <Link :href="login.url()">Masuk</Link>
+                        <Link
+                            :href="
+                                googleRedirect.url({
+                                    query: { invitation: token },
+                                })
+                            "
+                            >Lanjutkan dengan Google</Link
+                        >
+                    </Button>
+                    <Button
+                        as-child
+                        variant="outline"
+                        class="mt-2 min-h-11 w-full"
+                    >
+                        <Link :href="login.url()">Masuk dengan email</Link>
                     </Button>
                 </template>
 

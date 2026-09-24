@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Form, Head } from '@inertiajs/vue3';
+import { Form, Head, Link } from '@inertiajs/vue3';
 import InputError from '@/components/InputError.vue';
 import PasswordInput from '@/components/PasswordInput.vue';
 import TextLink from '@/components/TextLink.vue';
@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import { login } from '@/routes';
+import { redirect as googleRedirect } from '@/routes/auth/google';
 import { store } from '@/routes/register';
 
 defineProps<{
@@ -31,6 +32,16 @@ defineOptions({
         v-slot="{ errors, processing }"
         class="flex flex-col gap-6"
     >
+        <Button as-child variant="outline" class="min-h-11 w-full">
+            <Link :href="googleRedirect.url()">Daftar dengan Google</Link>
+        </Button>
+
+        <div class="flex items-center gap-3">
+            <span class="bg-border h-px flex-1" />
+            <span class="text-muted-foreground text-xs">atau</span>
+            <span class="bg-border h-px flex-1" />
+        </div>
+
         <div class="grid gap-6">
             <div class="grid gap-2">
                 <Label for="name">Name</Label>
