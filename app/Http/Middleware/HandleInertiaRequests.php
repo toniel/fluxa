@@ -2,6 +2,9 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Tenant;
+use App\Support\TenantContext;
+use App\Support\TenantDestination;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -42,6 +45,33 @@ class HandleInertiaRequests extends Middleware
                 'user' => $request->user(),
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
+            // Konteks tenant untuk layout (switcher + topbar): bentuknya
+            // sama dengan yang halaman pratinjau kirim per-halaman, supaya
+            // komponennya tidak perlu tahu sumbernya.
+            'tenant' => fn (): ?array => $this->tenantProps($request),
+        ];
+    }
+
+    /**
+     * @return array{name: string, memberships: list<array{id: int, name: string, subdomain: string|null, url: string, role: string|null, is_current: bool}>}|null
+     */
+    private function tenantProps(Request $request): ?array
+    {
+        $user = $request->user();
+
+        if ($user === null) {
+            return null;
+        }
+
+        $tenant = app(TenantContext::class)->tenant();
+
+        if (! $tenant instanceof Tenant) {
+            return null;
+        }
+
+        return [
+            'name' => $tenant->name,
+            'memberships' => TenantDestination::membershipsOf($user, $tenant->getKey()),
         ];
     }
 }

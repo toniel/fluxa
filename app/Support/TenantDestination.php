@@ -42,9 +42,9 @@ final class TenantDestination
     /**
      * Keanggotaan user beserta role dan subdomainnya.
      *
-     * @return list<array<string, mixed>>
+     * @return list<array{id: int, name: string, subdomain: string|null, url: string, role: string|null, is_current: bool}>
      */
-    public static function membershipsOf(User $user): array
+    public static function membershipsOf(User $user, ?int $currentId = null): array
     {
         return array_map(
             static fn (Tenant $tenant): array => [
@@ -53,6 +53,7 @@ final class TenantDestination
                 'subdomain' => $tenant->subdomain(),
                 'url' => $tenant->url('/dashboard'),
                 'role' => self::roleIn($tenant, $user)?->value,
+                'is_current' => $currentId !== null && $tenant->getKey() === $currentId,
             ],
             self::tenantsOf($user),
         );

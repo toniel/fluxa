@@ -49,3 +49,6 @@ yarn-error.log
 
 # Rekaman devtools Inertia, bukan artefak project
 /storage/inertia-devtools
+
+# Laporan coverage lokal, bukan artefak project
+/storage/coverage

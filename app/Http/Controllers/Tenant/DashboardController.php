@@ -8,7 +8,6 @@ use App\Enums\TransactionType;
 use App\Http\Controllers\Controller;
 use App\Models\Account;
 use App\Models\Transaction;
-use App\Support\TenantContext;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -61,7 +60,6 @@ class DashboardController extends Controller
             ->all();
 
         $now->locale('id');
-        $tenant = app(TenantContext::class)->tenant();
 
         return Inertia::render('Dashboard', [
             'summary' => [
@@ -75,7 +73,6 @@ class DashboardController extends Controller
             'breakdown' => $breakdown,
             'accounts' => $accounts,
             'recent' => $recent,
-            'tenant' => ['name' => $tenant === null ? '' : $tenant->name],
         ]);
     }
 
