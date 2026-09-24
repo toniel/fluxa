@@ -11,6 +11,7 @@ use App\Models\Domain;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Support\TenantContext;
+use Atrox\Haikunator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Lorisleiva\Actions\Concerns\AsAction;
@@ -94,6 +95,16 @@ class CreateTenantAction
     private function generateSubdomain(string $name): string
     {
         $reserved = config('fluxa.reserved_subdomains', []);
+
+        // Kata acak ramah dibaca ala PRD (wispy-dust-42). Tanpa tipe di
+        // vendor, jadi hasilnya di-cast eksplisit di perbatasan ini.
+        for ($i = 0; $i < 20; $i++) {
+            $candidate = (string) Haikunator::haikunate();
+
+            if (! in_array($candidate, $reserved, true) && ! $this->subdomainTaken($candidate)) {
+                return $candidate;
+            }
+        }
 
         do {
             $candidate = Str::slug(Str::limit($name, 24, '')) ?: 'tenant';
