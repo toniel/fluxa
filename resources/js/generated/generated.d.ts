@@ -75,6 +75,9 @@ plan: App.Data.PlanData,
 status: App.Enums.SubscriptionStatus,
 current_period_end: string | null,
 };
+export type TenantCreateFormData = {
+name: string,
+};
 export type TenantData = {
 id: number,
 name: string,
