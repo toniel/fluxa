@@ -11,6 +11,7 @@ use App\Models\Tenant;
 use App\Models\TenantInvitation;
 use App\Models\User;
 use App\Notifications\TenantInvitationNotification;
+use App\Support\PlanFeatureChecker;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Lorisleiva\Actions\Concerns\AsAction;
@@ -36,6 +37,18 @@ class InviteMemberAction
         if ($tenant->members()->whereKey($this->userIdFor($data->email))->exists()) {
             throw ValidationException::withMessages([
                 'email' => 'Email ini sudah menjadi anggota tenant.',
+            ]);
+        }
+
+        // Kirim ulang baris yang sudah ada tidak menambah anggota.
+        $resend = TenantInvitation::query()
+            ->forTenant($tenant)
+            ->where('email', Str::lower($data->email))
+            ->exists();
+
+        if (! $resend && app(PlanFeatureChecker::class)->atMemberLimit($tenant)) {
+            throw ValidationException::withMessages([
+                'email' => 'Paket ini mencapai batas anggota. Upgrade untuk mengundang lagi.',
             ]);
         }
 
