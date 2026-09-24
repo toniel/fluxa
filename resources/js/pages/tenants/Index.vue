@@ -1,10 +1,12 @@
 <script setup lang="ts">
-import { Head, usePage } from '@inertiajs/vue3';
-import { ArrowRight, Building2 } from '@lucide/vue';
+import { Head, Link, usePage } from '@inertiajs/vue3';
+import { ArrowRight, Building2, Plus } from '@lucide/vue';
 import { computed } from 'vue';
 import AppLogoIcon from '@/components/AppLogoIcon.vue';
 import EmptyState from '@/components/fluxa/EmptyState.vue';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { create as createRoute } from '@/routes/tenants';
 
 type Membership = {
     id: number;
@@ -80,12 +82,31 @@ const roleLabel: Record<string, string> = {
                 </li>
             </ul>
 
+            <Button
+                v-if="memberships.length"
+                as-child
+                variant="outline"
+                class="min-h-11 w-full"
+            >
+                <Link :href="createRoute.url()">
+                    <Plus class="size-4" aria-hidden="true" />
+                    Buat tenant baru
+                </Link>
+            </Button>
+
             <EmptyState
                 v-else
                 :icon="Building2"
                 title="Belum tergabung di tenant mana pun"
-                description="Minta pemilik tenant mengundang alamat email kamu, atau buat tenant sendiri setelah fitur itu tersedia."
-            />
+                description="Minta pemilik tenant mengundang alamat email kamu, atau buat tenant sendiri."
+            >
+                <Button as-child class="min-h-11">
+                    <Link :href="createRoute.url()">
+                        <Plus class="size-4" aria-hidden="true" />
+                        Buat tenant baru
+                    </Link>
+                </Button>
+            </EmptyState>
         </div>
     </div>
 </template>

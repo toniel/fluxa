@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\GoogleCallbackController;
 use App\Http\Controllers\Auth\GoogleRedirectController;
 use App\Http\Controllers\BillingWebhookController;
 use App\Http\Controllers\InvitationAcceptanceController;
+use App\Http\Controllers\TenantController;
 use App\Http\Controllers\TenantPickerController;
 use Illuminate\Support\Facades\Route;
 
@@ -24,6 +25,8 @@ Route::get('auth/google/callback', GoogleCallbackController::class)->name('auth.
 
 Route::middleware(['auth'])->group(function (): void {
     Route::get('tenants', [TenantPickerController::class, 'index'])->name('tenants.index');
+    Route::get('tenants/create', [TenantController::class, 'create'])->name('tenants.create');
+    Route::post('tenants', [TenantController::class, 'store'])->name('tenants.store');
 });
 
 // Halaman terima undangan hidup di central domain, di luar tenant context:
