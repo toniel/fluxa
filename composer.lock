@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "0452b90a33dbec616a31906080dc161d",
+    "content-hash": "2f79e43489d7796cffb868e2d3eb0dfd",
     "packages": [
         {
             "name": "atrox/haikunator",

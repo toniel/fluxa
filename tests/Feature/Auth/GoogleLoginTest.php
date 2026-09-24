@@ -153,6 +153,8 @@ test('subdomain tenant baru unik dan bukan kata reserved', function () {
         ->and($subdomains[0])->not->toBe($subdomains[1]);
 
     foreach ($subdomains as $subdomain) {
-        expect($subdomain)->not->toBeIn(config('fluxa.reserved_subdomains'));
+        // Format haikunator: kata-kata-angka, mis. wispy-dust-42.
+        expect($subdomain)->toMatch('/^[a-z]+-[a-z0-9]+-\d+$/')
+            ->and($subdomain)->not->toBeIn(config('fluxa.reserved_subdomains'));
     }
 });
