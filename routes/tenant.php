@@ -25,11 +25,6 @@ use Stancl\Tenancy\Middleware\PreventAccessFromCentralDomains;
 | dideklarasikan di sini, bukan di TenancyServiceProvider::mapRoutes(),
 | karena provider itu hanya mengelompokkan file tanpa membungkus middleware.
 |
-| Kategori dan kantong sudah memakai data asli, jadi grup di atasnya sudah
-| diberi middleware auth. Halaman lain (dashboard, transaksi, transfer,
-| anggota, billing, pengaturan) masih pratinjau tampilan dengan data contoh;
-| masing-masing berhenti memakai SampleData begitu lapisan datanya mendarat.
-|
 */
 
 Route::middleware([

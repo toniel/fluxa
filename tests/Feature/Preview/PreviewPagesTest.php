@@ -8,9 +8,8 @@ beforeEach(function () {
 });
 
 /**
- * Halaman yang masih memakai data contoh ikut ter-render di belakang auth.
- * Mengunjunginya juga menutup controller pratinjau dan SampleData, supaya
- * kedua-duanya tidak jadi file 0% bagi gate coverage.
+ * Asap halaman utama: setiap halaman inti ikut ter-render di belakang auth
+ * untuk anggota tenant.
  */
 test('halaman pratinjau tetap ter-render untuk anggota tenant', function (string $path, string $component) {
     ['user' => $owner] = categoryTenant('preview-uji');
