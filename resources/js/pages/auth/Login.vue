@@ -98,12 +98,15 @@ const highlights = [
                 <div class="mt-6 space-y-4">
                     <PasskeyVerify />
 
-                    <!-- type eksplisit: <button> tanpa type default-nya submit. -->
+                    <!-- type eksplisit: <button> tanpa type default-nya submit.
+                        <a> penuh (bukan Link Inertia): OAuth mengembalikan 302
+                        ke Google, bukan respons Inertia, jadi tidak boleh
+                        dibawa lewat XHR. -->
                     <Button as-child variant="outline" class="min-h-11 w-full">
-                        <Link :href="googleRedirect.url()">
+                        <a :href="googleRedirect.url()">
                             <GoogleIcon class="size-4" />
                             Lanjutkan dengan Google
-                        </Link>
+                        </a>
                     </Button>
 
                     <div class="flex items-center gap-3">

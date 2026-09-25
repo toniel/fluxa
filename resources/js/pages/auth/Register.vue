@@ -86,10 +86,10 @@ const highlights = [
 
                 <div class="mt-6 space-y-4">
                     <Button as-child variant="outline" class="min-h-11 w-full">
-                        <Link :href="googleRedirect.url()">
+                        <a :href="googleRedirect.url()">
                             <GoogleIcon class="size-4" />
                             Daftar dengan Google
-                        </Link>
+                        </a>
                     </Button>
 
                     <div class="flex items-center gap-3">
