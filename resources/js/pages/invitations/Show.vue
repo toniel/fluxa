@@ -93,14 +93,14 @@ const statusMeta = computed(() => {
                         akun yang sesuai, lalu buka tautan ini lagi.
                     </p>
                     <Button as-child class="mt-4 min-h-11 w-full">
-                        <Link
+                        <a
                             :href="
                                 googleRedirect.url({
                                     query: { invitation: token },
                                 })
                             "
                             ><GoogleIcon class="size-4" />Lanjutkan dengan
-                            Google</Link
+                            Google</a
                         >
                     </Button>
                     <Button
