@@ -3,6 +3,17 @@
 Semua perubahan yang berdampak pada deploy dicatat di sini, mengikuti
 [Semantic Versioning](https://semver.org/lang/id/).
 
+## v1.0.2 — 2026-09-25
+
+### Perbaikan
+
+- **URL, skema, dan deteksi subdomain salah di balik reverse proxy.**
+  Server produksi berdiri di belakang nginx; kini `Middleware::trustProxies`
+  dipercayai (`X-Forwarded-Proto`/`X-Forwarded-Host`) sehingga `url()`,
+  http/https, dan subdomain tenant dihitung dengan nilai header yang benar.
+  Nginx wajib selalu menimpa `X-Forwarded-*`, dan aplikasi tidak boleh
+  terekspos langsung tanpa nginx.
+
 ## v1.0.1 — 2026-09-25
 
 ### Perbaikan
