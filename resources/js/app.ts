@@ -2,6 +2,7 @@ import { createInertiaApp } from '@inertiajs/vue3';
 import { initializeTheme } from '@/composables/useAppearance';
 import AppLayout from '@/layouts/AppLayout.vue';
 import AuthLayout from '@/layouts/AuthLayout.vue';
+import AdminLayout from '@/layouts/admin/AdminLayout.vue';
 import SettingsLayout from '@/layouts/settings/Layout.vue';
 import { initializeFlashToast } from '@/lib/flashToast';
 
@@ -17,6 +18,10 @@ void createInertiaApp({
             // tidak punya tujuan: seluruh isinya route subdomain.
             case name.startsWith('tenants/'):
                 return null;
+            // Panel super-admin juga mandiri: datanya lintas tenant dan
+            // sidebar tenant tidak berlaku di sana.
+            case name.startsWith('admin/'):
+                return AdminLayout;
             // Halaman masuk membawa panel pengantarnya sendiri, jadi ia tidak
             // memakai kartu terpusat milik AuthLayout.
             case name === 'auth/Login':

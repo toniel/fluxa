@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\TenantController as AdminTenantController;
+use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Auth\GoogleCallbackController;
 use App\Http\Controllers\Auth\GoogleRedirectController;
 use App\Http\Controllers\BillingWebhookController;
@@ -34,6 +37,15 @@ Route::middleware(['auth'])->group(function (): void {
 Route::get('invitations/{token}', [InvitationAcceptanceController::class, 'show'])->name('invitations.show');
 Route::post('invitations/{token}/accept', [InvitationAcceptanceController::class, 'store'])
     ->middleware('auth')->name('invitations.accept');
+
+// Panel super-admin di central domain: statistik lintas tenant dan daftar
+// pengguna. Terpisah dari aplikasi tenant (subdomain) maupun pemilih tenant.
+Route::middleware(['auth', 'super-admin'])->prefix('admin')->name('admin.')->group(function (): void {
+    Route::get('/', AdminDashboardController::class)->name('dashboard');
+    Route::get('/users', [AdminUserController::class, 'index'])->name('users.index');
+    Route::get('/tenants', [AdminTenantController::class, 'index'])->name('tenants.index');
+    Route::put('/tenants/{tenant}', [AdminTenantController::class, 'update'])->name('tenants.update');
+});
 
 // Webhook billing dari provider (tanpa auth/CSRF; verifikasi di controller).
 Route::post('billing/webhook', BillingWebhookController::class)->name('billing.webhook');

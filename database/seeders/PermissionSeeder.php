@@ -44,6 +44,11 @@ class PermissionSeeder extends Seeder
             Permission::findOrCreate($permission->value, 'web');
         }
 
+        // Tanpa flush ini, cache spatie bisa basi: dalam DatabaseSeeder, model
+        // events (sumber flush normal via RefreshesPermissionCache) dinonaktifkan
+        // oleh WithoutModelEvents, jadi findOrCreate() tidak mematikan cache.
+        $registrar->forgetCachedPermissions();
+
         foreach (TenantRole::cases() as $role) {
             Role::findOrCreate($role->value, 'web')
                 ->syncPermissions($role->permissionValues());
