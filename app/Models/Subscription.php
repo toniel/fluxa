@@ -7,8 +7,10 @@ namespace App\Models;
 use App\Enums\SubscriptionStatus;
 use App\Models\Concerns\BelongsToTenant;
 use App\Policies\SubscriptionPolicy;
+use App\QueryBuilders\SubscriptionQueryBuilder;
 use Database\Factories\SubscriptionFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\UseEloquentBuilder;
 use Illuminate\Database\Eloquent\Attributes\UsePolicy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -28,8 +30,11 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $cancelled_at
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
+ *
+ * @method static SubscriptionQueryBuilder query()
  */
 #[Fillable(['plan_id', 'status', 'gateway', 'external_customer_id', 'external_subscription_id', 'current_period_start', 'current_period_end', 'cancelled_at'])]
+#[UseEloquentBuilder(SubscriptionQueryBuilder::class)]
 #[UsePolicy(SubscriptionPolicy::class)]
 class Subscription extends Model
 {

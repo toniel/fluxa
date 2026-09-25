@@ -25,6 +25,12 @@ class UserSeeder extends Seeder
         $admin = $this->user('Sinta Admin', 'admin@fluxa.test');
         $member = $this->user('Rudi Anggota', 'member@fluxa.test');
 
+        // Super admin platform tidak tergabung tenant mana pun: ia mengelola
+        // lintas tenant dari central (path /admin). is_super_admin tidak
+        // fillable, jadi di-set lewat forceFill — sama seperti command promote.
+        $superadmin = $this->user('Ayu Platform', 'superadmin@fluxa.test');
+        $superadmin->forceFill(['is_super_admin' => true])->save();
+
         // Budi sengaja hanya memegang satu tenant supaya login langsung masuk
         // dashboard tanpa mampir ke pemilih tenant.
         $this->tenant('Keluarga Demo', 'keluarga-demo', $owner, [

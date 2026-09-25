@@ -16,4 +16,20 @@ class PlanQueryBuilder extends Builder
     {
         return $this->where('slug', $slug)->first();
     }
+
+    /**
+     * Slug paket yang aktif, untuk menemani validasi permintaan.
+     *
+     * @return list<string>
+     */
+    public function activeSlugs(): array
+    {
+        $slugs = [];
+
+        foreach ($this->where('is_active', true)->get() as $plan) {
+            $slugs[] = $plan->slug;
+        }
+
+        return $slugs;
+    }
 }

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\EnsureSuperAdmin;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
 use Illuminate\Foundation\Application;
@@ -27,6 +28,8 @@ return Application::configure(basePath: dirname(__DIR__))
         // Webhook provider tidak bisa mengirim token CSRF; keasliannya
         // diverifikasi per-gateway di controller, bukan di sini.
         $middleware->validateCsrfTokens(except: ['billing/webhook']);
+
+        $middleware->alias(['super-admin' => EnsureSuperAdmin::class]);
 
         // AddLinkHeadersForPreloadedAssets sengaja tidak dipasang. Ia mengirim
         // header Link berisi seluruh aset halaman, dan header itu tumbuh tiap
