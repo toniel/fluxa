@@ -17,6 +17,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Produksi di belakang nginx/reverse proxy: percayai X-Forwarded-*
+        // supaya URL, skema, dan deteksi subdomain memakai nilai yang benar.
+        $middleware->trustProxies(at: '*');
+
         // Tujuan user yang sudah login saat membuka route tamu. Default
         // Laravel adalah '/dashboard', yang di central domain dijawab 404
         // karena dashboard hanya dilayani di subdomain tenant. Ini terpisah
