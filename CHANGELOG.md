@@ -3,6 +3,16 @@
 Semua perubahan yang berdampak pada deploy dicatat di sini, mengikuti
 [Semantic Versioning](https://semver.org/lang/id/).
 
+## v1.0.1 — 2026-09-25
+
+### Perbaikan
+
+- **Tombol "Lanjutkan dengan Google" tidak bisa diklik.** Tombol memakai
+  `<Link>` Inertia yang menjalankan XHR, padahal `/auth/google/redirect`
+  membalas 302 ke Google (bukan respons Inertia) — navigasi dibatalkan
+  diam-diam (CORS). Kini dipakai `<a>` penuh di halaman Masuk, Daftar, dan
+  terima undangan, sehingga browser berpindah halaman langsung ke Google.
+
 ## v1.0.0 — 2026-09-25
 
 Rilis produksi pertama, untuk pemakaian pribadi. Aplikasi keuangan bersama
