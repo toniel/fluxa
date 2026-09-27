@@ -39,14 +39,21 @@ class CategoryController extends Controller
         return Inertia::render('categories/Create', [
             'types' => CategoryType::values(),
             'icons' => $this->icons(),
+            'colors' => $this->colors(),
         ]);
     }
 
-    public function store(CategoryFormData $data, UpsertCategoryAction $action): RedirectResponse
+    public function store(CategoryFormData $data, Request $request, UpsertCategoryAction $action): RedirectResponse
     {
         Gate::authorize('create', Category::class);
 
-        $action->handle($data);
+        $request->validate(['icon_file' => ['nullable', 'image', 'max:2048']]);
+
+        $action->handle(
+            $data,
+            icon: $request->file('icon_file'),
+            removeIcon: $request->boolean('remove_icon'),
+        );
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Kategori disimpan.']);
 
@@ -61,14 +68,22 @@ class CategoryController extends Controller
             'category' => CategoryData::from($category),
             'types' => CategoryType::values(),
             'icons' => $this->icons(),
+            'colors' => $this->colors(),
         ]);
     }
 
-    public function update(CategoryFormData $data, Category $category, UpsertCategoryAction $action): RedirectResponse
+    public function update(CategoryFormData $data, Category $category, Request $request, UpsertCategoryAction $action): RedirectResponse
     {
         Gate::authorize('update', $category);
 
-        $action->handle($data, $category);
+        $request->validate(['icon_file' => ['nullable', 'image', 'max:2048']]);
+
+        $action->handle(
+            $data,
+            $category,
+            $request->file('icon_file'),
+            $request->boolean('remove_icon'),
+        );
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Kategori disimpan.']);
 
@@ -97,5 +112,13 @@ class CategoryController extends Controller
     private function icons(): array
     {
         return config('fluxa.category_icons');
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function colors(): array
+    {
+        return config('fluxa.category_colors');
     }
 }

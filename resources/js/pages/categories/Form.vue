@@ -2,11 +2,11 @@
 import { Head, useForm } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import InputError from '@/components/InputError.vue';
+import CategoryVisualForm from '@/components/fluxa/CategoryVisualForm.vue';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { categoryIcon } from '@/lib/categoryIcons';
 
 const props = withDefaults(
     defineProps<{
@@ -14,10 +14,17 @@ const props = withDefaults(
         method?: 'post' | 'put';
         types?: string[];
         icons?: string[];
+        colors?: string[];
         // Absent saat membuat, yang membuat semua field kosong.
         category?: App.Data.CategoryData | null;
     }>(),
-    { method: 'post', types: () => [], icons: () => [], category: null },
+    {
+        method: 'post',
+        types: () => [],
+        icons: () => [],
+        colors: () => [],
+        category: null,
+    },
 );
 
 // Nama Indonesia per ikon, dipakai sebagai label tombol supaya bisa dibaca
@@ -28,15 +35,20 @@ const iconLabels: Record<string, string> = {
     briefcase: 'Gaji',
     broom: 'Perlengkapan rumah',
     bus: 'Bus',
+    candy: 'Jajan',
     car: 'Kendaraan',
     'circle-dollar-sign': 'Penghasilan',
     'circle-plus': 'Umum',
+    coffee: 'Kopi',
     coins: 'Iuran',
     'credit-card': 'Kartu',
+    'cup-soda': 'Minuman',
+    droplets: 'Air / PDAM',
     dumbbell: 'Olahraga',
     ellipsis: 'Lainnya',
     'gamepad-2': 'Hiburan',
     gift: 'Hadiah',
+    globe: 'Internet',
     'graduation-cap': 'Pendidikan',
     'hand-coins': 'Donasi',
     'heart-pulse': 'Kesehatan',
@@ -44,18 +56,23 @@ const iconLabels: Record<string, string> = {
     key: 'Kontrakan',
     landmark: 'Bank',
     laptop: 'Gadget',
+    milk: 'Susu',
     'paw-print': 'Hewan',
     'piggy-bank': 'Tabungan',
     plane: 'Perjalanan',
+    plug: 'Listrik',
     receipt: 'Tagihan',
     shirt: 'Pakaian',
     'shopping-bag': 'Belanja',
     'shopping-basket': 'Sembako',
     'shopping-cart': 'Belanja besar',
-    smartphone: 'Pulsa',
+    signal: 'Pulsa',
+    smartphone: 'Gadget',
+    'soap-dispenser-droplet': 'Detergen / mandi',
     stethoscope: 'Obat',
     utensils: 'Makan',
     wallet: 'Dompet',
+    wifi: 'WiFi',
     wrench: 'Perbaikan',
 };
 
@@ -63,7 +80,10 @@ const form = useForm({
     name: props.category?.name ?? '',
     type: props.category?.type ?? 'expense',
     icon: props.category?.icon ?? '',
+    emoji: props.category?.emoji ?? '',
+    color: props.category?.color ?? '',
     is_default: props.category?.is_default ?? false,
+    remove_icon: false,
 });
 
 // transform() merusak tipe form.errors, baca lewat cast (lihat CRUD_FLOW §6).
@@ -123,29 +143,20 @@ function submit(): void {
                 <InputError :message="errorFor.type" />
             </fieldset>
 
-            <fieldset class="grid gap-2">
-                <legend class="text-sm leading-none font-medium">Ikon</legend>
-                <div class="flex flex-wrap gap-1.5">
-                    <button
-                        v-for="icon in icons"
-                        :key="icon"
-                        type="button"
-                        class="focus-visible:ring-ring flex size-12 items-center justify-center rounded-full border p-0 focus-visible:ring-2 focus-visible:outline-none"
-                        :class="
-                            form.icon === icon
-                                ? 'border-primary bg-primary/10 text-primary'
-                                : 'border-input hover:bg-accent text-muted-foreground'
-                        "
-                        :aria-label="iconLabels[icon] ?? icon"
-                        :aria-pressed="form.icon === icon"
-                        :title="iconLabels[icon] ?? icon"
-                        @click="form.icon = icon"
-                    >
-                        <component :is="categoryIcon(icon)" class="size-5" />
-                    </button>
-                </div>
-                <InputError :message="errorFor.icon" />
-            </fieldset>
+            <CategoryVisualForm
+                :icons="icons"
+                :icon-labels="iconLabels"
+                :colors="colors"
+                :icon="form.icon"
+                :emoji="form.emoji"
+                :color="form.color"
+                :icon-url="category?.icon_url ?? ''"
+                :errors="errorFor"
+                @update:icon="form.icon = $event"
+                @update:emoji="form.emoji = $event"
+                @update:color="form.color = $event"
+                @update:remove-icon="form.remove_icon = $event"
+            />
 
             <Label
                 for="category-default"

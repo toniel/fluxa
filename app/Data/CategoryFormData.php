@@ -30,6 +30,23 @@ class CategoryFormData extends Data
         public CategoryType $type,
         #[Nullable, Max(64)]
         public ?string $icon,
+        #[Nullable, Max(8)]
+        public ?string $color,
+        #[Nullable, Max(32)]
+        public ?string $emoji,
         public bool $is_default = false,
     ) {}
+
+    /**
+     * Ikon kategori longgar (nama lucide, arahkan lewat config); warna
+     * diikat ke slot palet agar tidak ada hex bebas yang merusak aksesibilitas.
+     *
+     * @return array<string, mixed>
+     */
+    public static function rules(): array
+    {
+        return [
+            'color' => ['nullable', 'in:'.implode(',', config('fluxa.category_colors'))],
+        ];
+    }
 }

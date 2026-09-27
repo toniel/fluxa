@@ -27,6 +27,11 @@ const roleLabel: Record<string, string> = {
     admin: 'Admin',
     member: 'Anggota',
 };
+
+// Sufiks subdomain diambil dari app.url, bukan diketik manual.
+const centralDomain = computed<string>(
+    () => (page.props.central_domain as string | undefined) ?? 'localhost',
+);
 </script>
 
 <template>
@@ -68,7 +73,9 @@ const roleLabel: Record<string, string> = {
                             }}</span>
                             <span
                                 class="text-muted-foreground block truncate text-xs"
-                                >{{ membership.subdomain }}.fluxa.test</span
+                                >{{ membership.subdomain }}.{{
+                                    centralDomain
+                                }}</span
                             >
                         </span>
                         <Badge v-if="membership.role" variant="secondary">{{

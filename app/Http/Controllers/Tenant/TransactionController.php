@@ -24,7 +24,7 @@ class TransactionController extends Controller
     public function index(Request $request): Response
     {
         $transactions = Transaction::query()
-            ->with(['account.creditCardDetail', 'category', 'creator', 'media', 'linkedAccount'])
+            ->with(['account.creditCardDetail', 'category.media', 'creator', 'media', 'linkedAccount'])
             ->filterByQueryString()
             ->searchByQueryString()
             ->sortByQueryString()
@@ -36,7 +36,7 @@ class TransactionController extends Controller
                 fn (Transaction $transaction) => $this->toData($request, $transaction),
             )->all(),
             'accounts' => Account::query()->active()->orderedForListing()->get(['id', 'name', 'balance']),
-            'categories' => Category::query()->orderedForListing()->get(['id', 'name', 'type']),
+            'categories' => $this->categoryOptions(),
             'types' => TransactionType::values(),
             'can' => [
                 'create' => $request->user()->can('create', Transaction::class),
@@ -55,7 +55,7 @@ class TransactionController extends Controller
     {
         Gate::authorize('view', $transaction);
 
-        $transaction->load(['account.creditCardDetail', 'category', 'creator', 'media', 'linkedAccount']);
+        $transaction->load(['account.creditCardDetail', 'category.media', 'creator', 'media', 'linkedAccount']);
 
         return Inertia::render('transactions/Show', [
             'transaction' => $this->toData(request(), $transaction),
@@ -87,7 +87,7 @@ class TransactionController extends Controller
     {
         Gate::authorize('update', $transaction);
 
-        $transaction->load(['account.creditCardDetail', 'category', 'creator', 'media', 'linkedAccount']);
+        $transaction->load(['account.creditCardDetail', 'category.media', 'creator', 'media', 'linkedAccount']);
 
         return Inertia::render('transactions/Edit', [
             'transaction' => $this->toData(request(), $transaction),
@@ -135,9 +135,33 @@ class TransactionController extends Controller
     {
         return [
             'accounts' => Account::query()->active()->orderedForListing()->get(['id', 'name', 'type', 'balance']),
-            'categories' => Category::query()->orderedForListing()->get(['id', 'name', 'type']),
+            'categories' => $this->categoryOptions(),
             'types' => TransactionType::values(),
         ];
+    }
+
+    /**
+     * Opsi kategori untuk form transaksi + filter index: bawa penampilannya
+     * (ikon/emoji/gambar/warna) supaya anak panah senada dengan daftar.
+     *
+     * @return array<int, array{id: int, name: string, type: string, icon: string|null, color: string|null, emoji: string|null, icon_url: string}>
+     */
+    private function categoryOptions(): array
+    {
+        return Category::query()
+            ->with('media')
+            ->orderedForListing()
+            ->get(['id', 'name', 'type', 'icon', 'color', 'emoji'])
+            ->map(static fn (Category $category): array => [
+                'id' => (int) $category->getKey(),
+                'name' => $category->name,
+                'type' => $category->type->value,
+                'icon' => $category->icon,
+                'color' => $category->color,
+                'emoji' => $category->emoji,
+                'icon_url' => $category->icon_url,
+            ])
+            ->all();
     }
 
     private function toData(Request $request, Transaction $transaction): TransactionData
@@ -151,6 +175,9 @@ class TransactionController extends Controller
             category_id: $transaction->category_id,
             category_name: $transaction->category?->name,
             category_icon: $transaction->category?->icon,
+            category_emoji: $transaction->category?->emoji,
+            category_color: $transaction->category?->color,
+            category_icon_url: $transaction->category->icon_url ?? '',
             type: $transaction->type,
             amount: (string) $transaction->amount,
             description: $transaction->description,

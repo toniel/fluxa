@@ -128,6 +128,8 @@ function confirmDelete(): void {
                     :name="account.name"
                     :type="account.type"
                     :balance="account.balance"
+                    :icon="account.icon"
+                    :color="account.color"
                     :logo-url="account.logo_url"
                     :credit-limit="account.credit_detail?.credit_limit ?? null"
                 >
@@ -200,6 +202,8 @@ function confirmDelete(): void {
                         :name="account.name"
                         :type="account.type"
                         :balance="account.balance"
+                        :icon="account.icon"
+                        :color="account.color"
                         :logo-url="account.logo_url"
                         :credit-limit="
                             account.credit_detail?.credit_limit ?? null

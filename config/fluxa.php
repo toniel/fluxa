@@ -58,15 +58,20 @@ return [
         'briefcase',
         'broom',
         'bus',
+        'candy',
         'car',
         'circle-dollar-sign',
         'circle-plus',
+        'coffee',
         'coins',
         'credit-card',
+        'cup-soda',
+        'droplets',
         'dumbbell',
         'ellipsis',
         'gamepad-2',
         'gift',
+        'globe',
         'graduation-cap',
         'hand-coins',
         'heart-pulse',
@@ -74,17 +79,72 @@ return [
         'key',
         'landmark',
         'laptop',
+        'milk',
         'paw-print',
         'piggy-bank',
         'plane',
+        'plug',
         'receipt',
         'shirt',
         'shopping-bag',
         'shopping-basket',
         'shopping-cart',
+        'signal',
         'smartphone',
+        'soap-dispenser-droplet',
         'stethoscope',
         'utensils',
+        'wallet',
+        'wifi',
+        'wrench',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Warna Kategori
+    |--------------------------------------------------------------------------
+    |
+    | Slot palet kategorikal lima warna dari DESIGN.md. Disimpan sebagai nama
+    | slot ("cat-1".."cat-5"), dan frontend me-resolve var CSS yang sama dengan
+    | donat dashboard supaya warnanya ikut terang/gelap. Sama dengan palet di
+    | resources/css/app.css harus dijaga selaras.
+    |
+    */
+
+    'category_colors' => [
+        'cat-1',
+        'cat-2',
+        'cat-3',
+        'cat-4',
+        'cat-5',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Ikon Kantong
+    |--------------------------------------------------------------------------
+    |
+    | Nama yang boleh dipilih untuk ikon kantong di form. Pemetaan nama ke
+    | komponen ikonnya hidup di resources/js/lib/accountIcons.ts.
+    |
+    */
+
+    'account_icons' => [
+        'banknote',
+        'car',
+        'circle-dollar-sign',
+        'coins',
+        'credit-card',
+        'ellipsis',
+        'gift',
+        'hand-coins',
+        'house',
+        'landmark',
+        'piggy-bank',
+        'plane',
+        'receipt',
+        'shopping-bag',
+        'smartphone',
         'wallet',
         'wrench',
     ],

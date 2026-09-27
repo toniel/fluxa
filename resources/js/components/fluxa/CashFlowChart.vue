@@ -3,11 +3,12 @@ import { computed } from 'vue';
 import { Bar } from 'vue-chartjs';
 import type { ChartData, ChartOptions } from 'chart.js';
 import { useAppearance } from '@/composables/useAppearance';
+import { useMaskedMoney } from '@/composables/useMaskedMoney';
 import {
     chartGridColor,
     chartPalette,
     chartTextColor,
-    rupiahTooltip,
+    moneyTooltip,
 } from '@/lib/chart';
 import { formatRupiah } from '@/lib/currency';
 
@@ -21,6 +22,7 @@ const props = defineProps<{ buckets: Bucket[] }>();
 
 // Dibaca di sini supaya ganti tema me-render ulang chart dengan warna baru.
 const { resolvedAppearance } = useAppearance();
+const { isMasked } = useMaskedMoney();
 
 const parsed = computed(() =>
     props.buckets.map((b) => ({
@@ -74,17 +76,25 @@ const options = computed<ChartOptions<'bar'>>(() => {
                 labels: { color: text, boxWidth: 12, usePointStyle: true },
             },
             tooltip: {
-                callbacks: { label: rupiahTooltip },
+                callbacks: {
+                    label: (item) => moneyTooltip(item, isMasked.value),
+                },
             },
         },
         scales: {
             x: { ticks: { color: text }, grid: { display: false } },
             y: {
-                ticks: {
-                    color: text,
-                    callback: (value) =>
-                        formatRupiah(typeof value === 'number' ? value : 0),
-                },
+                // Sumbu ikut disamarkan: label angka ditiadakan supaya skala
+                // bulanan tidak membocorkan besaran.
+                ticks: isMasked.value
+                    ? { display: false }
+                    : {
+                          color: text,
+                          callback: (value) =>
+                              formatRupiah(
+                                  typeof value === 'number' ? value : 0,
+                              ),
+                      },
                 grid: { color: grid },
                 border: { display: false },
             },
@@ -92,14 +102,18 @@ const options = computed<ChartOptions<'bar'>>(() => {
     };
 });
 
-const description = computed(() =>
-    parsed.value
+const description = computed(() => {
+    if (isMasked.value) {
+        return 'Arus kas per minggu disembunyikan';
+    }
+
+    return parsed.value
         .map(
             (r) =>
                 `${r.label} masuk ${formatRupiah(r.income)}, keluar ${formatRupiah(r.expense)}`,
         )
-        .join('; '),
-);
+        .join('; ');
+});
 </script>
 
 <template>

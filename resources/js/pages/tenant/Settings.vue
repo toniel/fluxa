@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, useForm } from '@inertiajs/vue3';
+import { Head, useForm, usePage } from '@inertiajs/vue3';
 import { Trash2 } from '@lucide/vue';
 import { computed, ref } from 'vue';
 import ConfirmDeleteDialog from '@/components/fluxa/ConfirmDeleteDialog.vue';
@@ -30,6 +30,13 @@ const form = useForm({
     name: props.tenant.name,
     subdomain: props.tenant.subdomain ?? '',
 });
+
+// Sufiks subdomain diambil dari app.url (domain pusat), bukan diketik manual.
+const page = usePage();
+
+const centralDomain = computed<string>(
+    () => (page.props.central_domain as string | undefined) ?? 'localhost',
+);
 
 // Subdomain pilihan sendiri adalah fitur Pro; Free terkunci di alamat acak.
 const canCustomizeSubdomain = computed(() => props.plan.slug !== 'free');
@@ -125,7 +132,7 @@ function confirmDelete(): void {
                         placeholder="nama-pilihanmu"
                     />
                     <span class="text-muted-foreground shrink-0 text-sm"
-                        >.fluxa.test</span
+                        >.{{ centralDomain }}</span
                     >
                 </div>
                 <p class="text-muted-foreground text-xs">
@@ -158,7 +165,9 @@ function confirmDelete(): void {
                         aria-hidden="true"
                     />
                     <span class="font-numeric min-w-0 truncate"
-                        >https://{{ tenant.subdomain }}.fluxa.test</span
+                        >https://{{ tenant.subdomain }}.{{
+                            centralDomain
+                        }}</span
                     >
                 </div>
                 <p class="text-muted-foreground text-xs">

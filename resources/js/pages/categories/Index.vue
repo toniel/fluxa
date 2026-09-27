@@ -4,8 +4,8 @@ import { Pencil, Plus, Tags, Trash2 } from '@lucide/vue';
 import { computed, ref } from 'vue';
 import EmptyState from '@/components/fluxa/EmptyState.vue';
 import ConfirmDeleteDialog from '@/components/fluxa/ConfirmDeleteDialog.vue';
+import CategoryBadge from '@/components/fluxa/CategoryBadge.vue';
 import { Button } from '@/components/ui/button';
-import { categoryIcon } from '@/lib/categoryIcons';
 import {
     create as createRoute,
     destroy,
@@ -161,20 +161,13 @@ const activeExpenseTextClass = 'text-[#16211c]';
                     :key="category.id"
                     class="flex items-center gap-3 py-3"
                 >
-                    <span
-                        class="flex size-10 shrink-0 items-center justify-center rounded-full"
-                        :class="
-                            tab === 'expense'
-                                ? 'bg-chart-out/12 text-money-out'
-                                : 'bg-money-in/12 text-money-in'
-                        "
-                        aria-hidden="true"
-                    >
-                        <component
-                            :is="categoryIcon(category.icon)"
-                            class="size-5"
-                        />
-                    </span>
+                    <CategoryBadge
+                        :icon="category.icon"
+                        :emoji="category.emoji"
+                        :icon-url="category.icon_url"
+                        :color="category.color"
+                        :tone="tab === 'expense' ? 'out' : 'in'"
+                    />
 
                     <div class="min-w-0 flex-1">
                         <p class="truncate text-sm font-medium">

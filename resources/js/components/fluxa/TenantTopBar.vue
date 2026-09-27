@@ -2,6 +2,7 @@
 import { usePage } from '@inertiajs/vue3';
 import { Check, ChevronsUpDown } from '@lucide/vue';
 import { computed } from 'vue';
+import MaskMoneyButton from '@/components/fluxa/MaskMoneyButton.vue';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -89,5 +90,7 @@ function tenantUrl(subdomain: string): string {
         >
             {{ roleLabel[current.role] ?? current.role }}
         </span>
+
+        <MaskMoneyButton />
     </header>
 </template>

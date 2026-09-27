@@ -19,6 +19,9 @@ class CategoryData extends Data
         public string $name,
         public CategoryType $type,
         public ?string $icon,
+        public ?string $color,
+        public ?string $emoji,
+        public string $icon_url,
         public bool $is_default,
     ) {}
 }

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { formatRupiah, formatRupiahCompact } from '@/lib/currency';
+import { useMaskedMoney } from '@/composables/useMaskedMoney';
 
 const props = withDefaults(
     defineProps<{
@@ -13,11 +14,16 @@ const props = withDefaults(
     { direction: 'neutral', signed: false, compact: false },
 );
 
+const { isMasked } = useMaskedMoney();
+
 const formatted = computed(() =>
     props.compact
         ? formatRupiahCompact(props.value)
         : formatRupiah(props.value),
 );
+
+// Nominal disamarkan utuh; tanda arah (bila ada) tetap tampil di depannya.
+const hidden = 'Rp ••••••';
 
 const sign = computed(() => {
     if (!props.signed || props.direction === 'neutral') {
@@ -40,8 +46,13 @@ const tone = computed(() => {
 </script>
 
 <template>
-    <span class="font-numeric tabular-nums" :class="tone">
+    <span
+        class="font-numeric tabular-nums"
+        :class="tone"
+        :aria-label="isMasked ? 'Nominal disembunyikan' : undefined"
+    >
         <span v-if="sign" aria-hidden="true">{{ sign }}</span
-        >{{ formatted }}
+        ><span v-if="isMasked" aria-hidden="true">{{ hidden }}</span
+        ><template v-else>{{ formatted }}</template>
     </span>
 </template>

@@ -9,6 +9,9 @@ import {
 } from '@lucide/vue';
 import { computed } from 'vue';
 import MoneyText from '@/components/fluxa/MoneyText.vue';
+import { useMaskedMoney } from '@/composables/useMaskedMoney';
+import { accountIcon } from '@/lib/accountIcons';
+import { isColorSlot } from '@/lib/categoryVisual';
 import { formatRupiah } from '@/lib/currency';
 
 const props = withDefaults(
@@ -22,13 +25,24 @@ const props = withDefaults(
         logoUrl?: string;
         // Absent untuk kantong aset atau kartu tanpa limit.
         creditLimit?: string | null;
+        // Penampilan kustom kantong; memakai bawaan tipe bila kosong.
+        icon?: string | null;
+        color?: string | null;
     }>(),
-    { txCount: undefined, archived: false, logoUrl: '', creditLimit: null },
+    {
+        txCount: undefined,
+        archived: false,
+        logoUrl: '',
+        creditLimit: null,
+        icon: null,
+        color: null,
+    },
 );
 
 /**
  * Tipe kantong menentukan ikon sekaligus warnanya, jadi satu jenis kantong
- * selalu tampil sama di seluruh aplikasi.
+ * selalu tampil sama di seluruh aplikasi bila tidak dipilihkan penampilan
+ * kustom.
  */
 const styles = {
     cash: {
@@ -73,6 +87,26 @@ const style = computed(
     () => styles[props.type as keyof typeof styles] ?? styles.other,
 );
 
+// Slot warna divalidasi sehingga kelas Tailwind tetap aman dari input user.
+const slot = computed(() =>
+    props.color && isColorSlot(props.color) ? props.color : null,
+);
+
+const swatch = computed(
+    () =>
+        slot.value && {
+            tint: `bg-${slot.value}/12 text-${slot.value}`,
+            blob: `bg-${slot.value}/12`,
+        },
+);
+
+const { isMasked } = useMaskedMoney();
+
+// Ikon kustom yang valid dipakai; sisanya kembali ke ikon bawaan tipe.
+const resolvedIcon = computed(
+    () => accountIcon(props.icon) ?? style.value.icon,
+);
+
 // Saldo minus diberi warna arah keluar supaya kantong yang jebol terlihat
 // sebelum tanda minusnya sempat dibaca.
 const direction = computed(() =>
@@ -103,7 +137,7 @@ const utilization = computed(() => {
              lebar halaman betapapun besarnya. -->
         <div
             class="pointer-events-none absolute -top-8 -right-8 size-28 rounded-full"
-            :class="style.blob"
+            :class="swatch?.blob ?? style.blob"
             aria-hidden="true"
         />
 
@@ -121,10 +155,10 @@ const utilization = computed(() => {
             <span
                 v-else
                 class="flex size-11 shrink-0 items-center justify-center rounded-full"
-                :class="style.tint"
+                :class="swatch?.tint ?? style.tint"
                 aria-hidden="true"
             >
-                <component :is="style.icon" class="size-5" />
+                <component :is="resolvedIcon" class="size-5" />
             </span>
 
             <span
@@ -144,7 +178,7 @@ const utilization = computed(() => {
                 class="text-muted-foreground mt-0.5 text-xs"
             >
                 Terpakai {{ utilization }}% dari
-                {{ formatRupiah(creditLimit ?? 0) }}
+                {{ isMasked ? 'Rp ••••••' : formatRupiah(creditLimit ?? 0) }}
             </p>
             <p
                 v-else-if="txCount !== undefined"

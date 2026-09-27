@@ -9,18 +9,24 @@ import EmptyState from '@/components/fluxa/EmptyState.vue';
 import HeroBalance from '@/components/fluxa/HeroBalance.vue';
 import TransactionRow from '@/components/fluxa/TransactionRow.vue';
 import { Button } from '@/components/ui/button';
-import { categoryIcon } from '@/lib/categoryIcons';
 import { create as createAccountRoute } from '@/routes/accounts';
 import { index as accountsRoute } from '@/routes/accounts';
 import { dashboard } from '@/routes';
 import { index as transactionsRoute } from '@/routes/transactions';
 
-type Slice = { category: string; icon: string | null; total: string };
+type Slice = {
+    category: string;
+    icon: string | null;
+    color: string | null;
+    total: string;
+};
 type Bucket = { label: string; income: string; expense: string };
 type Account = {
     id: number;
     name: string;
     type: string;
+    icon?: string | null;
+    color?: string | null;
     balance: string;
     is_archived: boolean;
 };
@@ -33,6 +39,9 @@ type Recent = {
     account: string;
     category: string | null;
     icon: string | null;
+    emoji: string | null;
+    color: string | null;
+    icon_url: string;
 };
 
 defineProps<{
@@ -107,6 +116,8 @@ const asLocalDate = (ymd: string): Date => new Date(`${ymd}T00:00:00`);
                     :name="account.name"
                     :type="account.type"
                     :balance="account.balance"
+                    :icon="account.icon"
+                    :color="account.color"
                 />
             </div>
             <EmptyState
@@ -157,7 +168,10 @@ const asLocalDate = (ymd: string): Date => new Date(`${ymd}T00:00:00`);
             <ul v-if="recent.length" class="divide-y">
                 <li v-for="item in recent" :key="item.id">
                     <TransactionRow
-                        :icon="categoryIcon(item.icon)"
+                        :icon="item.icon"
+                        :emoji="item.emoji"
+                        :icon-url="item.icon_url"
+                        :color="item.color"
                         :title="
                             item.description ||
                             item.category ||

@@ -6,6 +6,8 @@ use App\Models\Category;
 use App\Models\Tenant;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Testing\AssertableInertia as Assert;
 
 beforeEach(function () {
@@ -319,4 +321,101 @@ test('baris milik tenant lain menjawab 404, bukan 403', function () {
     $this->actingAs($secondOwner)
         ->delete(categoryBaseUrl('komunitas-uji').'/categories/'.$category->getKey())
         ->assertNotFound();
+});
+
+test('emoji dan warna slot tersimpan dan muncul di daftar', function () {
+    ['user' => $owner] = categoryTenant('keluarga-uji');
+
+    $this->actingAs($owner)
+        ->post(categoryBaseUrl('keluarga-uji').'/categories', categoryPayload([
+            'icon' => '',
+            'emoji' => '⚡',
+            'color' => 'cat-1',
+        ]))
+        ->assertRedirect()
+        ->assertSessionHasNoErrors();
+
+    $this->actingAs($owner)
+        ->get(categoryBaseUrl('keluarga-uji').'/categories')
+        ->assertOk()
+        ->assertInertia(
+            fn (Assert $page) => $page->component('categories/Index')
+                ->where('categories.0.emoji', '⚡')
+                ->where('categories.0.color', 'cat-1')
+                ->where('categories.0.icon', null),
+        );
+});
+
+test('warna di luar slot palet ditolak', function () {
+    ['user' => $owner] = categoryTenant('keluarga-uji');
+
+    $this->actingAs($owner)
+        ->post(categoryBaseUrl('keluarga-uji').'/categories', categoryPayload(['color' => '#ff0000']))
+        ->assertSessionHasErrors(['color']);
+
+    expect(Category::query()->count())->toBe(0);
+});
+
+test('mengunggah ikon menyimpan media dan urlnya masuk data keluar', function () {
+    Storage::fake('public');
+    ['user' => $owner] = categoryTenant('keluarga-uji');
+
+    $this->actingAs($owner)
+        ->post(categoryBaseUrl('keluarga-uji').'/categories', [
+            ...categoryPayload(['icon' => '']),
+            'icon_file' => UploadedFile::fake()->image('ikon.png'),
+        ])
+        ->assertRedirect()
+        ->assertSessionHasNoErrors();
+
+    $category = Category::query()->firstOrFail();
+
+    expect($category->getMedia('icon'))->toHaveCount(1)
+        ->and($category->icon_url)->toContain('/storage/');
+});
+
+test('mengganti ikon lewat update tetap satu file, remove_icon menghapusnya', function () {
+    Storage::fake('public');
+    ['user' => $owner] = categoryTenant('keluarga-uji');
+    $url = categoryBaseUrl('keluarga-uji').'/categories';
+
+    $this->actingAs($owner)
+        ->post($url, [
+            ...categoryPayload(),
+            'icon_file' => UploadedFile::fake()->image('ikon.png'),
+        ])
+        ->assertRedirect();
+
+    $category = Category::query()->firstOrFail();
+
+    $this->actingAs($owner)
+        ->put($url.'/'.$category->getKey(), [
+            ...categoryPayload(),
+            'icon_file' => UploadedFile::fake()->image('baru.png'),
+        ])
+        ->assertRedirect()
+        ->assertSessionHasNoErrors();
+
+    expect($category->refresh()->getMedia('icon'))->toHaveCount(1);
+
+    $this->actingAs($owner)
+        ->put($url.'/'.$category->getKey(), [
+            ...categoryPayload(),
+            'remove_icon' => true,
+        ])
+        ->assertRedirect()
+        ->assertSessionHasNoErrors();
+
+    expect($category->refresh()->getMedia('icon'))->toHaveCount(0);
+});
+
+test('file ikon yang bukan gambar ditolak', function () {
+    ['user' => $owner] = categoryTenant('keluarga-uji');
+
+    $this->actingAs($owner)
+        ->post(categoryBaseUrl('keluarga-uji').'/categories', [
+            ...categoryPayload(),
+            'icon_file' => UploadedFile::fake()->create('ikon.txt', 1),
+        ])
+        ->assertSessionHasErrors(['icon_file']);
 });

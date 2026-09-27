@@ -5,6 +5,8 @@ import { index, store } from '@/routes/accounts';
 
 defineProps<{
     types: string[];
+    icons: string[];
+    colors: string[];
 }>();
 
 defineOptions({
@@ -20,5 +22,10 @@ defineOptions({
 <template>
     <Head title="Kantong Baru" />
 
-    <AccountForm :action="store.url()" :types="types" />
+    <AccountForm
+        :action="store.url()"
+        :types="types"
+        :icons="icons"
+        :colors="colors"
+    />
 </template>

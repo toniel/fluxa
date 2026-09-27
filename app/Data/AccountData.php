@@ -22,6 +22,8 @@ class AccountData extends Data
         public AccountType $type,
         public string $balance,
         public string $initial_balance,
+        public ?string $icon,
+        public ?string $color,
         public bool $is_archived,
         public string $logo_url,
         public ?CreditCardDetailData $credit_detail = null,
