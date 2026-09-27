@@ -40,10 +40,10 @@ class DashboardController extends Controller
         $accounts = Account::query()
             ->active()
             ->orderedForListing()
-            ->get(['id', 'name', 'type', 'balance', 'is_archived']);
+            ->get(['id', 'name', 'type', 'icon', 'color', 'balance', 'is_archived']);
 
         $recent = Transaction::query()
-            ->with(['account', 'category'])
+            ->with(['account', 'category.media'])
             ->latestFirst()
             ->limit(4)
             ->get()
@@ -56,6 +56,9 @@ class DashboardController extends Controller
                 'account' => $transaction->account->name,
                 'category' => $transaction->category?->name,
                 'icon' => $transaction->category?->icon,
+                'emoji' => $transaction->category?->emoji,
+                'color' => $transaction->category?->color,
+                'icon_url' => $transaction->category->icon_url ?? '',
             ])
             ->all();
 
@@ -87,10 +90,10 @@ class DashboardController extends Controller
     }
 
     /**
-     * Satu iris donat: nama + ikon kategori dengan totalnya. Total berasal
+     * Satu iris donat: nama, ikon, warna, dan total kategori. Total berasal
      * dari alias agregat SUM, jadi dibaca lewat getAttribute.
      *
-     * @return array{category: string, icon: string|null, total: string}
+     * @return array{category: string, icon: string|null, color: string|null, total: string}
      */
     private function breakdownRow(Transaction $row): array
     {
@@ -99,6 +102,7 @@ class DashboardController extends Controller
         return [
             'category' => $categoryName ?? 'Tanpa kategori',
             'icon' => $row->category_id === null ? null : $row->category->icon,
+            'color' => $row->category_id === null ? null : $row->category->color,
             'total' => $this->money($row->getAttribute('total') ?? 0),
         ];
     }

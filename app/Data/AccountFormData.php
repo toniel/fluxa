@@ -48,9 +48,16 @@ class AccountFormData extends Data
         public ?string $default_interest_rate_monthly,
         #[Nullable, Numeric, Min(0), Max(100)]
         public ?string $default_admin_fee_percentage,
+        #[Nullable, Max(64)]
+        public ?string $icon,
+        #[Nullable, Max(8)]
+        public ?string $color,
     ) {}
 
     /**
+     * Ikon kantong longgar (nama lucide, arahkan lewat config); warna diikat
+     * ke slot palet agar tidak ada hex bebas yang merusak aksesibilitas.
+     *
      * @return array<string, mixed>
      */
     public static function rules(): array
@@ -61,6 +68,7 @@ class AccountFormData extends Data
             'billing_cycle_start_day' => $requiredIfLiability,
             'billing_cycle_end_day' => $requiredIfLiability,
             'payment_due_offset_days' => $requiredIfLiability,
+            'color' => ['nullable', 'in:'.implode(',', config('fluxa.category_colors'))],
         ];
     }
 }

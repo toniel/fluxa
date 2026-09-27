@@ -16,7 +16,15 @@ type OptionAccount = {
     type: string;
     balance: string;
 };
-type OptionCategory = { id: number; name: string; type: string };
+type OptionCategory = {
+    id: number;
+    name: string;
+    type: string;
+    icon?: string | null;
+    emoji?: string | null;
+    icon_url?: string | null;
+    color?: string | null;
+};
 
 const props = withDefaults(
     defineProps<{

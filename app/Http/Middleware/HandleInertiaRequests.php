@@ -41,6 +41,10 @@ class HandleInertiaRequests extends Middleware
         return [
             ...parent::share($request),
             'name' => config('app.name'),
+            // Domain pusat untuk menampilkan alamat subdomain (cek
+            // "administrasi subdomain" di Settings tenant). Diambil dari
+            // app.url supaya selalu senada dengan host yang menjalankan app.
+            'central_domain' => parse_url((string) config('app.url'), PHP_URL_HOST) ?? '',
             'auth' => [
                 'user' => $request->user(),
             ],

@@ -8,7 +8,6 @@ import MoneyText from '@/components/fluxa/MoneyText.vue';
 import TransactionRow from '@/components/fluxa/TransactionRow.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { categoryIcon } from '@/lib/categoryIcons';
 import {
     create as createRoute,
     destroy,
@@ -332,7 +331,10 @@ const selectClass =
                             class="min-w-0 flex-1 rounded-xl"
                         >
                             <TransactionRow
-                                :icon="categoryIcon(item.category_icon)"
+                                :icon="item.category_icon"
+                                :emoji="item.category_emoji"
+                                :icon-url="item.category_icon_url"
+                                :color="item.category_color"
                                 :title="
                                     item.description ||
                                     item.category_name ||

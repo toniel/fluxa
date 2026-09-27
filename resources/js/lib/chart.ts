@@ -67,3 +67,14 @@ export function rupiahTooltip(tooltipItem: { raw: unknown }): string {
 
     return formatRupiah(Number.isFinite(value) ? value : 0);
 }
+
+// Teks pengganti saat fitur sembunyikan nominal aktif.
+export const maskedAmount = 'Rp ••••••';
+
+/** Tooltip yang sama tapi berangkat saat nominal sedang disembunyikan. */
+export function moneyTooltip(
+    tooltipItem: { raw: unknown },
+    masked = false,
+): string {
+    return masked ? maskedAmount : rupiahTooltip(tooltipItem);
+}

@@ -3,10 +3,9 @@ import { Head, Link, useForm } from '@inertiajs/vue3';
 import { Pencil, Trash2 } from '@lucide/vue';
 import { computed, ref } from 'vue';
 import ConfirmDeleteDialog from '@/components/fluxa/ConfirmDeleteDialog.vue';
-import IconBadge from '@/components/fluxa/IconBadge.vue';
+import CategoryBadge from '@/components/fluxa/CategoryBadge.vue';
 import MoneyText from '@/components/fluxa/MoneyText.vue';
 import { Button } from '@/components/ui/button';
-import { categoryIcon } from '@/lib/categoryIcons';
 import {
     destroy,
     edit as editRoute,
@@ -102,8 +101,11 @@ function confirmDelete(): void {
 
         <section class="bg-card rounded-2xl border p-4">
             <div class="flex items-center gap-3">
-                <IconBadge
-                    :icon="categoryIcon(transaction.category_icon)"
+                <CategoryBadge
+                    :icon="transaction.category_icon"
+                    :emoji="transaction.category_emoji"
+                    :icon-url="transaction.category_icon_url"
+                    :color="transaction.category_color"
                     :tone="direction"
                 />
                 <div class="min-w-0 flex-1">

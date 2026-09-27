@@ -45,6 +45,8 @@ class AccountController extends Controller
 
         return Inertia::render('accounts/Create', [
             'types' => AccountType::values(),
+            'icons' => $this->icons(),
+            'colors' => $this->colors(),
         ]);
     }
 
@@ -91,6 +93,8 @@ class AccountController extends Controller
         return Inertia::render('accounts/Edit', [
             'account' => $this->toData($account->load(['media', 'creditCardDetail'])),
             'types' => AccountType::values(),
+            'icons' => $this->icons(),
+            'colors' => $this->colors(),
         ]);
     }
 
@@ -131,6 +135,22 @@ class AccountController extends Controller
     private function canManage(Request $request): bool
     {
         return $request->user()->can(PermissionEnum::AccountsManage->value);
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function icons(): array
+    {
+        return config('fluxa.account_icons');
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function colors(): array
+    {
+        return config('fluxa.category_colors');
     }
 
     /**
@@ -227,6 +247,8 @@ class AccountController extends Controller
             type: $account->type,
             balance: (string) $account->balance,
             initial_balance: (string) $account->initial_balance,
+            icon: $account->icon,
+            color: $account->color,
             is_archived: $account->is_archived,
             logo_url: $account->logo_url,
             credit_detail: $detail === null ? null : new CreditCardDetailData(

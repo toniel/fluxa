@@ -6,6 +6,7 @@ import { index, store } from '@/routes/categories';
 defineProps<{
     types: string[];
     icons: string[];
+    colors: string[];
 }>();
 
 defineOptions({
@@ -21,5 +22,10 @@ defineOptions({
 <template>
     <Head title="Kategori Baru" />
 
-    <CategoryForm :action="store.url()" :types="types" :icons="icons" />
+    <CategoryForm
+        :action="store.url()"
+        :types="types"
+        :icons="icons"
+        :colors="colors"
+    />
 </template>

@@ -3,6 +3,30 @@
 Semua perubahan yang berdampak pada deploy dicatat di sini, mengikuti
 [Semantic Versioning](https://semver.org/lang/id/).
 
+## v1.1.0 — 2026-09-28
+
+### Fitur baru
+
+- **Penampilan visual kategori.** Setiap kategori bisa diberi ikon Lucide,
+  emoji, atau foto, plus satu warna dari palet tema. Transaksi dan laporan
+  memakai tampilan itu (ikon/emoji/foto + badge warna).
+- **Ikon dan warna kantong.** Kantong (tunai, rekening, e-wallet, kartu,
+  paylater, lainnya) memakai ikon dan warna pilihan di kartu, ubin, dan
+  dasbor; tanpa pilihan, jatuh ke bawaan tipe.
+- **Sembunyikan nominal.** Tombol di bar atas (desktop dan HP) menyamarkan
+  semua nominal rupiah ke `Rp ••••••`, termasuk tooltip dan sumbu grafik.
+  Preferensi disimpan per perangkat di `localStorage`, tidak disentuh saat
+  mengisi formulir.
+- **Sufiks subdomain mengikuti domain aplikasi.** Pengaturan tenant tidak
+  lagi menebak `.fluxa.test`; suffix diambil dari `APP_URL` lewat prop
+  bersama `central_domain`, sehingga benar di produksi maupun lokal.
+
+### Migrasi
+
+- `add_category_visuals` menambah kolom `color` dan `emoji` (nullable) pada
+  `categories`. Gambar kategori dikirim lewat spatie media-library; kolom
+  baru kosong untuk data lama dan migrasi berjalan tanpa interaksi.
+
 ## v1.0.2 — 2026-09-25
 
 ### Perbaikan

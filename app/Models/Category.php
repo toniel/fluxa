@@ -19,6 +19,9 @@ use Lacodix\LaravelModelFilter\Filters\EnumFilter;
 use Lacodix\LaravelModelFilter\Traits\HasFilters;
 use Lacodix\LaravelModelFilter\Traits\IsSearchable;
 use Lacodix\LaravelModelFilter\Traits\IsSortable;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 /**
  * @property int $id
@@ -26,7 +29,10 @@ use Lacodix\LaravelModelFilter\Traits\IsSortable;
  * @property string $name
  * @property CategoryType $type
  * @property string|null $icon
+ * @property string|null $color
+ * @property string|null $emoji
  * @property bool $is_default
+ * @property-read string $icon_url
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  *
@@ -34,13 +40,13 @@ use Lacodix\LaravelModelFilter\Traits\IsSortable;
  *
  * @mixin CategoryQueryBuilder
  */
-#[Fillable(['name', 'type', 'icon', 'is_default'])]
+#[Fillable(['name', 'type', 'icon', 'color', 'emoji', 'is_default'])]
 #[UseEloquentBuilder(CategoryQueryBuilder::class)]
 #[UsePolicy(CategoryPolicy::class)]
-class Category extends Model
+class Category extends Model implements HasMedia
 {
     /** @use HasFactory<CategoryFactory> */
-    use BelongsToTenant, HasFactory, HasFilters, IsSearchable, IsSortable;
+    use BelongsToTenant, HasFactory, HasFilters, InteractsWithMedia, IsSearchable, IsSortable;
 
     /** @var list<string> */
     protected $searchable = ['name'];
@@ -56,6 +62,26 @@ class Category extends Model
         return [EnumFilter::make('type')
             ->setEnum(CategoryType::class)
             ->setQueryName('type')];
+    }
+
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('icon')->singleFile();
+    }
+
+    public function registerMediaConversions(?Media $media = null): void
+    {
+        // nonQueued() disebut duluan: method asli Conversion yang
+        // mengembalikan Conversion; width()/height() lewat @mixin ImageDriver.
+        $this->addMediaConversion('thumb')->nonQueued()->width(96)->height(96);
+    }
+
+    /**
+     * URL gambar ikon kategori; kosong kalau belum diunggah.
+     */
+    public function getIconUrlAttribute(): string
+    {
+        return $this->getFirstMediaUrl('icon', 'thumb');
     }
 
     protected function casts(): array

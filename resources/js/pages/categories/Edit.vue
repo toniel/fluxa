@@ -7,6 +7,7 @@ const props = defineProps<{
     category: App.Data.CategoryData;
     types: string[];
     icons: string[];
+    colors: string[];
 }>();
 
 defineOptions({
@@ -27,6 +28,7 @@ defineOptions({
         method="put"
         :types="types"
         :icons="icons"
+        :colors="colors"
         :category="category"
     />
 </template>

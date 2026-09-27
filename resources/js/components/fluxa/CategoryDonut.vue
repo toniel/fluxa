@@ -3,20 +3,33 @@ import { computed } from 'vue';
 import { Doughnut } from 'vue-chartjs';
 import type { ChartData, ChartOptions } from 'chart.js';
 import { useAppearance } from '@/composables/useAppearance';
+import { useMaskedMoney } from '@/composables/useMaskedMoney';
 import MoneyText from '@/components/fluxa/MoneyText.vue';
-import { chartPalette, chartTextColor, rupiahTooltip } from '@/lib/chart';
+import {
+    chartPalette,
+    chartTextColor,
+    themeColor,
+    moneyTooltip,
+} from '@/lib/chart';
+import { isColorSlot } from '@/lib/categoryVisual';
 
-type Slice = { category: string; total: number | string };
+type Slice = {
+    category: string;
+    total: number | string;
+    color?: string | null;
+};
 
 const props = defineProps<{ slices: Slice[] }>();
 
 // Dibaca di sini supaya ganti tema me-render ulang chart dengan warna baru.
 const { resolvedAppearance } = useAppearance();
+const { isMasked } = useMaskedMoney();
 
 const parsed = computed(() =>
     props.slices.map((s) => ({
         category: s.category,
         total: Number.parseFloat(String(s.total)),
+        color: s.color && isColorSlot(s.color) ? s.color : null,
     })),
 );
 
@@ -30,14 +43,20 @@ const theme = computed(() => {
 
 const total = computed(() => parsed.value.reduce((acc, r) => acc + r.total, 0));
 
+// Kategori berkunci warna membawa warnanya; yang belum hanya mengikuti urutan
+// palet (kategori ke-4 selalu warna ke-4 walau lainnya hilang bulan ini).
+function colorFor(row: (typeof parsed.value)[number], i: number): string {
+    return row.color
+        ? themeColor(`--${row.color}`)
+        : theme.value.palette[i % theme.value.palette.length];
+}
+
 const data = computed<ChartData<'doughnut'>>(() => ({
     labels: parsed.value.map((r) => r.category),
     datasets: [
         {
             data: parsed.value.map((r) => r.total),
-            backgroundColor: parsed.value.map(
-                (_, i) => theme.value.palette[i % theme.value.palette.length],
-            ),
+            backgroundColor: parsed.value.map(colorFor),
             borderWidth: 2,
         },
     ],
@@ -49,7 +68,9 @@ const options = computed<ChartOptions<'doughnut'>>(() => ({
     cutout: '68%',
     plugins: {
         legend: { display: false },
-        tooltip: { callbacks: { label: rupiahTooltip } },
+        tooltip: {
+            callbacks: { label: (item) => moneyTooltip(item, isMasked.value) },
+        },
     },
 }));
 </script>
@@ -59,7 +80,11 @@ const options = computed<ChartOptions<'doughnut'>>(() => ({
         <div
             class="relative mx-auto h-36 w-full max-w-55"
             role="img"
-            :aria-label="`Pengeluaran per kategori, total ${total}`"
+            :aria-label="
+                isMasked
+                    ? 'Pengeluaran per kategori, total disembunyikan'
+                    : `Pengeluaran per kategori, total ${total}`
+            "
         >
             <Doughnut :data="data" :options="options" />
         </div>
@@ -76,10 +101,7 @@ const options = computed<ChartOptions<'doughnut'>>(() => ({
             >
                 <span
                     class="size-2.5 shrink-0 rounded-full"
-                    :style="{
-                        backgroundColor:
-                            theme.palette[i % theme.palette.length],
-                    }"
+                    :style="{ backgroundColor: colorFor(row, i) }"
                     aria-hidden="true"
                 />
                 <span class="min-w-0 flex-1 truncate">{{ row.category }}</span>

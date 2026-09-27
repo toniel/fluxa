@@ -12,6 +12,8 @@ import { computed } from 'vue';
 import InputError from '@/components/InputError.vue';
 import CreditDetailFields from '@/components/fluxa/CreditDetailFields.vue';
 import CurrencyInput from '@/components/fluxa/CurrencyInput.vue';
+import ColorSwatches from '@/components/fluxa/ColorSwatches.vue';
+import IconSwatches from '@/components/fluxa/IconSwatches.vue';
 import ImageUpload from '@/components/fluxa/ImageUpload.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -22,10 +24,18 @@ const props = withDefaults(
         action: string;
         method?: 'post' | 'put';
         types?: string[];
+        icons?: string[];
+        colors?: string[];
         // Absent saat membuat, yang membuat saldo awal bisa diketik.
         account?: App.Data.AccountData | null;
     }>(),
-    { method: 'post', types: () => [], account: null },
+    {
+        method: 'post',
+        types: () => [],
+        icons: () => [],
+        colors: () => [],
+        account: null,
+    },
 );
 
 const typeOptions: Record<string, { label: string; icon: typeof Wallet }> = {
@@ -35,6 +45,27 @@ const typeOptions: Record<string, { label: string; icon: typeof Wallet }> = {
     credit_card: { label: 'Kartu kredit', icon: CreditCard },
     paylater: { label: 'Paylater', icon: HandCoins },
     other: { label: 'Lainnya', icon: PiggyBank },
+};
+
+// Nama Indonesia per ikon kantong untuk tombol ikon (aria-label).
+const iconLabels: Record<string, string> = {
+    banknote: 'Uang',
+    car: 'Kendaraan',
+    'circle-dollar-sign': 'Rupiah',
+    coins: 'Dompet koin',
+    'credit-card': 'Kartu',
+    ellipsis: 'Lainnya',
+    gift: 'Hadiah',
+    'hand-coins': 'Donasi',
+    house: 'Rumah',
+    landmark: 'Bank',
+    'piggy-bank': 'Celengan',
+    plane: 'Perjalanan',
+    receipt: 'Struk',
+    'shopping-bag': 'Belanja',
+    smartphone: 'E-wallet',
+    wallet: 'Dompet',
+    wrench: 'Tabungan',
 };
 
 const isLiabilityType = computed(
@@ -62,6 +93,8 @@ const form = useForm({
         props.account?.credit_detail?.default_admin_fee_percentage ?? '',
     logo: null as File | null,
     remove_logo: false,
+    icon: props.account?.icon ?? '',
+    color: props.account?.color ?? '',
 });
 
 // transform() merusak tipe form.errors, baca lewat cast (lihat CRUD_FLOW §6).
@@ -186,6 +219,25 @@ function submit(): void {
                 v-model="form"
                 :errors="errorFor"
             />
+
+            <fieldset class="grid gap-2">
+                <legend class="text-sm leading-none font-medium">Ikon</legend>
+                <IconSwatches
+                    :icons="icons"
+                    :labels="iconLabels"
+                    :model-value="form.icon"
+                    @update:model-value="form.icon = $event"
+                />
+            </fieldset>
+
+            <fieldset class="grid gap-2">
+                <legend class="text-sm leading-none font-medium">Warna</legend>
+                <ColorSwatches
+                    :colors="colors"
+                    :model-value="form.color"
+                    @update:model-value="form.color = $event"
+                />
+            </fieldset>
 
             <ImageUpload
                 input-id="account-logo"

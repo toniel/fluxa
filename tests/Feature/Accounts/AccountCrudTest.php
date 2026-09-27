@@ -408,3 +408,39 @@ test('logo yang bukan gambar ditolak', function () {
 
     expect(Account::query()->count())->toBe(0);
 });
+
+test('ikon dan warna kantong tersimpan dan muncul di daftar', function () {
+    ['user' => $owner] = categoryTenant('keluarga-uji');
+
+    $this->actingAs($owner)
+        ->post(categoryBaseUrl('keluarga-uji').'/accounts', accountPayload([
+            'icon' => 'wrench',
+            'color' => 'cat-3',
+        ]))
+        ->assertRedirect()
+        ->assertSessionHasNoErrors();
+
+    $account = Account::query()->firstOrFail();
+
+    expect($account->icon)->toBe('wrench')
+        ->and($account->color)->toBe('cat-3');
+
+    $this->actingAs($owner)
+        ->get(categoryBaseUrl('keluarga-uji').'/accounts')
+        ->assertOk()
+        ->assertInertia(
+            fn (Assert $page) => $page->component('accounts/Index')
+                ->where('accounts.0.icon', 'wrench')
+                ->where('accounts.0.color', 'cat-3'),
+        );
+});
+
+test('warna kantong di luar slot palet ditolak', function () {
+    ['user' => $owner] = categoryTenant('keluarga-uji');
+
+    $this->actingAs($owner)
+        ->post(categoryBaseUrl('keluarga-uji').'/accounts', accountPayload(['color' => 'merah']))
+        ->assertSessionHasErrors(['color']);
+
+    expect(Account::query()->count())->toBe(0);
+});

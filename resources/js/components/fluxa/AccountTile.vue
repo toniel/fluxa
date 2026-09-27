@@ -7,14 +7,21 @@ import {
     Wallet,
 } from '@lucide/vue';
 import { computed } from 'vue';
-import IconBadge from '@/components/fluxa/IconBadge.vue';
 import MoneyText from '@/components/fluxa/MoneyText.vue';
+import { accountIcon } from '@/lib/accountIcons';
+import { colorTint, isColorSlot } from '@/lib/categoryVisual';
 
-const props = defineProps<{
-    name: string;
-    type: string;
-    balance: number | string;
-}>();
+const props = withDefaults(
+    defineProps<{
+        name: string;
+        type: string;
+        balance: number | string;
+        // Penampilan kustom kantong; memakai bawaan tipe bila kosong.
+        icon?: string | null;
+        color?: string | null;
+    }>(),
+    { icon: null, color: null },
+);
 
 const icons = {
     cash: Wallet,
@@ -24,7 +31,17 @@ const icons = {
     paylater: HandCoins,
 } as const;
 
-const icon = computed(() => icons[props.type as keyof typeof icons] ?? Wallet);
+const typeIcon = computed(
+    () => icons[props.type as keyof typeof icons] ?? Wallet,
+);
+
+const icon = computed(() => accountIcon(props.icon) ?? typeIcon.value);
+
+const tint = computed(() =>
+    props.color && isColorSlot(props.color)
+        ? colorTint[props.color]
+        : 'bg-brand/12 text-brand',
+);
 
 // Saldo minus diberi warna arah keluar supaya kantong yang jebol terlihat
 // tanpa harus membaca tanda minusnya lebih dulu.
@@ -35,7 +52,13 @@ const direction = computed(() =>
 
 <template>
     <div class="bg-card rounded-xl border p-3">
-        <IconBadge :icon="icon" tone="brand" size="sm" />
+        <span
+            class="flex size-9 items-center justify-center rounded-full"
+            :class="tint"
+            aria-hidden="true"
+        >
+            <component :is="icon" class="size-4" />
+        </span>
         <p class="text-muted-foreground mt-2 truncate text-xs">{{ name }}</p>
         <p class="truncate font-semibold">
             <MoneyText :value="balance" :direction="direction" />
