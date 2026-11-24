@@ -3,6 +3,22 @@
 Semua perubahan yang berdampak pada deploy dicatat di sini, mengikuti
 [Semantic Versioning](https://semver.org/lang/id/).
 
+## v1.2.0 — 2026-11-24
+
+### Fitur baru
+
+- **Verifikasi email wajib.** Pendaftaran baru harus memverifikasi alamat
+  email sebelum mengakses tenant. Email verifikasi kini menyarankan penerima
+  memeriksa folder spam atau junk bila tidak menemukannya di kotak masuk.
+
+### Keamanan
+
+- **Isolasi tenant antar anggota.** Sebelumnya user yang sudah login bisa
+  membuka subdomain tenant lain selama subdomain itu valid, dan data tenant
+  tersebut ikut tampil. Middleware baru memastikan hanya pemilik atau anggota
+  tenant (atau super-admin) yang bisa membuka subdomain; selain itu dijawab
+  404, tanpa membocorkan apakah tenant itu ada.
+
 ## v1.1.0 — 2026-09-28
 
 ### Fitur baru
