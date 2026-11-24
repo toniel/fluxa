@@ -2,6 +2,8 @@
 
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\PlanSeeder;
+use Illuminate\Auth\Notifications\VerifyEmail;
+use Illuminate\Support\Facades\Notification;
 use Laravel\Fortify\Features;
 
 beforeEach(function () {
@@ -15,6 +17,7 @@ test('registration screen can be rendered', function () {
 });
 
 test('new users can register', function () {
+    Notification::fake();
     // Registrasi membuatkan tenant + role + langganan free, jadi definisi
     // role dan paket harus ada.
     $this->seed([
@@ -31,4 +34,6 @@ test('new users can register', function () {
 
     $this->assertAuthenticated();
     $response->assertRedirect(route('tenants.index', absolute: false));
+    Notification::assertSentTo(auth()->user(), VerifyEmail::class);
+    $this->get(route('tenants.index'))->assertRedirect(route('verification.notice'));
 });

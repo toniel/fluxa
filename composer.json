@@ -101,6 +101,15 @@
             "@php artisan config:clear --ansi",
             "@php artisan test --coverage-html=storage/coverage"
         ],
+        "changelog": [
+            "git cliff --unreleased --prepend CHANGELOG.md"
+        ],
+        "changelog:preview": [
+            "git cliff --unreleased"
+        ],
+        "changelog:release": [
+            "git cliff --prepend CHANGELOG.md"
+        ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
             "@php artisan package:discover --ansi"
@@ -119,6 +128,11 @@
         "pre-package-uninstall": [
             "Illuminate\\Foundation\\ComposerScripts::prePackageUninstall"
         ]
+    },
+    "scripts-descriptions": {
+        "changelog": "Susun entri rilis belum-dirilis dari commit lalu sisipkan di atas CHANGELOG.md (prepend, entri lama tetap).",
+        "changelog:preview": "Tampilkan entri belum-dirilis ke layar tanpa menulis file. Dipakai untuk cek sebelum commit.",
+        "changelog:release": "Prepend changelog untuk tag versi. Jalankan setelah tag dibuat, mis. composer changelog:release -- --tag v1.2.0."
     },
     "extra": {
         "laravel": {

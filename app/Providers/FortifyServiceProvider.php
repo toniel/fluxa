@@ -6,8 +6,10 @@ use App\Actions\Fortify\CreateNewUser;
 use App\Actions\Fortify\ResetUserPassword;
 use App\Http\Responses\LoginResponse;
 use App\Models\User;
+use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
@@ -38,6 +40,7 @@ class FortifyServiceProvider extends ServiceProvider
         $this->configureActions();
         $this->configureViews();
         $this->configureRateLimiting();
+        $this->configureEmailVerification();
     }
 
     /**
@@ -114,6 +117,26 @@ class FortifyServiceProvider extends ServiceProvider
             return Limit::perMinute(10)->by(
                 ($request->input('credential.id') ?: $request->session()->getId()).'|'.$request->ip(),
             );
+        });
+    }
+
+    /**
+     * Isi email verifikasi.
+     *
+     * Notifikasi bawaan Laravel (VerifyEmail) dioverride di sini supaya
+     * teksnya berbahasa Indonesia dan memuat saran memeriksa folder spam:
+     * email verifikasi sering tersaring ke sana, dan user yang tidak
+     * menemukannya mengira email tak pernah terkirim.
+     */
+    private function configureEmailVerification(): void
+    {
+        VerifyEmail::toMailUsing(function (mixed $notifiable, string $url): MailMessage {
+            return (new MailMessage)
+                ->subject('Verifikasi Alamat Email')
+                ->line('Klik tombol di bawah untuk memverifikasi alamat email Anda.')
+                ->action('Verifikasi Email', $url)
+                ->line('Jika email ini tidak ada di kotak masuk, periksa folder spam atau junk.')
+                ->line('Abaikan email ini bila Anda tidak membuat akun.');
         });
     }
 }

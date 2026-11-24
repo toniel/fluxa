@@ -26,6 +26,8 @@ function categoryTenant(string $domain): array
     $tenant = Tenant::create(['name' => 'Tim Uji', 'owner_id' => $user->getKey()]);
     $tenant->domains()->create(['domain' => $domain, 'is_primary' => true]);
 
+    $tenant->members()->syncWithoutDetaching([$user->getKey() => ['joined_at' => now()]]);
+
     categoryRole($tenant, $user, TenantRole::Owner);
 
     return ['user' => $user, 'tenant' => $tenant];
@@ -51,10 +53,16 @@ function categoryRole(Tenant $tenant, User $user, TenantRole $role): void
 
 /**
  * User yang sudah login untuk tenant ini dengan role tertentu.
+ *
+ * Meniru alur nyata (CreateTenantAction / AcceptInvitationAction): setiap
+ * anggota punya baris pivot keanggotaan DAN role spatie. Pivot inilah yang
+ * dipakai EnsureTenantMember sebagai pagar akses subdomain.
  */
 function categoryUser(Tenant $tenant, TenantRole $role, string $name = 'Anggota'): User
 {
     $user = User::factory()->create(['name' => $name]);
+
+    $tenant->members()->syncWithoutDetaching([$user->getKey() => ['joined_at' => now()]]);
 
     categoryRole($tenant, $user, $role);
 

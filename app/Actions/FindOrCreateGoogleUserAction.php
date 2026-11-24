@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Actions;
 
 use App\Models\User;
+use Laravel\Socialite\AbstractUser;
 use Laravel\Socialite\Contracts\User as GoogleUser;
 use Lorisleiva\Actions\Concerns\AsAction;
 
@@ -22,6 +23,9 @@ class FindOrCreateGoogleUserAction
      */
     public function handle(GoogleUser $googleUser): array
     {
+        $emailVerifiedByGoogle = $googleUser instanceof AbstractUser
+            && ($googleUser->getRaw()['email_verified'] ?? false) === true;
+
         $byGoogleId = User::query()->where('google_id', $googleUser->getId())->first();
 
         if ($byGoogleId instanceof User) {
@@ -38,7 +42,7 @@ class FindOrCreateGoogleUserAction
                 'avatar' => $googleUser->getAvatar(),
             ]);
 
-            if ($byEmail->email_verified_at === null) {
+            if ($emailVerifiedByGoogle && $byEmail->email_verified_at === null) {
                 $byEmail->forceFill(['email_verified_at' => now()])->save();
             }
 
@@ -51,7 +55,11 @@ class FindOrCreateGoogleUserAction
             'google_id' => $googleUser->getId(),
             'avatar' => $googleUser->getAvatar(),
         ]);
-        $user->forceFill(['email_verified_at' => now()])->save();
+        if ($emailVerifiedByGoogle) {
+            $user->forceFill(['email_verified_at' => now()])->save();
+        } else {
+            $user->sendEmailVerificationNotification();
+        }
 
         return [$user, true];
     }

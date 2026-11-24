@@ -27,6 +27,13 @@ function tenantFor(User $user, string $name, string $subdomain): Tenant
 
 beforeEach(fn () => $this->seed(PermissionSeeder::class));
 
+test('akun belum terverifikasi diarahkan ke halaman verifikasi sesudah login', function () {
+    $user = User::factory()->unverified()->create(['password' => bcrypt('rahasia-uji')]);
+
+    $this->post('/login', ['email' => $user->email, 'password' => 'rahasia-uji'])
+        ->assertRedirect(route('verification.notice'));
+});
+
 test('login tidak pernah mendarat di dashboard central domain', function () {
     $user = User::factory()->create(['password' => bcrypt('rahasia-uji')]);
     tenantFor($user, 'Keluarga Uji', 'keluarga-uji');

@@ -28,6 +28,10 @@ class LoginResponse implements LoginResponseContract
             return redirect()->route('login');
         }
 
+        if (! $user->hasVerifiedEmail()) {
+            return redirect()->route('verification.notice');
+        }
+
         $destination = TenantDestination::afterLogin($user);
 
         // Redirect biasa tidak bisa menyeberang origin di sini: Inertia

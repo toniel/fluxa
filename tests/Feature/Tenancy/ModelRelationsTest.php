@@ -36,8 +36,7 @@ test('domain redirecting menyaring domain pengalihan saja', function () {
 test('relasi tenants memuat keanggotaan user melalui pivot', function () {
     ['user' => $owner, 'tenant' => $tenant] = categoryTenant('utama-uji');
 
-    $tenant->members()->attach($owner->getKey(), ['joined_at' => now()]);
-
+    // categoryTenant sudah mencatat owner di pivot keanggotaan.
     expect($owner->tenants->pluck('id')->all())->toBe([$tenant->getKey()]);
     expect($owner->tenants()->first()->getKey())->toBe($tenant->getKey());
 });
