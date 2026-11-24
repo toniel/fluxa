@@ -23,11 +23,8 @@ beforeEach(function () {
  */
 function memberTenant(string $domain): array
 {
-    ['user' => $owner, 'tenant' => $tenant] = categoryTenant($domain);
-
-    $tenant->members()->attach($owner->getKey(), ['joined_at' => now()]);
-
-    return ['user' => $owner, 'tenant' => $tenant];
+    // categoryTenant sudah mencatat owner di pivot keanggotaan plus role.
+    return categoryTenant($domain);
 }
 
 /**

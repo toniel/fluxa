@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\TenantRole;
+use App\Models\User;
 use App\Support\TenantDestination;
 use Database\Seeders\PermissionSeeder;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -113,7 +114,8 @@ test('member ditolak mengeluarkan anggota lain', function () {
 
 test('ubah dan hapus bukan anggota menjawab 404', function () {
     ['user' => $owner, 'tenant' => $tenant] = memberTenant('keluarga-uji');
-    $outsider = categoryUser($tenant, TenantRole::Member, 'Asing');
+    // Bukan anggota: tidak ada baris pivot maupun role di tenant ini.
+    $outsider = User::factory()->create(['name' => 'Asing']);
     $url = categoryBaseUrl('keluarga-uji');
 
     $this->actingAs($owner)

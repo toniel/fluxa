@@ -1,0 +1,90 @@
+# Konfigurasi git-cliff untuk Fluxa.
+#
+# Dipakai untuk menyusun entri rilis BARU dari pesan commit (Conventional
+# Commits) lalu menyisipkannya di atas CHANGELOG.md yang sudah ada. Entri lama
+# ditulis tangan dan lebih kaya daripada yang bisa disimpulkan dari commit,
+# jadi file lama TIDAK diregenerasi: alur normalnya prepend (lihat composer
+# changelog). Judul grup sengaja berbahasa Indonesia, mengikuti gaya CHANGELOG.
+
+[changelog]
+# Header hanya ditulis saat file changelog belum ada. Saat prepend ke file
+# yang sudah punya header ini, git-cliff memakai body saja.
+header = """
+# Changelog
+
+Semua perubahan yang berdampak pada deploy dicatat di sini, mengikuti
+[Semantic Versioning](https://semver.org/lang/id/).
+"""
+
+# Satu blok per rilis. Formatnya menyamai entri lama: `## vX.Y.Z — tanggal`
+# diikuti sub-judul grup berbahasa Indonesia.
+body = """
+
+{% if version %}\
+## {{ version }} — {{ timestamp | date(format="%Y-%m-%d") }}
+{% else %}\
+## Belum dirilis
+{% endif %}\
+{% for group, commits in commits | group_by(attribute="group") %}
+### {{ group | upper_first }}
+
+{% for commit in commits %}\
+- {% if commit.scope %}**{{ commit.scope }}:** {% endif %}{{ commit.message | upper_first }}\
+{% if commit.remote.pr_number %} (#{{ commit.remote.pr_number }}){% endif %}
+{% endfor %}\
+{% endfor %}
+"""
+
+# Teks yang ditaruh di paling bawah file. Dikosongkan supaya tidak mengganggu
+# konten lama saat prepend.
+footer = ""
+
+# Rapikan spasi berlebih dari template di atas.
+trim = true
+
+# Saat prepend, baris ini dipakai git-cliff untuk menemukan tempat menyisipkan
+# entri baru (tepat setelah header). Harus sama persis dengan baris di
+# CHANGELOG.md.
+# (Tidak memakai `postprocessors` khusus; link commit dibentuk via remote.)
+
+[git]
+# Hanya commit yang mengikuti Conventional Commits yang diproses.
+conventional_commits = true
+# Commit non-conventional (misalnya merge PR GitHub) dibuang dari changelog.
+filter_unconventional = true
+# Pisahkan commit yang menumpuk beberapa perubahan dalam satu pesan.
+split_commits = false
+
+# Pemetaan tipe commit -> judul grup. Urutan di sini menentukan urutan grup
+# dalam setiap rilis. Grup mengikuti istilah CHANGELOG lama.
+commit_parsers = [
+    { message = "^feat", group = "Fitur baru" },
+    { message = "^fix", group = "Perbaikan" },
+    { message = "^perf", group = "Performa" },
+    { message = "^refactor", group = "Perombakan" },
+    { message = "^docs", skip = true },
+    { message = "^style", skip = true },
+    { message = "^test", skip = true },
+    { message = "^chore\\(release\\)", skip = true },
+    { message = "^chore\\(deps\\)", skip = true },
+    { message = "^chore", skip = true },
+    { message = "^build", group = "Build" },
+    { message = "^ci", skip = true },
+    # Buang merge commit PR GitHub ("Merge pull request ...").
+    { message = "^Merge", skip = true },
+    # Sisanya (conventional tapi tak terpetakan) dikelompokkan sebagai Lainnya.
+    { message = ".*", group = "Lainnya" },
+]
+
+# Buang commit yang tidak cocok parser di atas sama sekali.
+filter_commits = false
+
+# Hanya tag SemVer `vX.Y.Z` yang dianggap rilis.
+tag_pattern = "v[0-9]*"
+
+# Urutan commit dalam tiap grup: terbaru di atas.
+sort_commits = "newest"
+
+[remote.github]
+owner = "toniel"
+repo = "fluxa"

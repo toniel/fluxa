@@ -21,6 +21,24 @@ test('sends verification notification', function () {
     Notification::assertSentTo($user, VerifyEmail::class);
 });
 
+test('verification notification mentions the spam folder', function () {
+    Notification::fake();
+
+    $user = User::factory()->unverified()->create();
+
+    $this->actingAs($user)
+        ->post(route('verification.send'))
+        ->assertRedirect(route('home'));
+
+    Notification::assertSentTo($user, VerifyEmail::class, function (VerifyEmail $notification) use ($user) {
+        $mail = $notification->toMail($user);
+
+        return collect($mail->introLines)
+            ->merge($mail->outroLines)
+            ->contains(fn (string $line) => str_contains(strtolower($line), 'spam'));
+    });
+});
+
 test('does not send verification notification if email is verified', function () {
     Notification::fake();
 

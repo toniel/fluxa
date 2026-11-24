@@ -8,8 +8,11 @@ use App\Models\TenantInvitation;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\PlanSeeder;
+use Illuminate\Auth\Notifications\VerifyEmail;
+use Illuminate\Support\Facades\Notification;
 use Laravel\Socialite\Contracts\User as GoogleUser;
 use Laravel\Socialite\Facades\Socialite;
+use Laravel\Socialite\Two\User as SocialiteUser;
 
 beforeEach(function () {
     $this->seed([PermissionSeeder::class, PlanSeeder::class]);
@@ -26,15 +29,39 @@ function mockGoogleDriver(?GoogleUser $user = null): void
 
 function mockGoogleUser(array $overrides = []): GoogleUser
 {
-    $user = Mockery::mock(GoogleUser::class);
-    $user->shouldReceive('getId')->andReturn($overrides['id'] ?? 'google-123');
-    $user->shouldReceive('getEmail')->andReturn($overrides['email'] ?? 'budi@gmail.com');
-    $user->shouldReceive('getName')->andReturn($overrides['name'] ?? 'Budi');
-    $user->shouldReceive('getNickname')->andReturn($overrides['nickname'] ?? null);
-    $user->shouldReceive('getAvatar')->andReturn($overrides['avatar'] ?? 'https://avatar/x.png');
-
-    return $user;
+    return (new SocialiteUser)->setRaw([
+        'email_verified' => $overrides['email_verified'] ?? true,
+    ])->map([
+        'id' => $overrides['id'] ?? 'google-123',
+        'email' => $overrides['email'] ?? 'budi@gmail.com',
+        'name' => $overrides['name'] ?? 'Budi',
+        'nickname' => $overrides['nickname'] ?? null,
+        'avatar' => $overrides['avatar'] ?? 'https://avatar/x.png',
+    ]);
 }
+
+test('akun Google dengan email belum terverifikasi tetap harus memverifikasi email', function () {
+    Notification::fake();
+    mockGoogleDriver(mockGoogleUser(['email_verified' => false]));
+
+    $this->get('/auth/google/callback')
+        ->assertRedirect(route('verification.notice'));
+
+    $user = User::query()->where('email', 'budi@gmail.com')->firstOrFail();
+
+    expect($user->email_verified_at)->toBeNull();
+    Notification::assertSentTo($user, VerifyEmail::class);
+});
+
+test('login Google tanpa verifikasi email tidak mengangkat status akun lama', function () {
+    $user = User::factory()->unverified()->create(['email' => 'budi@gmail.com']);
+    mockGoogleDriver(mockGoogleUser(['email_verified' => false]));
+
+    $this->get('/auth/google/callback')
+        ->assertRedirect(route('verification.notice'));
+
+    expect($user->refresh()->email_verified_at)->toBeNull();
+});
 
 test('redirect menyimpan token undangan lalu ke google', function () {
     mockGoogleDriver();

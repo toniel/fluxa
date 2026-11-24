@@ -26,7 +26,7 @@ Route::inertia('/', 'Welcome')->name('home');
 Route::get('auth/google/redirect', GoogleRedirectController::class)->name('auth.google.redirect');
 Route::get('auth/google/callback', GoogleCallbackController::class)->name('auth.google.callback');
 
-Route::middleware(['auth'])->group(function (): void {
+Route::middleware(['auth', 'verified'])->group(function (): void {
     Route::get('tenants', [TenantPickerController::class, 'index'])->name('tenants.index');
     Route::get('tenants/create', [TenantController::class, 'create'])->name('tenants.create');
     Route::post('tenants', [TenantController::class, 'store'])->name('tenants.store');
@@ -36,11 +36,11 @@ Route::middleware(['auth'])->group(function (): void {
 // pengklik belum tentu login atau punya tenant, token-lah otoritasnya.
 Route::get('invitations/{token}', [InvitationAcceptanceController::class, 'show'])->name('invitations.show');
 Route::post('invitations/{token}/accept', [InvitationAcceptanceController::class, 'store'])
-    ->middleware('auth')->name('invitations.accept');
+    ->middleware(['auth', 'verified'])->name('invitations.accept');
 
 // Panel super-admin di central domain: statistik lintas tenant dan daftar
 // pengguna. Terpisah dari aplikasi tenant (subdomain) maupun pemilih tenant.
-Route::middleware(['auth', 'super-admin'])->prefix('admin')->name('admin.')->group(function (): void {
+Route::middleware(['auth', 'verified', 'super-admin'])->prefix('admin')->name('admin.')->group(function (): void {
     Route::get('/', AdminDashboardController::class)->name('dashboard');
     Route::get('/users', [AdminUserController::class, 'index'])->name('users.index');
     Route::get('/tenants', [AdminTenantController::class, 'index'])->name('tenants.index');

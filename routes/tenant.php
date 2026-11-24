@@ -30,8 +30,10 @@ use Stancl\Tenancy\Middleware\PreventAccessFromCentralDomains;
 Route::middleware([
     'web',
     'auth',
+    'verified',
     InitializeTenancyBySubdomain::class,
     PreventAccessFromCentralDomains::class,
+    'tenant.member',
 ])->group(function (): void {
     Route::get('dashboard', DashboardController::class)->name('dashboard');
 
